@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <meta name="theme-color" content="#1E1E1E" />
+    <meta name="description" content="GhostLink Club" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="./ghost_ava.png" />
+    <title>GhostLink Club</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="flex flex-col p-6">
+    <main class="flex-1 overflow-y-auto">
+      <section id="screen-invite" class="screen active">
+        <header class="pt-2 mb-6 flex items-center gap-3">
+          <img src="./ghost_ava.png" alt="GhostLink" class="w-10 h-10 rounded-full object-cover" />
+          <h1 class="text-3xl font-black tracking-tight text-white uppercase">GHOSTLINK</h1>
+        </header>
+
+        <div class="text-white text-2xl font-bold mb-2">Закрытый клуб</div>
+        <div class="text-muted-gray mb-5">
+          Доступ только по приглашению. Авторизация выполняется через Telegram.
+        </div>
+
+        <div class="bg-card-dark rounded-2xl p-4 mb-4">
+          <div class="text-white font-bold mb-2">Устав клуба (кратко)</div>
+          <div class="text-muted-gray text-sm leading-6">
+            Только по инвайтам. Бережем канал и скорость. За приглашенного отвечает пригласивший.
+            Администрация оставляет право ограничить доступ при злоупотреблениях.
+          </div>
+        </div>
+
+        <button id="openTgBtn" class="ios-active w-full bg-primary h-[56px] rounded-2xl flex items-center justify-center mb-3">
+          <span class="text-black font-bold text-lg">Войти через Telegram</span>
+        </button>
+
+        <button id="shareInviteBtn" class="ios-active w-full border border-primary h-[52px] rounded-2xl flex items-center justify-center mb-3">
+          <span class="text-primary font-bold">Поделиться приглашением</span>
+        </button>
+
+        <button id="copyInviteBtn" class="ios-active w-full border border-primary h-[52px] rounded-2xl flex items-center justify-center mb-3">
+          <span class="text-primary font-bold">Скопировать ссылку</span>
+        </button>
+
+        <button id="installBtn" class="ios-active w-full border border-primary h-[52px] rounded-2xl flex items-center justify-center">
+          <span class="text-primary font-bold">Установить приложение</span>
+        </button>
+
+        <div id="statusText" class="text-muted-gray text-sm mt-4">Ожидайте авторизацию.</div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
