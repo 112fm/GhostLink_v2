@@ -1,2 +1,0 @@
-"""GhostLink bot package."""
-
