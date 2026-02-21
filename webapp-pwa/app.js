@@ -1,7 +1,12 @@
 (function () {
   const TG_BOT = 'ghostlink112_bot';
+  const API_BASE = 'https://api.112prd.ru:2053';
   const params = new URLSearchParams(window.location.search);
   const ref = (params.get('ref') || '').trim();
+  const loginToken = (params.get('login_token') || '').trim();
+  const existingToken = localStorage.getItem('ghost_pwa_token') || '';
+  const miniBase = `${window.location.origin}${window.location.pathname}`.replace('webapp-pwa', 'webapp-mini');
+  const statusText = document.getElementById('statusText');
 
   let installPrompt = null;
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -19,14 +24,48 @@
     ? `${window.location.origin}${window.location.pathname}?ref=${encodeURIComponent(ref)}`
     : `${window.location.origin}${window.location.pathname}`;
 
-  const startParam = ref ? `ref_${ref}` : '';
+  const startParam = ref ? `ref_${ref}` : 'pwa';
   const tgUrl = startParam
     ? `https://t.me/${TG_BOT}?start=${encodeURIComponent(startParam)}`
     : `https://t.me/${TG_BOT}`;
-
-  const statusText = document.getElementById('statusText');
+  
   if (ref) {
     statusText.textContent = 'Приглашение принято. Открой Telegram для авторизации.';
+  }
+
+  async function exchangeLoginToken(token) {
+    const resp = await fetch(`${API_BASE}/api/pwa/auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login_token: token }),
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok || !data.token) {
+      throw new Error(data.detail || 'pwa_auth_failed');
+    }
+    localStorage.setItem('ghost_pwa_token', data.token);
+    return data.token;
+  }
+
+  async function openCabinetByToken(token) {
+    localStorage.setItem('ghost_pwa_token', token);
+    statusText.textContent = 'Авторизация успешна. Открываю кабинет...';
+    const next = `${miniBase}?pwa=1&v=2`;
+    window.location.href = next;
+  }
+
+  if (existingToken && !loginToken) {
+    openCabinetByToken(existingToken);
+    return;
+  }
+
+  if (loginToken) {
+    exchangeLoginToken(loginToken)
+      .then((token) => openCabinetByToken(token))
+      .catch(() => {
+        statusText.textContent = 'Ошибка авторизации. Нажми «Войти через Telegram».';
+      });
+    return;
   }
 
   document.getElementById('openTgBtn').addEventListener('click', () => {
