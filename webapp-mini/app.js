@@ -32,7 +32,9 @@ const screens = Array.from(document.querySelectorAll('.screen'));
 
       const API_BASE = "https://api.112prd.ru:2053";
       const INIT_DATA = tg ? tg.initData : '';
+      const PWA_TOKEN = localStorage.getItem('ghost_pwa_token') || '';
       const ADMIN_ID = 312826672;
+      let CURRENT_USER_ID = 0;
       function extractUserId() {
         try {
           if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
@@ -50,14 +52,18 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         return 0;
       }
       const USER_ID = extractUserId();
+      CURRENT_USER_ID = USER_ID;
 
       function apiFetch(path, options = {}) {
         if (!API_BASE) return Promise.reject(new Error('no_api'));
+        const authHeaders = {};
+        if (INIT_DATA) authHeaders['X-Telegram-InitData'] = INIT_DATA;
+        if (PWA_TOKEN) authHeaders['X-PWA-Token'] = PWA_TOKEN;
         return fetch(API_BASE + path, {
           ...options,
           headers: {
             'Content-Type': 'application/json',
-            'X-Telegram-InitData': INIT_DATA,
+            ...authHeaders,
             ...(options.headers || {})
           }
         }).then(async (r) => {
@@ -139,9 +145,10 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       }
 
       function loadUser() {
-        if (!API_BASE || !INIT_DATA) return;
+        if (!API_BASE || (!INIT_DATA && !PWA_TOKEN)) return;
         apiFetch('/api/user')
           .then(data => {
+            CURRENT_USER_ID = Number((data.user && data.user.id) || CURRENT_USER_ID || 0);
             document.getElementById('balanceValue').textContent = (data.balance || 0) + '₽';
             document.getElementById('expiryValue').textContent = formatSubLine(data.subscription);
             setSubStatus(data.subscription.active);
@@ -157,6 +164,10 @@ const screens = Array.from(document.querySelectorAll('.screen'));
             const supportLink = document.getElementById('supportLink');
             supportLink.href = supportUrl;
             renderTariffs();
+            if (CURRENT_USER_ID === ADMIN_ID) {
+              const adminBtn = document.getElementById('homeAdminBtn');
+              adminBtn.classList.remove('hidden');
+            }
           })
           .catch((err) => {
             if (err && (err.status === 401 || err.status === 403)) {
@@ -374,11 +385,12 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       if (USER_ID === ADMIN_ID) {
         const adminBtn = document.getElementById('homeAdminBtn');
         adminBtn.classList.remove('hidden');
-        adminBtn.addEventListener('click', () => {
-          pushScreen('screen-admin');
-          loadAdminUsers();
-        });
       }
+      document.getElementById('homeAdminBtn').addEventListener('click', () => {
+        if (CURRENT_USER_ID !== ADMIN_ID) return notify('Нет доступа');
+        pushScreen('screen-admin');
+        loadAdminUsers();
+      });
 
       document.getElementById('adminStats').addEventListener('click', async () => {
         try {
