@@ -1,71 +1,85 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-    <meta name="theme-color" content="#1E1E1E" />
-    <meta name="description" content="GhostLink Club" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: "#B8FF00",
-              "bg-dark": "#1E1E1E",
-              "muted-gray": "#555555",
-              "card-dark": "#111111",
-            },
-          },
-        },
-      };
-    </script>
-    <link rel="manifest" href="./manifest.json" />
-    <link rel="icon" href="./ghost_ava.png" />
-    <title>GhostLink Club</title>
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body class="flex flex-col p-6">
-    <main class="flex-1 overflow-y-auto">
-      <section id="screen-invite" class="screen active">
-        <header class="pt-2 mb-6 flex items-center gap-3">
-          <img src="./ghost_ava.png" alt="GhostLink" class="w-10 h-10 rounded-full object-cover" />
-          <h1 class="text-3xl font-black tracking-tight text-white uppercase">GHOSTLINK</h1>
-        </header>
-
-        <div class="text-white text-2xl font-bold mb-2">Закрытый клуб</div>
-        <div class="text-muted-gray mb-5">
-          Доступ только по приглашению. Авторизация выполняется через Telegram.
-        </div>
-
-        <div class="bg-card-dark rounded-2xl p-4 mb-4">
-          <div class="text-white font-bold mb-2">Устав клуба (кратко)</div>
-          <div class="text-muted-gray text-sm leading-6">
-            Только по инвайтам. Бережем канал и скорость. За приглашенного отвечает пригласивший.
-            Администрация оставляет право ограничить доступ при злоупотреблениях.
-          </div>
-        </div>
-
-        <button id="openTgBtn" class="ios-active w-full bg-primary h-[56px] rounded-2xl flex items-center justify-center mb-3">
-          <span class="text-black font-bold text-lg">Войти через Telegram</span>
-        </button>
-
-        <button id="shareInviteBtn" class="ios-active w-full border border-primary h-[52px] rounded-2xl flex items-center justify-center mb-3">
-          <span class="text-primary font-bold">Поделиться приглашением</span>
-        </button>
-
-        <button id="copyInviteBtn" class="ios-active w-full border border-primary h-[52px] rounded-2xl flex items-center justify-center mb-3">
-          <span class="text-primary font-bold">Скопировать ссылку</span>
-        </button>
-
-        <button id="installBtn" class="ios-active w-full border border-primary h-[52px] rounded-2xl flex items-center justify-center">
-          <span class="text-primary font-bold">Установить приложение</span>
-        </button>
-
-        <div id="statusText" class="text-muted-gray text-sm mt-4">Ожидайте авторизацию.</div>
-      </section>
-    </main>
-
-    <script src="./app.js"></script>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#1E1E1E" />
+  <meta name="description" content="GhostLink Club" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./ghost_ava.png" />
+  <title>GhostLink Club</title>
+  <style>
+    body {
+      margin: 0;
+      background: #1e1e1e;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+    }
+    .wrap {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .head img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: .02em;
+    }
+    .muted { color: #8a8a8a; }
+    .card {
+      background: #111;
+      border-radius: 14px;
+      padding: 14px;
+      margin: 16px 0;
+    }
+    .btn {
+      width: 100%;
+      height: 50px;
+      border-radius: 12px;
+      border: 1px solid #b8ff00;
+      background: transparent;
+      color: #b8ff00;
+      font-weight: 700;
+      margin: 0 0 10px;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: #b8ff00;
+      color: #111;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="head">
+      <img src="./ghost_ava.png" alt="GhostLink" />
+      <h1>GHOSTLINK</h1>
+    </div>
+    <h2>Закрытый клуб</h2>
+    <p class="muted">Доступ только по приглашению. Авторизация выполняется через Telegram.</p>
+    <div class="card">
+      <strong>Устав клуба (кратко)</strong>
+      <p class="muted">Только по инвайтам. Бережем канал и скорость. За приглашенного отвечает пригласивший.</p>
+    </div>
+    <button id="openTgBtn" class="btn btn-primary">Войти через Telegram</button>
+    <button id="shareInviteBtn" class="btn">Поделиться приглашением</button>
+    <button id="copyInviteBtn" class="btn">Скопировать ссылку</button>
+    <button id="installBtn" class="btn">Установить приложение</button>
+    <p id="statusText" class="muted">Ожидайте авторизацию.</p>
+  </main>
+  <script src="./app.js"></script>
+</body>
 </html>
