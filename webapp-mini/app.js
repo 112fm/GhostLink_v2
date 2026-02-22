@@ -25,7 +25,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         showScreen(stack[stack.length - 1]);
       }
 
-      backBtn.addEventListener('click', popScreen);
+      if (backBtn) backBtn.addEventListener('click', popScreen);
 
       const tg = window.Telegram ? Telegram.WebApp : null;
       if (tg) tg.ready();
