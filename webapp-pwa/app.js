@@ -67,13 +67,50 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         const title = document.getElementById('pwaLockedTitle');
         const msg = document.getElementById('pwaLockedText');
         const link = document.getElementById('pwaOpenTgLink');
+        const codeErr = document.getElementById('pwaCodeError');
         if (title) title.textContent = 'Требуется авторизация';
         if (msg) msg.textContent = text || 'Открой Telegram и войди в клуб.';
+        if (codeErr) codeErr.textContent = '';
         if (link) {
           link.href = buildPwaTgAuthLink();
           link.classList.remove('hidden');
         }
         showScreen('screen-locked');
+      }
+
+      async function loginByPwaCode(rawCode) {
+        const code = String(rawCode || '').trim();
+        if (!code) {
+          const codeErr = document.getElementById('pwaCodeError');
+          if (codeErr) codeErr.textContent = 'Введи код из Telegram.';
+          return false;
+        }
+        try {
+          const resp = await fetch(API_BASE + '/api/pwa/auth/code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code }),
+          });
+          const data = await resp.json().catch(() => ({}));
+          if (!resp.ok || !data.token) throw new Error(data.detail || 'bad_code');
+          localStorage.setItem('ghost_pwa_token', data.token);
+          PWA_TOKEN = data.token;
+          const codeInput = document.getElementById('pwaCodeInput');
+          const codeErr = document.getElementById('pwaCodeError');
+          if (codeInput) codeInput.value = '';
+          if (codeErr) codeErr.textContent = '';
+          accessClosed = false;
+          stack.length = 0;
+          stack.push('screen-home');
+          showScreen('screen-home');
+          loadUser();
+          loadTariffs();
+          return true;
+        } catch (e) {
+          const codeErr = document.getElementById('pwaCodeError');
+          if (codeErr) codeErr.textContent = 'Код неверный или истек. Запроси новый в Telegram.';
+          return false;
+        }
       }
 
       async function bootstrapPwaAuth() {
@@ -99,6 +136,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
             localStorage.setItem('ghost_pwa_token', data.token);
             PWA_TOKEN = data.token;
             window.history.replaceState({}, '', window.location.pathname);
+            accessClosed = false;
             return true;
           } catch (e) {
             showPwaLocked('Ошибка авторизации. Нажми «Войти через Telegram».');
@@ -228,8 +266,10 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           })
           .catch((err) => {
             if (err && (err.status === 401 || err.status === 403)) {
+              localStorage.removeItem('ghost_pwa_token');
+              PWA_TOKEN = '';
               accessClosed = true;
-              showScreen('screen-locked');
+              showPwaLocked('Сессия истекла. Войди через Telegram или одноразовый код.');
             }
           });
       }
@@ -822,3 +862,17 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         loadUser();
         loadTariffs();
       });
+
+      const pwaCodeBtn = document.getElementById('pwaCodeBtn');
+      const pwaCodeInput = document.getElementById('pwaCodeInput');
+      if (pwaCodeBtn) {
+        pwaCodeBtn.addEventListener('click', () => loginByPwaCode(pwaCodeInput ? pwaCodeInput.value : ''));
+      }
+      if (pwaCodeInput) {
+        pwaCodeInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            loginByPwaCode(pwaCodeInput.value);
+          }
+        });
+      }

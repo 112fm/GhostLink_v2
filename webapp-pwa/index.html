@@ -50,6 +50,20 @@
         <div class="text-2xl font-bold mb-2" id="pwaLockedTitle">Доступ закрыт</div>
         <div class="text-muted-gray" id="pwaLockedText">Вход только по приглашению.</div>
         <a id="pwaOpenTgLink" href="#" class="ios-active hidden mt-4 bg-primary text-black font-bold px-4 py-3 rounded-2xl inline-block">Войти через Telegram</a>
+        <div class="mt-4 w-full max-w-sm">
+          <div class="text-muted-gray text-sm mb-2">Или введи одноразовый код из Telegram</div>
+          <div class="flex items-center gap-2">
+            <input
+              id="pwaCodeInput"
+              inputmode="numeric"
+              maxlength="6"
+              class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2 text-center tracking-[0.2em]"
+              placeholder="123456"
+            />
+            <button id="pwaCodeBtn" class="ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl">Войти</button>
+          </div>
+          <div id="pwaCodeError" class="text-accent-red text-sm mt-2 min-h-[20px]"></div>
+        </div>
       </div>
     </section>
     <header id="appHeader" class="pt-2 mb-6 flex items-center gap-3">
