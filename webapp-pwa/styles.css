@@ -1,0 +1,39 @@
+body {
+        background-color: #1e1e1e;
+        color: white;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        overflow: hidden;
+        height: 100dvh;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+      .ios-active:active {
+        transform: scale(0.97);
+        transition: transform 0.1s ease;
+      }
+      .screen {
+        display: none;
+      }
+      .screen.active {
+        display: block;
+      }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 24px;
+        transform: translateX(-50%);
+        background: #0f0f0f;
+        border: 1px solid #b8ff00;
+        color: #d6ff7a;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 14px;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.18s ease;
+      }
+      .toast.show {
+        opacity: 1;
+      }
