@@ -146,9 +146,13 @@
         <div class="mb-4 text-muted-gray">
           Устройства: <span id="profileDevicesRatio">0/0</span>
         </div>
+        <div class="mb-4 text-muted-gray">
+          Цена в месяц: <span id="profileMonthlyPrice">—</span>
+        </div>
         <div class="flex flex-col gap-3">
           <button id="profilePayBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Поддержать сервис</button>
           <button id="profileRefBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Реферальная программа</button>
+          <button id="profileShareBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Поделиться приложением</button>
           <button id="profileSupportBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Связаться с поддержкой</button>
           <button id="profileRulesBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Политика и правила</button>
           <button id="profileDevicesBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">Управление устройствами</button>
@@ -214,6 +218,19 @@
           Бонус начисляется только после первой оплаты друга: 15% к твоей скидке.
         </div>
         <div class="mt-4" id="refList"></div>
+      </section>
+
+      <section id="screen-share" class="screen">
+        <h2 class="text-2xl font-bold mb-2">Поделиться приложением</h2>
+        <div class="text-muted-gray mb-3">Отправь ссылку или покажи QR-код.</div>
+        <div class="bg-card-dark rounded-2xl p-4 break-words text-sm" id="appShareLink">—</div>
+        <div class="mt-4 flex gap-2">
+          <button id="copyAppLinkBtn" class="ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl w-full">Скопировать ссылку</button>
+          <button id="shareAppBtn" class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full">Поделиться</button>
+        </div>
+        <div class="mt-4 flex justify-center">
+          <img id="appQrImg" alt="QR" class="w-56 h-56 rounded-xl bg-white p-2" />
+        </div>
       </section>
 
       <section id="screen-admin" class="screen">
@@ -293,7 +310,7 @@
       </section>
     </main>
 
-        <script src="app.js"></script>
+        <script src="app.js?v=105"></script>
 
   </body>
 </html>

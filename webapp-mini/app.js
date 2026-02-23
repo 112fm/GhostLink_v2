@@ -92,6 +92,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       }
 
       let supportUrl = '';
+      let appShareUrl = `${window.location.origin}${window.location.pathname}`;
       let adminUsersById = {};
       let tariffMap = { 1: { price: 150, min_pay: 100 }, 2: { price: 225, min_pay: 150 }, 3: { price: 300, min_pay: 200 }, 4: { price: 375, min_pay: 250 }, 5: { price: 450, min_pay: 300 } };
       let currentTier = 'regular';
@@ -161,9 +162,12 @@ const screens = Array.from(document.querySelectorAll('.screen'));
             if (dc) dc.textContent = data.connected_devices || 0;
             document.getElementById('refLink').textContent = data.referral_link || 'нет ссылки';
             document.getElementById('discountValue').textContent = data.discount_text || ((data.discount || 0) + ' ₽');
+            document.getElementById('profileMonthlyPrice').textContent = `${data.monthly_min_pay || 0} ₽ (полная ${data.monthly_price || 0} ₽)`;
             supportUrl = data.support_link || 'https://t.me/ghostlink112_bot';
+            appShareUrl = data.app_link || appShareUrl;
             const supportLink = document.getElementById('supportLink');
             supportLink.href = supportUrl;
+            renderShareBlock();
             renderTariffs();
             if (CURRENT_USER_ID === ADMIN_ID) {
               const adminBtn = document.getElementById('homeAdminBtn');
@@ -207,6 +211,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
 
       document.getElementById('profilePayBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
       document.getElementById('profileRefBtn').addEventListener('click', () => { pushScreen('screen-ref'); loadReferrals(); });
+      document.getElementById('profileShareBtn').addEventListener('click', () => { pushScreen('screen-share'); renderShareBlock(); });
       document.getElementById('profileSupportBtn').addEventListener('click', () => pushScreen('screen-support'));
       document.getElementById('profileRulesBtn').addEventListener('click', () => pushScreen('screen-rules'));
       document.getElementById('profileDevicesBtn').addEventListener('click', () => { pushScreen('screen-devices'); loadDevices(); });
@@ -214,6 +219,35 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       document.getElementById('copyRefBtn').addEventListener('click', async () => {
         const text = document.getElementById('refLink').textContent;
         try { await navigator.clipboard.writeText(text); } catch (e) {}
+      });
+
+      function renderShareBlock() {
+        const linkEl = document.getElementById('appShareLink');
+        const qrEl = document.getElementById('appQrImg');
+        if (linkEl) linkEl.textContent = appShareUrl || '—';
+        if (qrEl && appShareUrl) {
+          qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(appShareUrl)}`;
+        }
+      }
+
+      document.getElementById('copyAppLinkBtn').addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(appShareUrl || '');
+          notify('Ссылка скопирована');
+        } catch (e) {
+          notify('Не удалось скопировать ссылку');
+        }
+      });
+
+      document.getElementById('shareAppBtn').addEventListener('click', async () => {
+        try {
+          if (navigator.share) {
+            await navigator.share({ title: 'GhostLink', text: 'Личный кабинет GhostLink', url: appShareUrl });
+          } else {
+            await navigator.clipboard.writeText(appShareUrl || '');
+            notify('Ссылка скопирована');
+          }
+        } catch (e) {}
       });
 
       document.getElementById('supportLink').addEventListener('click', (e) => {
