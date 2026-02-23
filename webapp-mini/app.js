@@ -206,8 +206,25 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       }
 
       document.getElementById('buyBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
-      document.getElementById('profileBtn').addEventListener('click', () => pushScreen('screen-profile'));
+      document.getElementById('homeDevicesBtn').addEventListener('click', () => { pushScreen('screen-devices'); loadDevices(); });
+      document.getElementById('homeRefBtn').addEventListener('click', () => { pushScreen('screen-ref'); loadReferrals(); });
       document.getElementById('supportBtn').addEventListener('click', () => pushScreen('screen-support'));
+      document.getElementById('homeMoreBtn').addEventListener('click', () => pushScreen('screen-more'));
+
+      document.getElementById('moreProfileBtn').addEventListener('click', () => pushScreen('screen-profile'));
+      document.getElementById('moreShareBtn').addEventListener('click', () => { pushScreen('screen-share'); renderShareBlock(); });
+      document.getElementById('moreRulesBtn').addEventListener('click', () => pushScreen('screen-rules'));
+      document.getElementById('moreGetKeyBtn').addEventListener('click', async () => {
+        try {
+          const res = await apiFetch('/api/key', { method: 'POST' });
+          const key = (res && res.key) ? String(res.key) : '';
+          if (!key) return notify('Ключ не получен');
+          await navigator.clipboard.writeText(key).catch(() => {});
+          notify('Ключ скопирован');
+        } catch (e) {
+          notify('Не удалось получить ключ');
+        }
+      });
 
       document.getElementById('profilePayBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
       document.getElementById('profileRefBtn').addEventListener('click', () => { pushScreen('screen-ref'); loadReferrals(); });
