@@ -143,6 +143,9 @@
         <div class="mb-4 text-muted-gray">
           Текущая скидка: <span id="discountValue">0 ₽</span>
         </div>
+        <div class="mb-4 text-muted-gray">
+          Устройства: <span id="profileDevicesRatio">0/0</span>
+        </div>
         <div class="flex flex-col gap-3">
           <button id="profilePayBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Поддержать сервис</button>
           <button id="profileRefBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Реферальная программа</button>
@@ -183,6 +186,18 @@
         <div class="text-muted-gray mb-1">Лимит устройств: <span id="deviceLimit">0</span></div>
         <div class="text-muted-gray mb-3">Подключено: <span id="deviceCount">0</span></div>
         <div id="deviceList" class="mb-3 text-muted-gray text-sm">Загрузка...</div>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <select id="deviceType" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2">
+            <option value="iphone">iPhone</option>
+            <option value="android">Android</option>
+            <option value="mac">Mac</option>
+            <option value="windows">Windows</option>
+            <option value="linux">Linux</option>
+            <option value="tv">TV</option>
+            <option value="other">Другое</option>
+          </select>
+          <input id="deviceName" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2" placeholder="Имя устройства (необязательно)" />
+        </div>
         <div class="flex flex-col gap-3">
           <button id="addDeviceBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Добавить устройство</button>
           <button id="resetDeviceBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Сбросить ключ</button>

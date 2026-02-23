@@ -155,9 +155,10 @@ const screens = Array.from(document.querySelectorAll('.screen'));
             document.getElementById('profileName').textContent = data.user.name || 'Пользователь';
             document.getElementById('profileId').textContent = 'ID: ' + data.user.id;
             document.getElementById('deviceLimit').textContent = data.device_limit || 3;
+            document.getElementById('profileDevicesRatio').textContent = data.devices_ratio || `${data.connected_devices || 0}/${data.device_limit || 0}`;
             currentTier = data.member_tier || currentTier;
             const dc = document.getElementById('deviceCount');
-            if (dc) dc.textContent = '—';
+            if (dc) dc.textContent = data.connected_devices || 0;
             document.getElementById('refLink').textContent = data.referral_link || 'нет ссылки';
             document.getElementById('discountValue').textContent = data.discount_text || ((data.discount || 0) + ' ₽');
             supportUrl = data.support_link || 'https://t.me/ghostlink112_bot';
@@ -307,6 +308,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           .then((data) => {
             document.getElementById('deviceLimit').textContent = data.device_limit || 0;
             document.getElementById('deviceCount').textContent = data.connected || 0;
+            document.getElementById('profileDevicesRatio').textContent = `${data.connected || 0}/${data.device_limit || 0}`;
             renderDeviceList(data.items || []);
           })
           .catch(() => {
@@ -317,16 +319,27 @@ const screens = Array.from(document.querySelectorAll('.screen'));
 
       document.getElementById('addDeviceBtn').addEventListener('click', async () => {
         try {
-          const res = await apiFetch('/api/device/add', { method: 'POST' });
+          const deviceType = (document.getElementById('deviceType') || {}).value || 'other';
+          const deviceName = ((document.getElementById('deviceName') || {}).value || '').trim();
+          const res = await apiFetch('/api/device/add', {
+            method: 'POST',
+            body: JSON.stringify({ device_type: deviceType, device_name: deviceName })
+          });
           if (res.key) {
             await navigator.clipboard.writeText(res.key).catch(() => {});
-            notify('Ключ нового устройства скопирован');
+            if (res.upgraded) {
+              notify(`Лимит увеличен: ${res.upgraded.old_limit}→${res.upgraded.new_limit}. Доплата: ${res.upgraded.topup_min_pay} ₽ (полная ${res.upgraded.topup_price} ₽). Ключ скопирован.`);
+            } else {
+              notify(`Устройство добавлено (${res.devices_ratio || ''}). Ключ скопирован.`);
+            }
           } else {
             notify('Устройство добавлено');
           }
+          const nameInput = document.getElementById('deviceName');
+          if (nameInput) nameInput.value = '';
           loadDevices();
         } catch (e) {
-          if (e && e.message === 'device_limit_reached') notify('Достигнут лимит устройств');
+          if (e && e.message === 'device_limit_reached') notify('Достигнут лимит устройств (максимум 5).');
           else notify('Не удалось добавить устройство');
         }
       });
