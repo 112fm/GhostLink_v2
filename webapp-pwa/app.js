@@ -445,8 +445,24 @@ const screens = Array.from(document.querySelectorAll('.screen'));
             }
           });
 
+          const btns = document.createElement('div');
+          btns.className = 'flex gap-2';
+          if (item.key) {
+            const keyBtn = document.createElement('button');
+            keyBtn.className = 'ios-active border border-primary text-primary font-bold px-2 py-1 rounded-lg text-xs';
+            keyBtn.textContent = 'Ключ';
+            keyBtn.addEventListener('click', async () => {
+              try {
+                await navigator.clipboard.writeText(item.key);
+                notify('Ключ скопирован');
+              } catch (e) {}
+            });
+            btns.appendChild(keyBtn);
+          }
+          btn.className = 'ios-active border border-accent-red text-accent-red font-bold px-2 py-1 rounded-lg text-xs';
+          btns.appendChild(btn);
           row.appendChild(left);
-          row.appendChild(btn);
+          row.appendChild(btns);
           box.appendChild(row);
         });
       }
@@ -940,3 +956,4 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           }
         });
       }
+
