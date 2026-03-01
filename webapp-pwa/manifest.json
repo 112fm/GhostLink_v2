@@ -1,12 +1,12 @@
-{
-  "name": "GhostLink Club",
-  "short_name": "GhostLink",
+﻿{
+  "name": "Чашка Кофе Club",
+  "short_name": "Чашка Кофе",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#1E1E1E",
   "theme_color": "#1E1E1E",
-  "description": "Закрытый клуб GhostLink",
+  "description": "Закрытый клуб Чашка Кофе",
   "icons": [
     {
       "src": "./ghost_ava.png",
@@ -20,3 +20,4 @@
     }
   ]
 }
+

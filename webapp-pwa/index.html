@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
@@ -7,7 +7,7 @@
       name="viewport"
     />
     <meta name="theme-color" content="#1E1E1E" />
-    <meta name="description" content="GhostLink Club" />
+    <meta name="description" content="Чашка Кофе Club" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./ghost_ava.png" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -66,15 +66,22 @@
         </div>
       </div>
     </section>
+    <section id="screen-pending" class="screen hidden text-center flex-col items-center justify-center h-full">
+      <div class="h-full flex flex-col items-center justify-center text-center px-4">
+        <span class="material-symbols-outlined text-primary text-6xl mb-4">hourglass_empty</span>
+        <div class="text-2xl font-bold mb-2 text-white">Заявка на рассмотрении</div>
+        <div class="text-muted-gray text-sm">Вы находитесь в очереди на вступление в закрытый клуб "Чашка Кофе".<br><br>Ожидайте одобрения администратором.<br><br>Вам придет уведомление в Telegram!</div>
+      </div>
+    </section>
     <header id="appHeader" class="pt-2 mb-6 flex items-center gap-3">
       <img
         src="ghost_ava.png"
-        alt="GhostLink"
+        alt="Чашка Кофе"
         class="w-10 h-10 rounded-full object-cover"
       />
       <div class="flex-1">
         <h1 class="text-3xl font-black tracking-tight text-white uppercase">
-          GHOSTLINK
+          Чашка Кофе
         </h1>
       </div>
       <button id="backBtn" class="hidden text-white/80">Назад</button>
@@ -210,7 +217,7 @@
         <h2 class="text-2xl font-bold mb-2">Политика и конфиденциальность</h2>
         <div class="text-muted-gray text-sm leading-6">
           <div class="text-white font-bold mb-1">1. Общие условия</div>
-          GhostLink — закрытый сервис доступа к сети по приглашению. Используя сервис, пользователь подтверждает согласие с условиями работы сервиса и правилами клуба.
+          Чашка Кофе — закрытый сервис доступа к сети по приглашению. Используя сервис, пользователь подтверждает согласие с условиями работы сервиса и правилами клуба.
           <br><br>
           <div class="text-white font-bold mb-1">2. Обрабатываемые данные</div>
           Мы обрабатываем только минимально необходимые данные: Telegram ID, имя/username, статус подписки, технические параметры подключения и обращения в поддержку.
@@ -221,7 +228,7 @@
           <div class="text-white font-bold mb-1">4. Безопасность</div>
           Доступ к служебным интерфейсам ограничивается техническими мерами. Пользователь обязан сохранять конфиденциальность выданных ключей и ссылок доступа.
           <br><br>
-          <div class="text-white font-bold mb-1">5. Устав клуба GhostLink</div>
+          <div class="text-white font-bold mb-1">5. Устав клуба Чашка Кофе</div>
           Клуб работает по модели «свои для своих», с ограниченным числом мест. Запрещены злоупотребления каналом и действия, мешающие работе других участников. Приглашая друга, участник принимает ответственность за его поведение.
         </div>
       </section>
@@ -355,3 +362,4 @@
 
   </body>
 </html>
+

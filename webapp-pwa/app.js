@@ -245,6 +245,15 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         apiFetch('/api/user')
           .then(data => {
             CURRENT_USER_ID = Number((data.user && data.user.id) || CURRENT_USER_ID || 0);
+      if (data.subscription && data.subscription.status === 'pending') {
+        showScreen('screen-pending');
+        return;
+      }
+      if (data.subscription && data.subscription.status === 'denied') {
+        showPwaLocked('Вам отказано в доступе к клубу.');
+        return;
+      }
+
             document.getElementById('balanceValue').textContent = (data.balance || 0) + '₽';
             document.getElementById('expiryValue').textContent = formatSubLine(data.subscription);
             setSubStatus(data.subscription.active);
