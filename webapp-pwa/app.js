@@ -370,6 +370,14 @@ document.getElementById('homeMoreBtn').addEventListener('click', () => pushScree
 document.getElementById('moreProfileBtn').addEventListener('click', () => pushScreen('screen-profile'));
 document.getElementById('moreShareBtn').addEventListener('click', () => { pushScreen('screen-share'); renderShareBlock(); });
 document.getElementById('moreRulesBtn').addEventListener('click', () => pushScreen('screen-rules'));
+const pwaReloginBtn = document.getElementById('pwaReloginBtn');
+if (pwaReloginBtn) {
+  pwaReloginBtn.addEventListener('click', () => {
+    localStorage.removeItem('ghost_pwa_token');
+    PWA_TOKEN = '';
+    showPwaLocked('Сессия сброшена. Войди через Telegram.');
+  });
+}
 document.getElementById('moreGetKeyBtn').addEventListener('click', async () => {
   try {
     const res = await apiFetch('/api/key', { method: 'POST' });
