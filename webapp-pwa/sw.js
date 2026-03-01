@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ghostlink-pwa-v3';
+const CACHE_NAME = 'ghostlink-pwa-v2';
 const STATIC_FILES = [
   './',
   './index.html',
