@@ -149,6 +149,13 @@
         <h2 class="text-2xl font-bold mb-4">Поддержка сервиса</h2>
         <div class="text-muted-gray text-sm mb-3">Тарифный статус: <span id="tierBadge">обычный</span></div>
         
+        
+        <div class="border border-primary rounded-2xl p-4 mb-4">
+          <div class="text-white font-bold mb-2">Рассылка (Push + Inbox)</div>
+          <textarea id="adminBroadcastText" rows="3" class="w-full bg-card-dark text-white rounded-xl px-3 py-2 border border-primary/50 text-sm mb-2" placeholder="Текст новости..."></textarea>
+          <button id="adminBroadcastBtn" class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full">Отправить всем</button>
+        </div>
+
         <div class="border border-primary rounded-2xl p-4 mb-4">
           <div class="text-white font-bold mb-2 flex justify-between items-center">
             <span>Ожидают одобрения</span>
@@ -217,10 +224,22 @@
         </div>
       </section>
 
-      <section id="screen-support" class="screen">
-        <h2 class="text-2xl font-bold mb-2">Поддержка</h2>
-        <div class="text-muted-gray mb-4">Откроется чат с ботом.</div>
-        <a id="supportLink" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl inline-block" href="#" target="_blank">Открыть чат</a>
+      <section id="screen-support" class="screen flex flex-col h-full">
+        <h2 class="text-2xl font-bold mb-2 flex-shrink-0">Поддержка</h2>
+        <div id="supportMessages" class="flex-grow overflow-y-auto space-y-3 mb-4 rounded-xl bg-card-dark p-3 text-sm flex flex-col-reverse">
+          <div class="text-center text-muted-gray text-xs w-full py-4">Нет сообщений</div>
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+          <input id="supportInput" type="text" placeholder="Написать..." class="w-full bg-card-dark text-white rounded-xl px-4 py-3 border border-primary/50 focus:border-primary outline-none">
+          <button id="supportSendBtn" class="bg-primary text-black font-bold px-4 py-3 rounded-xl material-symbols-outlined">send</button>
+        </div>
+      </section>
+
+      <section id="screen-inbox" class="screen">
+        <h2 class="text-2xl font-bold mb-4">Инбокс</h2>
+        <div id="inboxList" class="space-y-3">
+           <div class="text-center text-muted-gray mt-4">Нет новостей</div>
+        </div>
       </section>
 
       <section id="screen-rules" class="screen">

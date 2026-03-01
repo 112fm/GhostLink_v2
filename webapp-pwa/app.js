@@ -104,6 +104,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           stack.push('screen-home');
           showScreen('screen-home');
           loadUser();
+        setTimeout(subscribePush, 2000);
           loadTariffs();
           return true;
         } catch (e) {
@@ -545,6 +546,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           });
           notify(`Solo активирован до ${res.expiry || 'даты в профиле'}`);
           loadUser();
+        setTimeout(subscribePush, 2000);
           loadDevices();
           loadTariffs();
         } catch (e) {
@@ -561,6 +563,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           });
           notify(`Flex (${devices}) активирован до ${res.expiry || 'даты в профиле'}`);
           loadUser();
+        setTimeout(subscribePush, 2000);
           loadDevices();
           loadTariffs();
         } catch (e) {
@@ -891,6 +894,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           if (String(userId) === String(USER_ID)) {
             loadTariffs();
             loadUser();
+        setTimeout(subscribePush, 2000);
           }
         } catch (e) {
           notify(`Ошибка: ${e.message || 'set_own'}`);
@@ -908,6 +912,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
           if (String(userId) === String(USER_ID)) {
             loadTariffs();
             loadUser();
+        setTimeout(subscribePush, 2000);
           }
         } catch (e) {
           notify(`Ошибка: ${e.message || 'set_regular'}`);
@@ -985,6 +990,83 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       const pb = document.getElementById('adminPendingRefresh');
       if (pb) pb.addEventListener('click', loadAdminPending);
 
+      
+      async function loadInbox() {
+        const list = document.getElementById('inboxList');
+        if(!list) return;
+        try {
+          const res = await apiFetch('/api/user/inbox');
+          if (!res.items || res.items.length === 0) {
+            list.innerHTML = '<div class="text-center text-muted-gray mt-4">Нет новостей</div>';
+            return;
+          }
+          list.innerHTML = '';
+          [...res.items].reverse().forEach(msg => {
+            const div = document.createElement('div');
+            div.className = 'bg-card-dark p-3 rounded-xl shadow border border-white/5';
+            div.innerHTML = <div class="text-xs text-primary mb-1"></div><div class="text-sm whitespace-pre-wrap"></div>;
+            list.appendChild(div);
+          });
+        } catch(e) {}
+      }
+
+      async function loadSupport() {
+        const list = document.getElementById('supportMessages');
+        if(!list) return;
+        try {
+          const res = await apiFetch('/api/user/support');
+          if (!res.items || res.items.length === 0) {
+            list.innerHTML = '<div class="text-center text-muted-gray text-xs w-full py-4">Нет сообщений</div>';
+            return;
+          }
+          list.innerHTML = '';
+          // reverse for bottom-up flex
+          [...res.items].forEach(msg => {
+            const wrap = document.createElement('div');
+            wrap.className = 'flex flex-col w-full ' + (msg.is_admin ? 'items-start' : 'items-end');
+            const bubble = document.createElement('div');
+            bubble.className = 'px-3 py-2 rounded-xl max-w-[85%] whitespace-pre-wrap ' + (msg.is_admin ? 'bg-white/10 text-white rounded-tl-sm' : 'bg-primary text-black rounded-tr-sm');
+            bubble.textContent = msg.text;
+            const ts = document.createElement('div');
+            ts.className = 'text-[10px] text-white/40 mt-1 px-1';
+            ts.textContent = msg.ts;
+            wrap.appendChild(bubble);
+            wrap.appendChild(ts);
+            // insert at top because flex-col-reverse
+            list.prepend(wrap);
+          });
+        } catch(e) {}
+      }
+
+      const supBtn = document.getElementById('supportSendBtn');
+      if (supBtn) supBtn.addEventListener('click', async () => {
+        const inp = document.getElementById('supportInput');
+        const text = inp.value.trim();
+        if(!text) return;
+        inp.value = '';
+        try {
+          await apiFetch('/api/user/support', { method: 'POST', body: JSON.stringify({text}) });
+          loadSupport();
+        } catch (e) {
+          notify('Ошибка отправки: ' + e.message);
+        }
+      });
+      
+      const broadcastBtn = document.getElementById('adminBroadcastBtn');
+      if (broadcastBtn) broadcastBtn.addEventListener('click', async () => {
+        const inp = document.getElementById('adminBroadcastText');
+        const text = inp.value.trim();
+        if(!text) return;
+        if(!confirm('Отправить Push-уведомление всем?')) return;
+        try {
+          const r = await adminFetch('/api/admin/broadcast', { method: 'POST', body: JSON.stringify({message: text}) });
+          inp.value = '';
+          notify('Отправлено. Доставлено пушей: ' + r.sent_pushes);
+        } catch(e) {
+          notify('Ошибка: ' + e.message);
+        }
+      });
+
       async function loadAdminUsers() {
         const sel = document.getElementById('adminUserId');
         if (!sel) return;
@@ -1020,6 +1102,7 @@ const screens = Array.from(document.querySelectorAll('.screen'));
       bootstrapPwaAuth().then((ok) => {
         if (!ok) return;
         loadUser();
+        setTimeout(subscribePush, 2000);
         loadTariffs();
       });
 
