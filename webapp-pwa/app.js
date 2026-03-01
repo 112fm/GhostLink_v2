@@ -914,6 +914,77 @@ const screens = Array.from(document.querySelectorAll('.screen'));
         }
       });
 
+      
+      async function loadAdminPending() {
+        const box = document.getElementById('adminPendingList');
+        if (!box) return;
+        box.textContent = 'Загрузка...';
+        try {
+          const data = await adminFetch('/api/admin/pending');
+          if (!data.items || data.items.length === 0) {
+            box.textContent = 'Нет заявок';
+            return;
+          }
+          box.innerHTML = '';
+          data.items.forEach(u => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between gap-2 py-2 border-b border-white/10';
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'text-white flex flex-col';
+            const strong = document.createElement('strong');
+            strong.textContent = u.name;
+            const sub = document.createElement('span');
+            sub.className = 'text-muted-gray text-xs';
+            sub.textContent = ID: ;
+            nameDiv.appendChild(strong);
+            nameDiv.appendChild(sub);
+            
+            const btnGroup = document.createElement('div');
+            btnGroup.className = 'flex gap-2';
+            
+            const btnOk = document.createElement('button');
+            btnOk.className = 'material-symbols-outlined text-green-500 bg-white/10 p-1 rounded';
+            btnOk.textContent = 'check';
+            btnOk.onclick = async () => {
+              try {
+                await adminFetch('/api/admin/approve', {
+                  method: 'POST',
+                  body: JSON.stringify({ user_id: u.id, action: 'approve' })
+                });
+                notify('Заявка одобрена');
+                loadAdminPending();
+              } catch(e){ notify('Ошибка: ' + e.message); }
+            };
+            
+            const btnNo = document.createElement('button');
+            btnNo.className = 'material-symbols-outlined text-red-500 bg-white/10 p-1 rounded';
+            btnNo.textContent = 'close';
+            btnNo.onclick = async () => {
+              if(!confirm('Отклонить заявку?')) return;
+              try {
+                await adminFetch('/api/admin/approve', {
+                  method: 'POST',
+                  body: JSON.stringify({ user_id: u.id, action: 'deny' })
+                });
+                notify('Заявка отклонена');
+                loadAdminPending();
+              } catch(e){ notify('Ошибка: ' + e.message); }
+            };
+            
+            btnGroup.appendChild(btnOk);
+            btnGroup.appendChild(btnNo);
+            row.appendChild(nameDiv);
+            row.appendChild(btnGroup);
+            box.appendChild(row);
+          });
+        } catch (e) {
+          box.textContent = 'Ошибка загрузки заявок';
+        }
+      }
+      
+      const pb = document.getElementById('adminPendingRefresh');
+      if (pb) pb.addEventListener('click', loadAdminPending);
+
       async function loadAdminUsers() {
         const sel = document.getElementById('adminUserId');
         if (!sel) return;

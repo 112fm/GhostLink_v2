@@ -148,6 +148,16 @@
       <section id="screen-tariffs" class="screen">
         <h2 class="text-2xl font-bold mb-4">Поддержка сервиса</h2>
         <div class="text-muted-gray text-sm mb-3">Тарифный статус: <span id="tierBadge">обычный</span></div>
+        
+        <div class="border border-primary rounded-2xl p-4 mb-4">
+          <div class="text-white font-bold mb-2 flex justify-between items-center">
+            <span>Ожидают одобрения</span>
+            <button id="adminPendingRefresh" class="text-primary text-xs material-symbols-outlined">refresh</button>
+          </div>
+          <div id="adminPendingList" class="space-y-2 mt-2 max-h-48 overflow-y-auto text-sm">
+            <div class="text-muted-gray">Нет заявок</div>
+          </div>
+        </div>
         <div class="border border-primary rounded-2xl p-4 mb-4">
           <div class="text-white text-lg font-bold">Solo Ghost</div>
           <div class="text-muted-gray text-sm">1 устройство · минимальный платеж: <span id="soloMinPay">50</span> ₽</div>
