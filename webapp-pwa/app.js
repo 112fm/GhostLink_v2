@@ -36,6 +36,7 @@ let PWA_TOKEN = localStorage.getItem('ghost_pwa_token') || '';
 const PWA_BOT_USERNAME = 'ghostlink112_bot';
 const ADMIN_ID = 312826672;
 let CURRENT_USER_ID = 0;
+let IS_ADMIN = false;
 function extractUserId() {
   try {
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) {
@@ -321,7 +322,8 @@ function loadUser() {
       supportLink.href = supportUrl;
       renderShareBlock();
       renderTariffs();
-      if (CURRENT_USER_ID === ADMIN_ID) {
+      IS_ADMIN = Boolean(data.user && data.user.is_admin) || String(CURRENT_USER_ID) === String(ADMIN_ID);
+      if (IS_ADMIN) {
         const adminBtn = document.getElementById('homeAdminBtn');
         adminBtn.classList.remove('hidden');
       }
@@ -621,12 +623,12 @@ document.getElementById('flexPay').addEventListener('click', async () => {
   }
 });
 
-if (USER_ID === ADMIN_ID) {
+if (String(USER_ID) === String(ADMIN_ID)) {
   const adminBtn = document.getElementById('homeAdminBtn');
   adminBtn.classList.remove('hidden');
 }
 document.getElementById('homeAdminBtn').addEventListener('click', () => {
-  if (CURRENT_USER_ID !== ADMIN_ID) return notify('Нет доступа');
+  if (!IS_ADMIN && String(CURRENT_USER_ID) !== String(ADMIN_ID)) return notify('Нет доступа');
   pushScreen('screen-admin');
   loadAdminUsers();
 });
@@ -998,8 +1000,8 @@ async function loadAdminPending() {
       btnGroup.className = 'flex gap-2';
 
       const btnOk = document.createElement('button');
-      btnOk.className = 'material-symbols-outlined text-green-500 bg-white/10 p-1 rounded';
-      btnOk.textContent = 'check';
+      btnOk.className = 'ios-active border border-primary text-primary font-bold px-2 py-1 rounded-lg text-xs';
+      btnOk.textContent = 'Одобрить';
       btnOk.onclick = async () => {
         try {
           await adminFetch('/api/admin/approve', {
@@ -1012,8 +1014,8 @@ async function loadAdminPending() {
       };
 
       const btnNo = document.createElement('button');
-      btnNo.className = 'material-symbols-outlined text-red-500 bg-white/10 p-1 rounded';
-      btnNo.textContent = 'close';
+      btnNo.className = 'ios-active border border-accent-red text-accent-red font-bold px-2 py-1 rounded-lg text-xs';
+      btnNo.textContent = 'Отклонить';
       btnNo.onclick = async () => {
         if (!confirm('Отклонить заявку?')) return;
         try {
