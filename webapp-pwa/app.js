@@ -55,7 +55,54 @@ function extractUserId() {
 const USER_ID = extractUserId();
 CURRENT_USER_ID = USER_ID;
 
-function buildPwaTgAuthLink() {
+
+      const publicVapidKey = 'BHSwMWoCyOiW-J1gZgc3I4dCycFQDUOSX3xWLyT2C3FfiC1W2nPmuC71K5s9kx_rx_4lbK-SNyu3ABjXU_LwyII';
+
+      function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+          .replace(/\-/g, '+')
+          .replace(/_/g, '/');
+
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+
+        for (let i = 0; i < rawData.length; ++i) {
+          outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+      }
+
+      async function subscribePush() {
+        if ('serviceWorker' in navigator && 'PushManager' in window && API_BASE) {
+          try {
+            const registration = await navigator.serviceWorker.ready;
+            const existingSubscription = await registration.pushManager.getSubscription();
+            if (existingSubscription) {
+              await apiFetch('/api/push/subscribe', {
+                method: 'POST',
+                body: JSON.stringify(existingSubscription)
+              });
+              return;
+            }
+
+            const subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+            });
+
+            await apiFetch('/api/push/subscribe', {
+              method: 'POST',
+              body: JSON.stringify(subscription)
+            });
+            console.log('Push subscribed', publicVapidKey);
+          } catch(e) {
+            console.log('Push subscription failed', e);
+          }
+        }
+      }
+
+      function buildPwaTgAuthLink() {
   const p = new URLSearchParams(window.location.search);
   const ref = (p.get('ref') || '').trim();
   const start = ref ? `ref_${ref}` : 'pwa';
