@@ -421,20 +421,23 @@ document.getElementById('shareAppBtn').addEventListener('click', async () => {
   } catch (e) { }
 });
 
-document.getElementById('supportLink').addEventListener('click', (e) => {
-  if (!supportUrl) return;
-  if (tg && tg.openTelegramLink) {
-    e.preventDefault();
-    try {
-      tg.openTelegramLink(supportUrl);
-    } catch (err) {
-      window.location.href = supportUrl;
+const supportLinkEl = document.getElementById('supportLink');
+if (supportLinkEl) {
+  supportLinkEl.addEventListener('click', (e) => {
+    if (!supportUrl) return;
+    if (tg && tg.openTelegramLink) {
+      e.preventDefault();
+      try {
+        tg.openTelegramLink(supportUrl);
+      } catch (err) {
+        window.location.href = supportUrl;
+      }
+    } else {
+      e.preventDefault();
+      window.open(supportUrl, '_blank');
     }
-  } else {
-    e.preventDefault();
-    window.open(supportUrl, '_blank');
-  }
-});
+  });
+}
 
 function loadReferrals() {
   apiFetch('/api/referrals')
