@@ -7,7 +7,7 @@
       name="viewport"
     />
     <meta name="theme-color" content="#1E1E1E" />
-    <meta name="description" content="Чашка Кофе Club" />
+    <meta name="description" content="GhostLink Club" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./ghost_ava.png" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -70,18 +70,18 @@
       <div class="h-full flex flex-col items-center justify-center text-center px-4">
         <span class="material-symbols-outlined text-primary text-6xl mb-4">hourglass_empty</span>
         <div class="text-2xl font-bold mb-2 text-white">Заявка на рассмотрении</div>
-        <div class="text-muted-gray text-sm">Вы находитесь в очереди на вступление в закрытый клуб "Чашка Кофе".<br><br>Ожидайте одобрения администратором.<br><br>Вам придет уведомление в Telegram!</div>
+        <div class="text-muted-gray text-sm">Вы находитесь в очереди на вступление в закрытый клуб "GhostLink".<br><br>Ожидайте одобрения администратором.<br><br>Вам придет уведомление в Telegram!</div>
       </div>
     </section>
     <header id="appHeader" class="pt-2 mb-6 flex items-center gap-3">
       <img
         src="ghost_ava.png"
-        alt="Чашка Кофе"
+        alt="GhostLink"
         class="w-10 h-10 rounded-full object-cover"
       />
       <div class="flex-1">
         <h1 class="text-3xl font-black tracking-tight text-white uppercase">
-          Чашка Кофе
+          GhostLink
         </h1>
       </div>
       <button id="backBtn" class="hidden text-white/80">Назад</button>
@@ -148,23 +148,6 @@
       <section id="screen-tariffs" class="screen">
         <h2 class="text-2xl font-bold mb-4">Поддержка сервиса</h2>
         <div class="text-muted-gray text-sm mb-3">Тарифный статус: <span id="tierBadge">обычный</span></div>
-        
-        
-        <div class="border border-primary rounded-2xl p-4 mb-4">
-          <div class="text-white font-bold mb-2">Рассылка (Push + Inbox)</div>
-          <textarea id="adminBroadcastText" rows="3" class="w-full bg-card-dark text-white rounded-xl px-3 py-2 border border-primary/50 text-sm mb-2" placeholder="Текст новости..."></textarea>
-          <button id="adminBroadcastBtn" class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full">Отправить всем</button>
-        </div>
-
-        <div class="border border-primary rounded-2xl p-4 mb-4">
-          <div class="text-white font-bold mb-2 flex justify-between items-center">
-            <span>Ожидают одобрения</span>
-            <button id="adminPendingRefresh" class="text-primary text-xs material-symbols-outlined">refresh</button>
-          </div>
-          <div id="adminPendingList" class="space-y-2 mt-2 max-h-48 overflow-y-auto text-sm">
-            <div class="text-muted-gray">Нет заявок</div>
-          </div>
-        </div>
         <div class="border border-primary rounded-2xl p-4 mb-4">
           <div class="text-white text-lg font-bold">Solo Ghost</div>
           <div class="text-muted-gray text-sm">1 устройство · минимальный платеж: <span id="soloMinPay">50</span> ₽</div>
@@ -224,7 +207,8 @@
         </div>
       </section>
 
-      <section id="screen-support" class="screen flex flex-col h-full">
+      <section id="screen-support" class="screen">
+<div class="flex flex-col h-full pb-16">
         <h2 class="text-2xl font-bold mb-2 flex-shrink-0">Поддержка</h2>
         <div id="supportMessages" class="flex-grow overflow-y-auto space-y-3 mb-4 rounded-xl bg-card-dark p-3 text-sm flex flex-col-reverse">
           <div class="text-center text-muted-gray text-xs w-full py-4">Нет сообщений</div>
@@ -233,6 +217,7 @@
           <input id="supportInput" type="text" placeholder="Написать..." class="w-full bg-card-dark text-white rounded-xl px-4 py-3 border border-primary/50 focus:border-primary outline-none">
           <button id="supportSendBtn" class="bg-primary text-black font-bold px-4 py-3 rounded-xl material-symbols-outlined">send</button>
         </div>
+      </div>
       </section>
 
       <section id="screen-inbox" class="screen">
@@ -246,7 +231,7 @@
         <h2 class="text-2xl font-bold mb-2">Политика и конфиденциальность</h2>
         <div class="text-muted-gray text-sm leading-6">
           <div class="text-white font-bold mb-1">1. Общие условия</div>
-          Чашка Кофе — закрытый сервис доступа к сети по приглашению. Используя сервис, пользователь подтверждает согласие с условиями работы сервиса и правилами клуба.
+          GhostLink — закрытый сервис доступа к сети по приглашению. Используя сервис, пользователь подтверждает согласие с условиями работы сервиса и правилами клуба.
           <br><br>
           <div class="text-white font-bold mb-1">2. Обрабатываемые данные</div>
           Мы обрабатываем только минимально необходимые данные: Telegram ID, имя/username, статус подписки, технические параметры подключения и обращения в поддержку.
@@ -257,7 +242,7 @@
           <div class="text-white font-bold mb-1">4. Безопасность</div>
           Доступ к служебным интерфейсам ограничивается техническими мерами. Пользователь обязан сохранять конфиденциальность выданных ключей и ссылок доступа.
           <br><br>
-          <div class="text-white font-bold mb-1">5. Устав клуба Чашка Кофе</div>
+          <div class="text-white font-bold mb-1">5. Устав клуба GhostLink</div>
           Клуб работает по модели «свои для своих», с ограниченным числом мест. Запрещены злоупотребления каналом и действия, мешающие работе других участников. Приглашая друга, участник принимает ответственность за его поведение.
         </div>
       </section>
@@ -313,6 +298,24 @@
       <section id="screen-admin" class="screen">
         <h2 class="text-2xl font-bold mb-4">Админка</h2>
         <div class="text-muted-gray text-sm mb-4">Управление панелью и клиентами в одном месте.</div>
+
+        
+        
+        <div class="border border-primary rounded-2xl p-4 mb-4">
+          <div class="text-white font-bold mb-2">Рассылка (Push + Inbox)</div>
+          <textarea id="adminBroadcastText" rows="3" class="w-full bg-card-dark text-white rounded-xl px-3 py-2 border border-primary/50 text-sm mb-2" placeholder="Текст новости..."></textarea>
+          <button id="adminBroadcastBtn" class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full">Отправить всем</button>
+        </div>
+
+        <div class="border border-primary rounded-2xl p-4 mb-4">
+          <div class="text-white font-bold mb-2 flex justify-between items-center">
+            <span>Ожидают одобрения</span>
+            <button id="adminPendingRefresh" class="text-primary text-xs material-symbols-outlined">refresh</button>
+          </div>
+          <div id="adminPendingList" class="space-y-2 mt-2 max-h-48 overflow-y-auto text-sm">
+            <div class="text-muted-gray">Нет заявок</div>
+          </div>
+        </div>
 
         <div class="border border-primary rounded-2xl p-4 mb-4">
           <div class="text-white font-bold mb-2">Сервер</div>
