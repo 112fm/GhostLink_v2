@@ -1,3 +1,7 @@
+html,
+body {
+        touch-action: manipulation;
+      }
 body {
         background-color: #1e1e1e;
         color: white;
@@ -5,6 +9,11 @@ body {
         user-select: none;
         overflow: hidden;
         height: 100dvh;
+      }
+input,
+select,
+textarea {
+        font-size: 16px;
       }
       .material-symbols-outlined {
         font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
