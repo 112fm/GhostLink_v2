@@ -291,6 +291,9 @@
           data-tab="admin-tab-access">Доступ</button>
         <button
           class="admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap"
+          data-tab="admin-tab-support">Поддержка</button>
+        <button
+          class="admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap"
           data-tab="admin-tab-system">Система</button>
       </div>
 
@@ -380,21 +383,53 @@
         <!-- ТАБ Доступ -->
         <div id="admin-tab-access" class="admin-tab-content hidden">
           <div class="border border-primary rounded-2xl p-4 mb-4">
-            <div class="text-white font-bold mb-2">Панель</div>
-            <div class="flex gap-2">
-              <button id="adminLock"
-                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Запереть</button>
-              <button id="adminUnlock"
-                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Открыть</button>
+            <div class="text-white font-bold mb-2">Оригинальная панель XUI</div>
+            <div class="text-muted-gray text-sm mb-3">
+              Для входа получи одноразовый код у бота (команда /panel). Код действует 5 минут.
             </div>
             <div class="mt-3 flex gap-2">
-              <input id="adminIp" class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2"
-                placeholder="IP (например 1.2.3.4)" />
-              <button id="adminIpShow"
-                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl">IP</button>
+              <input id="adminOtp"
+                class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2 text-center tracking-widest text-lg font-mono"
+                placeholder="000000" maxlength="6" />
+              <button id="adminOtpLogin"
+                class="ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl whitespace-nowrap">Войти</button>
             </div>
-            <div class="text-muted-gray text-xs mt-3">
-              *Скоро будет заменено на OTP-аутентификацию через API.
+            <div id="adminProxyLink" class="mt-4 hidden">
+              <a href="/panel/" target="_blank"
+                class="block ios-active bg-primary text-black text-center font-bold px-3 py-3 rounded-xl w-full">Открыть
+                панель</a>
+              <div class="text-muted-gray text-xs mt-2 text-center">
+                Сессия активна 1 час. Порт наружу закрыт.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ТАБ Поддержка -->
+        <div id="admin-tab-support" class="admin-tab-content hidden flex flex-col h-full">
+          <div class="border border-primary rounded-2xl p-4 mb-4 flex-shrink-0">
+            <div class="text-white font-bold mb-2">Активные диалоги</div>
+            <select id="adminSupportUserId"
+              class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2">
+              <option value="">Нет активных тикетов</option>
+            </select>
+            <button id="adminSupportRefresh"
+              class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full mt-3">Обновить
+              список диалогов</button>
+          </div>
+
+          <div class="border border-primary rounded-2xl p-4 flex flex-col flex-1 min-h-[300px]">
+            <div id="adminSupportMessages"
+              class="flex-1 overflow-y-auto w-full flex flex-col-reverse gap-2 mb-3 max-h-64 no-scrollbar border-b border-white/10 pb-2">
+              <div class="text-center text-muted-gray text-xs mt-auto py-4">Выберите диалог из списка выше</div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+              <input id="adminSupportInput"
+                class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2 text-sm"
+                placeholder="Ответ..." disabled />
+              <button id="adminSupportSendBtn"
+                class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl whitespace-nowrap"
+                disabled>Отправить</button>
             </div>
           </div>
         </div>

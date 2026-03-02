@@ -1,0 +1,15 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Local env/secrets
+.env
+vapid_private.pem
+
+# Backend is server-only for this repo
+api_server.py
+ghost_final.py
+bot/
+
+# Local helper/temporary scripts
+fix_*.py

@@ -680,33 +680,17 @@ document.getElementById('adminRestart').addEventListener('click', async () => {
     notify('Ошибка');
   }
 });
-document.getElementById('adminLock').addEventListener('click', async () => {
+document.getElementById('adminOtpLogin').addEventListener('click', async () => {
+  const otp = document.getElementById('adminOtp').value.trim();
+  if (!otp || otp.length !== 6) return notify('Укажи 6-значный код');
   try {
-    const r = await adminFetch('/api/admin/panel/lock', { method: 'POST' });
-    if (!r.ok) throw new Error(r.message || 'panel_lock_failed');
-    notify(r.message || 'Панель закрыта');
+    const res = await adminFetch('/api/admin/proxy_auth', { method: 'POST', body: JSON.stringify({ otp }) });
+    if (res && res.ok) {
+      notify('Успешный вход в панель');
+      document.getElementById('adminProxyLink').classList.remove('hidden');
+    }
   } catch (e) {
-    notify(`Ошибка: ${e.message || 'panel_lock'}`);
-  }
-});
-document.getElementById('adminUnlock').addEventListener('click', async () => {
-  const ip = document.getElementById('adminIp').value.trim();
-  if (!ip) return notify('Укажи IP');
-  try {
-    const r = await adminFetch('/api/admin/panel/unlock', { method: 'POST', body: JSON.stringify({ ip }) });
-    if (!r.ok) throw new Error(r.message || 'panel_unlock_failed');
-    notify(r.message || 'Панель открыта');
-  } catch (e) {
-    notify(`Ошибка: ${e.message || 'panel_unlock'}`);
-  }
-});
-document.getElementById('adminIpShow').addEventListener('click', async () => {
-  try {
-    const r = await adminFetch('/api/admin/myip');
-    notify(`Твой IP: ${r.ip || '-'}`);
-    if (r.ip) document.getElementById('adminIp').value = r.ip;
-  } catch (e) {
-    notify('Ошибка');
+    notify('Ошибка: ' + (e.message || 'неверный код/сессия'));
   }
 });
 document.getElementById('adminAddSlots').addEventListener('click', async () => {
@@ -1221,4 +1205,100 @@ document.querySelectorAll('.admin-tab-btn').forEach(btn => {
       t.classList.add('block');
     }
   });
+});
+
+// Admin Support Chat Logic
+let adminSupportTickets = [];
+
+async function loadAdminSupportTickets() {
+  const sel = document.getElementById('adminSupportUserId');
+  if (!sel) return;
+  try {
+    const res = await adminFetch('/api/admin/support_tickets');
+    adminSupportTickets = res.items || [];
+    sel.innerHTML = '<option value="">Выберите диалог</option>';
+    adminSupportTickets.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.user_id;
+      const unread = t.needs_reply ? ' [НОВОЕ]' : '';
+      opt.textContent = `${t.name}${unread}`;
+      sel.appendChild(opt);
+    });
+    document.getElementById('adminSupportMessages').innerHTML = '<div class="text-center text-muted-gray text-xs mt-auto py-4">Выберите диалог из списка выше</div>';
+    document.getElementById('adminSupportInput').disabled = true;
+    document.getElementById('adminSupportSendBtn').disabled = true;
+  } catch (e) {
+    notify('Ошибка загрузки тикетов');
+  }
+}
+
+const adminSupRef = document.getElementById('adminSupportRefresh');
+if (adminSupRef) adminSupRef.addEventListener('click', loadAdminSupportTickets);
+
+const adminSupSel = document.getElementById('adminSupportUserId');
+if (adminSupSel) adminSupSel.addEventListener('change', (e) => {
+  const uid = e.target.value;
+  const list = document.getElementById('adminSupportMessages');
+  const inp = document.getElementById('adminSupportInput');
+  const btn = document.getElementById('adminSupportSendBtn');
+
+  if (!uid) {
+    list.innerHTML = '<div class="text-center text-muted-gray text-xs mt-auto py-4">Выберите диалог из списка выше</div>';
+    inp.disabled = true;
+    btn.disabled = true;
+    return;
+  }
+
+  const ticket = adminSupportTickets.find(t => t.user_id === uid);
+  if (!ticket || !ticket.messages) return;
+
+  inp.disabled = false;
+  btn.disabled = false;
+  list.innerHTML = '';
+
+  [...ticket.messages].forEach(msg => {
+    const wrap = document.createElement('div');
+    wrap.className = 'flex flex-col w-full ' + (msg.is_admin ? 'items-end' : 'items-start');
+    const bubble = document.createElement('div');
+    bubble.className = 'px-3 py-2 rounded-xl max-w-[85%] whitespace-pre-wrap ' + (msg.is_admin ? 'bg-primary text-black rounded-tr-sm' : 'bg-white/10 text-white rounded-tl-sm');
+    bubble.textContent = msg.text;
+    const ts = document.createElement('div');
+    ts.className = 'text-[10px] text-white/40 mt-1 px-1';
+    ts.textContent = msg.ts;
+    wrap.appendChild(bubble);
+    wrap.appendChild(ts);
+    list.prepend(wrap);
+  });
+});
+
+const adminSupBtn = document.getElementById('adminSupportSendBtn');
+if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
+  const sel = document.getElementById('adminSupportUserId');
+  const inp = document.getElementById('adminSupportInput');
+  const uid = sel.value;
+  const text = inp.value.trim();
+  if (!uid || !text) return;
+
+  inp.disabled = true;
+  adminSupBtn.disabled = true;
+
+  try {
+    await adminFetch('/api/admin/support_reply', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: uid, text })
+    });
+    inp.value = '';
+    await loadAdminSupportTickets();
+    sel.value = uid;
+    sel.dispatchEvent(new Event('change'));
+  } catch (e) {
+    notify('Ошибка отправки: ' + e.message);
+  } finally {
+    inp.disabled = false;
+    adminSupBtn.disabled = false;
+  }
+});
+
+document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
+  b.addEventListener('click', loadAdminSupportTickets);
 });
