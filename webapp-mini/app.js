@@ -845,3 +845,27 @@ async function loadAdminUsers() {
 
 loadUser();
 loadTariffs();
+
+// Admin Tabs Logic
+document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    document.querySelectorAll('.admin-tab-btn').forEach(b => {
+      b.className = 'admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap';
+    });
+
+    const me = e.currentTarget;
+    me.className = 'admin-tab-btn ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap';
+    const targetId = me.getAttribute('data-tab');
+
+    document.querySelectorAll('.admin-tab-content').forEach(c => {
+      c.classList.add('hidden');
+      c.classList.remove('block');
+    });
+
+    const t = document.getElementById(targetId);
+    if (t) {
+      t.classList.remove('hidden');
+      t.classList.add('block');
+    }
+  });
+});

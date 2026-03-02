@@ -1,12 +1,12 @@
 ﻿{
-  "name": "Чашка Кофе Club",
-  "short_name": "Чашка Кофе",
+  "name": "GhostLink VPN",
+  "short_name": "GhostLink",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#1E1E1E",
   "theme_color": "#1E1E1E",
-  "description": "Закрытый клуб Чашка Кофе",
+  "description": "GhostLink Private Network",
   "icons": [
     {
       "src": "./ghost_ava.png",
@@ -20,4 +20,3 @@
     }
   ]
 }
-
