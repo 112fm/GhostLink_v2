@@ -456,23 +456,20 @@ document.getElementById('homeAdminBtn').addEventListener('click', () => {
   loadAdminUsers();
 });
 
-document.getElementById('adminStats').addEventListener('click', async () => {
+async function loadAdminStats() {
   try {
     const data = await adminFetch('/api/admin/stats');
-    notify('Статистика обновлена');
-    const box = document.getElementById('adminStatsBox');
-    box.textContent = `ОЗУ: ${data.free_mem_mb} MB | Онлайн: ${data.online.length} | Места: ${data.total}/${data.max_users}`;
-  } catch (e) {
-    notify('Ошибка');
-  }
-});
-document.getElementById('adminOnline').addEventListener('click', async () => {
-  try {
-    const data = await adminFetch('/api/admin/stats');
+    document.getElementById('dashMem').textContent = data.free_mem_mb + ' MB';
+    document.getElementById('dashOnline').textContent = String(data.online ? data.online.length : 0);
+    const upGB = ((data.traffic_up || 0) / (1024 ** 3)).toFixed(2);
+    const downGB = ((data.traffic_down || 0) / (1024 ** 3)).toFixed(2);
+    document.getElementById('dashUp').textContent = upGB + ' GB';
+    document.getElementById('dashDown').textContent = downGB + ' GB';
+
     const box = document.getElementById('adminOnlineList');
     box.innerHTML = '';
     if (!data.online || data.online.length === 0) {
-      box.textContent = 'Онлайн: 0';
+      box.textContent = 'Никого нет онлайн';
     } else {
       data.online.forEach((name) => {
         const row = document.createElement('div');
@@ -481,11 +478,12 @@ document.getElementById('adminOnline').addEventListener('click', async () => {
         box.appendChild(row);
       });
     }
-    notify('Список онлайн обновлен');
   } catch (e) {
-    notify('Ошибка');
+    // silently fail
   }
-});
+}
+document.getElementById('adminStats').addEventListener('click', () => { loadAdminStats(); notify('Данные сервера обновлены'); });
+
 document.getElementById('adminRestart').addEventListener('click', async () => {
   if (!confirmDanger('RESTART', 'Перезапуск Xray')) return;
   try {
@@ -850,6 +848,8 @@ document.querySelectorAll('.admin-tab-btn').forEach(btn => {
     if (t) {
       t.classList.remove('hidden');
       t.classList.add('block');
+      if (targetId === 'admin-tab-system' && typeof loadAdminStats === 'function') loadAdminStats();
+      if (targetId === 'admin-tab-support' && typeof loadAdminSupportTickets === 'function') loadAdminSupportTickets();
     }
   });
 });
