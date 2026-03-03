@@ -494,16 +494,15 @@ document.getElementById('adminRestart').addEventListener('click', async () => {
   }
 });
 document.getElementById('adminOtpLogin').addEventListener('click', async () => {
-  const otp = document.getElementById('adminOtp').value.trim();
-  if (!otp || otp.length !== 6) return notify('Укажи 6-значный код');
   try {
-    const res = await adminFetch('/api/admin/proxy_auth', { method: 'POST', body: JSON.stringify({ otp }) });
+    const res = await adminFetch('/api/admin/proxy_auth', { method: 'POST', body: JSON.stringify({}) });
     if (res && res.ok) {
-      notify('Успешный вход в панель');
+      notify('Доступ разрешен на 1 час');
       document.getElementById('adminProxyLink').classList.remove('hidden');
+      document.getElementById('adminOtpLogin').classList.add('hidden');
     }
   } catch (e) {
-    notify('Ошибка: ' + (e.message || 'неверный код/сессия'));
+    notify('Ошибка: ' + (e.message || 'неверная сессия'));
   }
 });
 document.getElementById('adminAddSlots').addEventListener('click', async () => {
