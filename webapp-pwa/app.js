@@ -686,7 +686,7 @@ document.getElementById('adminOtpLogin').addEventListener('click', async () => {
       const proxyLinkDiv = document.getElementById('adminProxyLink');
       const proxyLinkAnchor = proxyLinkDiv.querySelector('a');
       if (proxyLinkAnchor) {
-        proxyLinkAnchor.href = API_URL + '/panel/';
+        proxyLinkAnchor.href = API_BASE + '/panel/';
       }
       proxyLinkDiv.classList.remove('hidden');
       document.getElementById('adminOtpLogin').classList.add('hidden');
