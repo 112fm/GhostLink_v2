@@ -498,7 +498,12 @@ document.getElementById('adminOtpLogin').addEventListener('click', async () => {
     const res = await adminFetch('/api/admin/proxy_auth', { method: 'POST', body: JSON.stringify({}) });
     if (res && res.ok) {
       notify('Доступ разрешен на 1 час');
-      document.getElementById('adminProxyLink').classList.remove('hidden');
+      const proxyLinkDiv = document.getElementById('adminProxyLink');
+      const proxyLinkAnchor = proxyLinkDiv.querySelector('a');
+      if (proxyLinkAnchor) {
+        proxyLinkAnchor.href = API_URL + '/panel/';
+      }
+      proxyLinkDiv.classList.remove('hidden');
       document.getElementById('adminOtpLogin').classList.add('hidden');
     }
   } catch (e) {
