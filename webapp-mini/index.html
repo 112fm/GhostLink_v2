@@ -32,7 +32,7 @@
       },
     };
   </script>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=2" />
 
 </head>
 
@@ -109,7 +109,8 @@
       <div class="text-muted-gray text-sm mb-3">Тарифный статус: <span id="tierBadge">обычный</span></div>
       <div class="border border-primary rounded-2xl p-4 mb-4">
         <div class="text-white text-lg font-bold">Solo Ghost</div>
-        <div class="text-muted-gray text-sm">1 устройство · минимальный платеж: <span id="soloMinPay">50</span> ₽</div>
+        <div class="text-muted-gray text-sm">до 2 устройств · минимальный платеж: <span id="soloMinPay">75</span> ₽
+        </div>
         <div class="mt-3">
           <button id="soloPay" class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full">1 месяц —
             <span id="soloPrice">150</span> ₽</button>
@@ -120,13 +121,13 @@
         <div class="text-white text-lg font-bold">Flex Squad</div>
         <div class="text-muted-gray text-sm">Выбери количество устройств</div>
         <div class="mt-3">
-          <input id="flexSlider" type="range" min="2" max="5" value="2" class="w-full">
+          <input id="flexSlider" type="range" min="3" max="5" value="3" class="w-full">
           <div class="flex justify-between text-xs text-muted-gray mt-1">
-            <span>2</span><span>3</span><span>4</span><span>5</span>
+            <span>3</span><span>4</span><span>5</span>
           </div>
         </div>
-        <div class="mt-3 text-white" id="flexPrice">2 устройства — 225 ₽</div>
-        <div class="text-muted-gray text-sm mt-1">Минимальный платеж: <span id="flexMinPay">75</span> ₽</div>
+        <div class="mt-3 text-white" id="flexPrice">3 устройства — 225 ₽</div>
+        <div class="text-muted-gray text-sm mt-1">Минимальный платеж: <span id="flexMinPay">112</span> ₽</div>
         <button id="flexPay"
           class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full mt-3">Поддержать</button>
       </div>
@@ -484,7 +485,13 @@
     </section>
   </main>
 
-  <script src="app.js?v=106"></script>
+  <script>
+    const userRole = (INIT_DATA && USER_ID === ADMIN_ID) || PWA_TOKEN ? 'admin' : 'user';
+    if (userRole === 'user') {
+      window.location.hash = ''; // clear hash
+    }
+  </script>
+  <script src="app.js?v=2"></script>
 
 </body>
 
