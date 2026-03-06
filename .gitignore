@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Config and Secrets
+vapid_private.pem
+
+# Server files
+ghost_final.py
+api_server.py
+
+# Bot folder
+bot/
