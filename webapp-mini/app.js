@@ -350,7 +350,35 @@ function renderDeviceList(items) {
 
     row.appendChild(left);
     row.appendChild(btn);
-    box.appendChild(row);
+
+    const keyBox = document.createElement('div');
+    keyBox.className = 'flex gap-2 mt-2 w-full';
+
+    const keyInput = document.createElement('input');
+    keyInput.className = 'flex-1 rounded-xl bg-black border border-white/20 text-muted-gray text-xs px-2 py-1 truncate';
+    keyInput.value = item.key || 'Ключ недоступен';
+    keyInput.readOnly = true;
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'ios-active bg-primary text-black font-bold px-3 py-1 rounded-xl text-xs whitespace-nowrap';
+    copyBtn.textContent = 'Копировать';
+    copyBtn.addEventListener('click', async () => {
+      if (!item.key) return;
+      try {
+        await navigator.clipboard.writeText(item.key);
+        notify('Ключ скопирован');
+      } catch (e) { }
+    });
+
+    keyBox.appendChild(keyInput);
+    keyBox.appendChild(copyBtn);
+
+    const container = document.createElement('div');
+    container.className = 'flex flex-col py-2 border-b border-white/10';
+    container.appendChild(row);
+    container.appendChild(keyBox);
+
+    box.appendChild(container);
   });
 }
 
@@ -461,10 +489,9 @@ async function loadAdminStats() {
     const data = await adminFetch('/api/admin/stats');
     document.getElementById('dashMem').textContent = data.free_mem_mb + ' MB';
     document.getElementById('dashOnline').textContent = String(data.online ? data.online.length : 0);
-    const upGB = ((data.traffic_up || 0) / (1024 ** 3)).toFixed(2);
-    const downGB = ((data.traffic_down || 0) / (1024 ** 3)).toFixed(2);
-    document.getElementById('dashUp').textContent = upGB + ' GB';
-    document.getElementById('dashDown').textContent = downGB + ' GB';
+    const totalGB = (((data.traffic_up || 0) + (data.traffic_down || 0)) / (1024 ** 3)).toFixed(2);
+    const dashTotal = document.getElementById('dashTotal');
+    if (dashTotal) dashTotal.textContent = totalGB + ' GB';
 
     const box = document.getElementById('adminOnlineList');
     box.innerHTML = '';
