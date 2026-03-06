@@ -626,36 +626,86 @@ flexSlider.addEventListener('input', () => {
   renderTariffs();
 });
 
-document.getElementById('soloPay').addEventListener('click', async () => {
+let paymentSettings = { phone: '+79857719139', bank: 'alfa' };
+
+async function loadPaymentSettings() {
   try {
-    const res = await apiFetch('/api/subscribe', {
-      method: 'POST',
-      body: JSON.stringify({ tariff_id: 'solo', devices: 1 })
-    });
-    notify(`Solo активирован до ${res.expiry || 'даты в профиле'}`);
-    loadUser();
-    setTimeout(subscribePush, 2000);
-    loadDevices();
-    loadTariffs();
-  } catch (e) {
-    notify(`Ошибка: ${e.message || 'subscribe'}`);
+    paymentSettings = await apiFetch('/api/payment/settings');
+  } catch (e) { }
+}
+
+function openPaymentScreen(amount) {
+  document.getElementById('paymentAmountDisplay').textContent = `${amount} ₽`;
+  loadPaymentSettings().then(() => {
+    document.getElementById('paymentPhoneDisplay').textContent = paymentSettings.phone || '+79857719139';
+    const bankName = String(paymentSettings.bank || 'alfa').toLowerCase();
+    let bankDisplay = 'Альфа-Банк';
+    if (bankName.includes('sber')) bankDisplay = 'Сбербанк';
+    if (bankName.includes('ozon')) bankDisplay = 'Ozon Банк';
+    if (bankName.includes('tinkoff') || bankName.includes('t-bank')) bankDisplay = 'Т-Банк';
+    if (bankName.includes('yandex')) bankDisplay = 'Яндекс Банк';
+    document.getElementById('paymentBankDisplay').textContent = bankDisplay;
+  });
+
+  if (CURRENT_USER_DATA && CURRENT_USER_DATA.subscription && CURRENT_USER_DATA.subscription.payment_status === 'pending_verification') {
+    document.getElementById('paymentPendingBox').classList.remove('hidden');
+    document.getElementById('paymentFormBox').classList.add('hidden');
+  } else {
+    document.getElementById('paymentPendingBox').classList.add('hidden');
+    document.getElementById('paymentFormBox').classList.remove('hidden');
   }
+
+  document.getElementById('paymentSenderInput').value = '';
+  pushScreen('screen-payment');
+}
+
+document.getElementById('soloPay').addEventListener('click', () => {
+  const price = tariffMap[1] ? tariffMap[1].price : 150;
+  openPaymentScreen(price);
 });
 
-document.getElementById('flexPay').addEventListener('click', async () => {
-  const devices = Math.max(2, Math.min(5, parseInt(flexSlider.value || '2', 10)));
+document.getElementById('flexPay').addEventListener('click', () => {
+  const devices = Math.max(3, Math.min(5, parseInt(flexSlider.value || '3', 10)));
+  const price = tariffMap[devices] ? tariffMap[devices].price : 225;
+  openPaymentScreen(price);
+});
+
+const profilePayBtn = document.getElementById('profilePayBtn');
+if (profilePayBtn) {
+  profilePayBtn.addEventListener('click', () => {
+    const limit = CURRENT_USER_DATA ? (CURRENT_USER_DATA.device_limit || 1) : 1;
+    let price = tariffMap[limit] ? tariffMap[limit].price : 150;
+    openPaymentScreen(price);
+  });
+}
+
+document.getElementById('copyPhoneBtn').addEventListener('click', async () => {
   try {
-    const res = await apiFetch('/api/subscribe', {
+    const phone = document.getElementById('paymentPhoneDisplay').textContent;
+    await navigator.clipboard.writeText(phone);
+    notify('Номер телефона скопирован!');
+  } catch (e) { }
+});
+
+document.getElementById('submitPaymentBtn').addEventListener('click', async () => {
+  const timeVal = document.getElementById('paymentSenderInput').value.trim();
+  if (!timeVal) return notify('Укажите точное время из чека');
+
+  const amountText = document.getElementById('paymentAmountDisplay').textContent;
+  const amount = parseInt(amountText.replace(/\D/g, ''), 10) || 150;
+
+  try {
+    await apiFetch('/api/payment/report', {
       method: 'POST',
-      body: JSON.stringify({ tariff_id: 'flex', devices })
+      body: JSON.stringify({ amount: amount, sender_name: timeVal })
     });
-    notify(`Flex (${devices}) активирован до ${res.expiry || 'даты в профиле'}`);
+    notify('Заявка отправлена. Ожидайте подтверждения.');
     loadUser();
-    setTimeout(subscribePush, 2000);
-    loadDevices();
-    loadTariffs();
+
+    document.getElementById('paymentPendingBox').classList.remove('hidden');
+    document.getElementById('paymentFormBox').classList.add('hidden');
   } catch (e) {
-    notify(`Ошибка: ${e.message || 'subscribe'}`);
+    notify('Ошибка отправки: ' + e.message);
   }
 });
 
@@ -663,10 +713,73 @@ if (String(USER_ID) === String(ADMIN_ID)) {
   const adminBtn = document.getElementById('homeAdminBtn');
   adminBtn.classList.remove('hidden');
 }
+
+async function loadAdminSbpSettings() {
+  try {
+    const res = await apiFetch('/api/payment/settings');
+    document.getElementById('adminSbpPhone').value = res.phone || '';
+    document.getElementById('adminSbpBank').value = res.bank || 'sber';
+  } catch (e) { }
+}
+
+const adminSbpSaveBtn = document.getElementById('adminSbpSaveBtn');
+if (adminSbpSaveBtn) {
+  adminSbpSaveBtn.addEventListener('click', async () => {
+    const phone = document.getElementById('adminSbpPhone').value.trim();
+    const bank = document.getElementById('adminSbpBank').value.trim();
+    try {
+      await adminFetch('/api/admin/payment/settings', {
+        method: 'POST',
+        body: JSON.stringify({ phone, bank })
+      });
+      notify('Реквизиты сохранены');
+    } catch (e) { notify('Ошибка сохранения: ' + e.message); }
+  });
+}
+
+const adminApprovePaymentBtn = document.getElementById('adminApprovePaymentBtn');
+if (adminApprovePaymentBtn) {
+  adminApprovePaymentBtn.addEventListener('click', async () => {
+    const userId = document.getElementById('adminUserId').value.trim();
+    if (!userId) return notify('Выберите пользователя');
+    if (!confirm('Одобрить платеж и выдать 30 дней?')) return;
+    try {
+      await adminFetch('/api/admin/payment/approve', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId })
+      });
+      notify('Платеж одобрен!');
+      await loadAdminUsers();
+      document.getElementById('adminUserId').value = userId;
+      document.getElementById('adminUserId').dispatchEvent(new Event('change'));
+    } catch (e) { notify('Ошибка: ' + e.message); }
+  });
+}
+
+const adminRejectPaymentBtn = document.getElementById('adminRejectPaymentBtn');
+if (adminRejectPaymentBtn) {
+  adminRejectPaymentBtn.addEventListener('click', async () => {
+    const userId = document.getElementById('adminUserId').value.trim();
+    if (!userId) return notify('Выберите пользователя');
+    if (!confirmDanger('REJECT', 'Отклонить платеж (пользователь лишится аванса и получит бан)')) return;
+    try {
+      await adminFetch('/api/admin/payment/reject', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId })
+      });
+      notify('Платеж отклонен. Доступ закрыт.');
+      await loadAdminUsers();
+      document.getElementById('adminUserId').value = userId;
+      document.getElementById('adminUserId').dispatchEvent(new Event('change'));
+    } catch (e) { notify('Ошибка: ' + e.message); }
+  });
+}
+
 document.getElementById('homeAdminBtn').addEventListener('click', () => {
   if (!IS_ADMIN && String(CURRENT_USER_ID) !== String(ADMIN_ID)) return notify('Нет доступа');
   pushScreen('screen-admin');
   loadAdminUsers();
+  loadAdminSbpSettings();
 });
 
 async function loadAdminStats() {
@@ -818,7 +931,6 @@ document.getElementById('adminUserId').addEventListener('change', () => {
   const meta = document.getElementById('adminUserMeta');
   const openBtn = document.getElementById('adminOpenTg');
   const actionsBox = document.getElementById('adminUserActions');
-  const approveBtn = document.getElementById('adminApprovePaymentBtn');
 
   if (!userId || !adminUsersById[userId]) {
     meta.textContent = 'Выбери пользователя, чтобы увидеть детали подписки.';
@@ -830,10 +942,15 @@ document.getElementById('adminUserId').addEventListener('change', () => {
   if (actionsBox) actionsBox.classList.remove('hidden');
   const u = adminUsersById[userId];
 
-  if (approveBtn) {
-    if (u.status === 'pending') approveBtn.classList.remove('hidden');
-    else approveBtn.classList.add('hidden');
+  const pActions = document.getElementById('adminPaymentActions');
+  if (pActions) {
+    if (u.payment_status === 'pending_verification') {
+      pActions.classList.remove('hidden');
+    } else {
+      pActions.classList.add('hidden');
+    }
   }
+
   const expiry = u.expiry_human || (u.expiry ? u.expiry : 'Без срока/нет');
   const days = Number(u.days_left);
   const daysText = Number.isFinite(days) ? `${days} дн` : '—';
@@ -841,6 +958,7 @@ document.getElementById('adminUserId').addEventListener('change', () => {
   const limit = Number(u.device_limit || 0);
   const ratio = `${connected}/${limit}`;
   const tierText = formatTierLabel(u.member_tier || 'regular');
+
   meta.innerHTML =
     `Статус: ${u.status || 'none'}<br>` +
     `Подписка до: ${expiry}<br>` +
@@ -848,6 +966,11 @@ document.getElementById('adminUserId').addEventListener('change', () => {
     `Тариф: ${u.tariff_name || '—'} · Устройства: ${ratio}<br>` +
     `Категория: ${tierText}<br>` +
     `Трафик: ${u.traffic_limit_gb || 0} GB/мес`;
+
+  if (u.payment_status === 'pending_verification') {
+    meta.innerHTML += `<div class="mt-3 p-2 bg-yellow-900/30 border border-yellow-500 text-yellow-200 rounded-lg text-xs leading-5"><b>СБП ПЛАТЕЖ ОЖИДАЕТ ПРОВЕРКИ</b><br>Заявленная сумма: <span class="text-white text-sm font-bold">${u.payment_amount} ₽</span><br>Время по чеку: <span class="text-white text-sm font-bold font-mono tracking-wider">${u.payment_sender}</span></div>`;
+  }
+
   openBtn.disabled = !(u.tg_link || u.tg_username);
 });
 
