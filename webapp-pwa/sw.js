@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ghostlink-pwa-v3';
+const CACHE_NAME = 'ghostlink-pwa-v4';
 const STATIC_FILES = [
   './',
   './index.html',
@@ -45,7 +45,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 
-self.addEventListener('push', function(event) {
+self.addEventListener('push', function (event) {
   if (event.data) {
     try {
       const data = event.data.json();
@@ -72,9 +72,9 @@ self.addEventListener('push', function(event) {
   }
 });
 
-self.addEventListener('notificationclick', function(event) {
+self.addEventListener('notificationclick', function (event) {
   event.notification.close();
-  if(event.notification.data && event.notification.data.url) {
+  if (event.notification.data && event.notification.data.url) {
     event.waitUntil(
       clients.openWindow(event.notification.data.url)
     );
