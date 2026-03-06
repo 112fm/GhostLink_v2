@@ -384,49 +384,68 @@
                 Выбери пользователя, чтобы увидеть детали.
               </div>
               <button id="adminOpenTg"
-                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full mt-2">
+                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full mt-2"
+                disabled>
                 Открыть профиль Telegram
               </button>
-              <input id="adminDays"
-                class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2 mt-2" type="number"
-                min="1" value="30" placeholder="Дней для продления" />
-              <div class="flex gap-2 mt-3">
-                <button id="adminBan"
-                  class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Бан</button>
-                <button id="adminUnban"
-                  class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Разбан</button>
+
+              <div id="adminUserActions" class="hidden mt-3 flex-col gap-2">
+                <button id="adminApprovePaymentBtn"
+                  class="hidden ios-active bg-primary text-black font-bold px-3 py-3 rounded-xl w-full shadow-lg shadow-primary/20">💸
+                  Одобрить платеж (СБП)</button>
+
+                <!-- Блок управления подпиской -->
+                <button id="adminManageSubToggle"
+                  class="ios-active bg-card-dark border border-primary/50 text-white font-bold px-3 py-2 rounded-xl w-full flex justify-between items-center">
+                  <span>Управление подпиской</span>
+                  <span class="text-primary text-lg">▾</span>
+                </button>
+
+                <div id="adminSubMenu" class="hidden bg-black/30 rounded-xl p-3 border border-white/10 flex-col gap-2">
+                  <input id="adminDays"
+                    class="w-full rounded-xl bg-card-dark border border-primary/50 text-white px-3 py-2 text-sm"
+                    type="number" min="1" value="30" placeholder="Дней для продления" />
+                  <div class="grid grid-cols-2 gap-2 mt-2">
+                    <button id="adminExtend"
+                      class="ios-active border border-primary/50 text-white px-2 py-2 rounded-lg text-sm bg-card-dark">Продлить
+                      (+30д)</button>
+                    <button id="adminTrial7"
+                      class="ios-active border border-primary/50 text-white px-2 py-2 rounded-lg text-sm bg-card-dark">Trial
+                      7 дней</button>
+                    <button id="adminUnlimited"
+                      class="ios-active border border-primary/50 text-white px-2 py-2 rounded-lg text-sm bg-card-dark">Без
+                      срока</button>
+                    <button id="adminResetSub"
+                      class="ios-active border border-accent-red/50 text-accent-red px-2 py-2 rounded-lg text-sm bg-card-dark">Сбросить
+                      статусы</button>
+                  </div>
+                  <div class="mt-3 text-white text-xs font-bold mb-1">Категория (Полы цен)</div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <button id="adminSetOwn"
+                      class="ios-active border border-primary/50 text-primary px-2 py-2 rounded-lg text-sm bg-card-dark flex items-center justify-center gap-1">★
+                      СВОЙ</button>
+                    <button id="adminSetRegular"
+                      class="ios-active border border-primary/50 text-white px-2 py-2 rounded-lg text-sm bg-card-dark">Обычный</button>
+                  </div>
+                </div>
+
+                <!-- Блок опасных действий -->
+                <div class="mt-2 border-t border-accent-red/20 pt-3 flex flex-col gap-2">
+                  <div class="grid grid-cols-2 gap-2">
+                    <button id="adminBan"
+                      class="ios-active bg-card-dark border border-accent-red/50 text-accent-red font-bold px-3 py-2 rounded-xl w-full">Бан</button>
+                    <button id="adminUnban"
+                      class="ios-active bg-card-dark border border-primary/50 text-primary font-bold px-3 py-2 rounded-xl w-full">Разбан</button>
+                  </div>
+                  <button id="adminDelete"
+                    class="ios-active bg-accent-red/10 border border-accent-red text-accent-red font-bold px-3 py-2 rounded-xl w-full text-sm">Удалить
+                    навсегда</button>
+                </div>
               </div>
-              <div class="flex gap-2 mt-2">
-                <button id="adminTrial7"
-                  class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Trial
-                  7д</button>
-                <button id="adminExtend"
-                  class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Продлить</button>
-              </div>
-              <div class="flex gap-2 mt-2">
-                <button id="adminUnlimited"
-                  class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Без
-                  срока</button>
-                <button id="adminResetSub"
-                  class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Сброс
-                  подписки</button>
-              </div>
-              <div class="flex gap-2 mt-2">
-                <button id="adminSetOwn"
-                  class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Сделать
-                  СВОЙ</button>
-                <button id="adminSetRegular"
-                  class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Сделать
-                  Обычный</button>
-              </div>
-              <div class="mt-2 text-right">
-                <button id="adminDelete"
-                  class="ios-active border border-accent-red text-accent-red font-bold px-3 py-2 rounded-xl w-full">Удалить
-                  пользователя навсегда</button>
-              </div>
+
               <button id="adminUsersRefresh"
-                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full mt-3">Обновить
-                список пользователей</button>
+                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full mt-4">Обновить
+                список</button>
             </div>
             <button id="adminAddSlots"
               class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full mt-3">+5 мест в
@@ -523,14 +542,9 @@
               <div class="text-primary font-bold text-xl" id="dashOnline">--</div>
             </div>
             <div
-              class="bg-card-dark border border-primary/30 rounded-2xl p-4 flex flex-col justify-center items-center">
-              <div class="text-muted-gray text-xs mb-1">Трафик (↓)</div>
-              <div class="text-white font-bold text-xl" id="dashUp">-- GB</div>
-            </div>
-            <div
-              class="bg-card-dark border border-primary/30 rounded-2xl p-4 flex flex-col justify-center items-center">
-              <div class="text-muted-gray text-xs mb-1">Трафик (↑)</div>
-              <div class="text-white font-bold text-xl" id="dashDown">-- GB</div>
+              class="bg-card-dark border border-primary/30 rounded-2xl p-4 flex flex-col justify-center items-center col-span-2">
+              <div class="text-muted-gray text-xs mb-1">Всего израсходовано трафика</div>
+              <div class="text-white font-bold text-xl" id="dashTotal">-- GB</div>
             </div>
           </div>
 

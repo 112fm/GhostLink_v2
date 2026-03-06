@@ -632,12 +632,23 @@ document.getElementById('adminUserId').addEventListener('change', () => {
   const userId = document.getElementById('adminUserId').value.trim();
   const meta = document.getElementById('adminUserMeta');
   const openBtn = document.getElementById('adminOpenTg');
+  const actionsBox = document.getElementById('adminUserActions');
+  const approveBtn = document.getElementById('adminApprovePaymentBtn');
+
   if (!userId || !adminUsersById[userId]) {
     meta.textContent = 'Выбери пользователя, чтобы увидеть детали подписки.';
     openBtn.disabled = true;
+    if (actionsBox) actionsBox.classList.add('hidden');
     return;
   }
+
+  if (actionsBox) actionsBox.classList.remove('hidden');
   const u = adminUsersById[userId];
+
+  if (approveBtn) {
+    if (u.status === 'pending') approveBtn.classList.remove('hidden');
+    else approveBtn.classList.add('hidden');
+  }
   const expiry = u.expiry_human || (u.expiry ? u.expiry : 'Без срока/нет');
   const days = Number(u.days_left);
   const daysText = Number.isFinite(days) ? `${days} дн` : '—';
@@ -654,6 +665,17 @@ document.getElementById('adminUserId').addEventListener('change', () => {
     `Трафик: ${u.traffic_limit_gb || 0} GB/мес`;
   openBtn.disabled = !(u.tg_link || u.tg_username);
 });
+
+const adminManageSubToggle = document.getElementById('adminManageSubToggle');
+if (adminManageSubToggle) {
+  adminManageSubToggle.addEventListener('click', () => {
+    const menu = document.getElementById('adminSubMenu');
+    if (menu) {
+      menu.classList.toggle('hidden');
+      menu.style.display = menu.classList.contains('hidden') ? 'none' : 'flex';
+    }
+  });
+}
 
 document.getElementById('adminOpenTg').addEventListener('click', () => {
   const userId = document.getElementById('adminUserId').value.trim();
