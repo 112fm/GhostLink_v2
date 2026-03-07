@@ -147,8 +147,8 @@ function formatSubLine(sub) {
 }
 
 function loadUser() {
-  if (!API_BASE || !INIT_DATA) return;
-  apiFetch('/api/user')
+  if (!API_BASE || !INIT_DATA) return Promise.resolve(false);
+  return apiFetch('/api/user')
     .then(data => {
       CURRENT_USER_ID = Number((data.user && data.user.id) || CURRENT_USER_ID || 0);
       document.getElementById('balanceValue').textContent = (data.balance || 0) + '₽';
@@ -174,12 +174,17 @@ function loadUser() {
         const adminBtn = document.getElementById('homeAdminBtn');
         adminBtn.classList.remove('hidden');
       }
+      accessClosed = false;
+      showScreen(stack[stack.length - 1] || 'screen-home');
+      setTimeout(() => setupFirstRunOnboarding('mini'), 400);
+      return true;
     })
     .catch((err) => {
       if (err && (err.status === 401 || err.status === 403)) {
         accessClosed = true;
         showScreen('screen-locked');
       }
+      return false;
     });
 }
 
@@ -889,7 +894,7 @@ async function loadAdminUsers() {
   }
 }
 
-function setupFirstRunOnboarding(appLabel) {
+function setupFirstRunOnboarding(appLabel, forceShow = false) {
   const overlay = document.getElementById('onboardingOverlay');
   const title = document.getElementById('onboardingTitle');
   const text = document.getElementById('onboardingText');
@@ -898,12 +903,12 @@ function setupFirstRunOnboarding(appLabel) {
   if (!overlay || !title || !text || !nextBtn || !skipBtn) return;
 
   const key = `ghost_onboarding_done_${appLabel}`;
-  if (localStorage.getItem(key) === '1') return;
+  if (!forceShow && localStorage.getItem(key) === '1') return;
 
   const steps = [
     {
       title: 'Добро пожаловать в GhostLink',
-      text: 'Это Mini App для быстрого управления доступом и ключами.'
+      text: 'Это личный кабинет в Telegram для управления доступом и ключами.'
     },
     {
       title: 'Где взять ключ',
@@ -946,7 +951,11 @@ function setupFirstRunOnboarding(appLabel) {
 
 loadUser();
 loadTariffs();
-setTimeout(() => setupFirstRunOnboarding('mini'), 600);
+
+const helpBtn = document.getElementById('helpBtn');
+if (helpBtn) {
+  helpBtn.addEventListener('click', () => setupFirstRunOnboarding('mini', true));
+}
 
 // Admin Tabs Logic
 document.querySelectorAll('.admin-tab-btn').forEach(btn => {
@@ -1069,3 +1078,4 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
+

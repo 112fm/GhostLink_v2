@@ -32,7 +32,16 @@ if (tg) tg.ready();
 
 const API_BASE = "https://api.112prd.ru:2053";
 const INIT_DATA = tg ? tg.initData : '';
-let PWA_TOKEN = '';
+const PWA_LOCAL_TOKEN_KEY = 'ghost_pwa_token_local';
+let PWA_TOKEN = localStorage.getItem(PWA_LOCAL_TOKEN_KEY) || '';
+function savePwaToken(token) {
+  PWA_TOKEN = String(token || '').trim();
+  if (PWA_TOKEN) localStorage.setItem(PWA_LOCAL_TOKEN_KEY, PWA_TOKEN);
+}
+function clearPwaToken() {
+  PWA_TOKEN = '';
+  localStorage.removeItem(PWA_LOCAL_TOKEN_KEY);
+}
 const PWA_BOT_USERNAME = 'ghostlink112_bot';
 const ADMIN_ID = 312826672;
 let CURRENT_USER_ID = 0;
@@ -141,7 +150,7 @@ async function loginByPwaCode(rawCode) {
     });
     const data = await resp.json().catch(() => ({}));
     if (!resp.ok) throw new Error(data.detail || 'bad_code');
-    PWA_TOKEN = '';
+    savePwaToken(data.session_token || '');
     const codeInput = document.getElementById('pwaCodeInput');
     const codeErr = document.getElementById('pwaCodeError');
     if (codeInput) codeInput.value = '';
@@ -182,7 +191,7 @@ async function bootstrapPwaAuth() {
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) throw new Error(data.detail || 'pwa_auth_failed');
-      PWA_TOKEN = '';
+      savePwaToken(data.session_token || '');
       window.history.replaceState({}, '', window.location.pathname);
       accessClosed = false;
       return true;
@@ -288,17 +297,17 @@ function formatSubLine(sub) {
 }
 
 function loadUser() {
-  if (!API_BASE) return;
-  apiFetch('/api/user')
+  if (!API_BASE) return Promise.resolve(false);
+  return apiFetch('/api/user')
     .then(data => {
       CURRENT_USER_ID = Number((data.user && data.user.id) || CURRENT_USER_ID || 0);
       if (data.subscription && data.subscription.status === 'pending') {
         showScreen('screen-pending');
-        return;
+        return false;
       }
       if (data.subscription && data.subscription.status === 'denied') {
         showPwaLocked('Вам отказано в доступе к клубу.');
-        return;
+        return false;
       }
 
       document.getElementById('balanceValue').textContent = (data.balance || 0) + '₽';
@@ -307,7 +316,7 @@ function loadUser() {
       document.getElementById('profileName').textContent = data.user.name || 'Пользователь';
       document.getElementById('profileId').textContent = 'ID: ' + data.user.id;
       document.getElementById('deviceLimit').textContent = data.device_limit || 3;
-      document.getElementById('profileDevicesRatio').textContent = data.devices_ratio || `${data.connected_devices || 0}/${data.device_limit || 0}`;
+      document.getElementById('profileDevicesRatio').textContent = data.devices_ratio || `${data.connected || data.connected_devices || 0}/${data.device_limit || 0}`;
       currentTier = data.member_tier || currentTier;
       const dc = document.getElementById('deviceCount');
       if (dc) dc.textContent = data.connected_devices || 0;
@@ -325,13 +334,18 @@ function loadUser() {
         const adminBtn = document.getElementById('homeAdminBtn');
         adminBtn.classList.remove('hidden');
       }
+      accessClosed = false;
+      showScreen(stack[stack.length - 1] || 'screen-home');
+      setTimeout(() => setupFirstRunOnboarding('pwa'), 400);
+      return true;
     })
     .catch((err) => {
       if (err && (err.status === 401 || err.status === 403)) {
-        PWA_TOKEN = '';
+        clearPwaToken();
         accessClosed = true;
         showPwaLocked('Сессия истекла. Войди через Telegram или одноразовый код.');
       }
+      return false;
     });
 }
 
@@ -370,7 +384,7 @@ document.getElementById('moreRulesBtn').addEventListener('click', () => pushScre
 const pwaReloginBtn = document.getElementById('pwaReloginBtn');
 if (pwaReloginBtn) {
   pwaReloginBtn.addEventListener('click', () => {
-    PWA_TOKEN = '';
+    clearPwaToken();
     showPwaLocked('Сессия сброшена. Войди через Telegram.');
   });
 }
@@ -572,7 +586,7 @@ function loadDevices() {
     .then((data) => {
       document.getElementById('deviceLimit').textContent = data.device_limit || 0;
       document.getElementById('deviceCount').textContent = data.connected || 0;
-      document.getElementById('profileDevicesRatio').textContent = `${data.connected || 0}/${data.device_limit || 0}`;
+      document.getElementById('profileDevicesRatio').textContent = data.devices_ratio || `${data.connected || data.connected_devices || 0}/${data.device_limit || 0}`;
       renderDeviceList(data.items || []);
     })
     .catch(() => {
@@ -1356,7 +1370,7 @@ async function loadAdminUsers() {
   }
 }
 
-function setupFirstRunOnboarding(appLabel) {
+function setupFirstRunOnboarding(appLabel, forceShow = false) {
   const overlay = document.getElementById('onboardingOverlay');
   const title = document.getElementById('onboardingTitle');
   const text = document.getElementById('onboardingText');
@@ -1365,7 +1379,7 @@ function setupFirstRunOnboarding(appLabel) {
   if (!overlay || !title || !text || !nextBtn || !skipBtn) return;
 
   const key = `ghost_onboarding_done_${appLabel}`;
-  if (localStorage.getItem(key) === '1') return;
+  if (!forceShow && localStorage.getItem(key) === '1') return;
 
   const steps = [
     {
@@ -1416,7 +1430,6 @@ bootstrapPwaAuth().then((ok) => {
   loadUser();
   setTimeout(subscribePush, 2000);
   loadTariffs();
-  setTimeout(() => setupFirstRunOnboarding('pwa'), 600);
 });
 
 const pwaCodeBtn = document.getElementById('pwaCodeBtn');
@@ -1431,6 +1444,11 @@ if (pwaCodeInput) {
       loginByPwaCode(pwaCodeInput.value);
     }
   });
+}
+
+const helpBtn = document.getElementById('helpBtn');
+if (helpBtn) {
+  helpBtn.addEventListener('click', () => setupFirstRunOnboarding('pwa', true));
 }
 
 // Admin Tabs Logic
@@ -1554,3 +1572,4 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
+
