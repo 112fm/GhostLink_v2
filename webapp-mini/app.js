@@ -455,34 +455,57 @@ flexSlider.addEventListener('input', () => {
   renderTariffs();
 });
 
+let paymentSettings = { phone: '+79857719139', bank: 'alfa' };
+
+async function loadPaymentSettings() {
+  try {
+    paymentSettings = await apiFetch('/api/payment/settings');
+  } catch (e) {
+    paymentSettings = { phone: '+79857719139', bank: 'alfa' };
+  }
+}
+
+async function submitTrustPayment(amount) {
+  await loadPaymentSettings();
+  const phone = String(paymentSettings.phone || '+79857719139').trim();
+  const bank = String(paymentSettings.bank || 'Банк').trim();
+
+  const ok = window.confirm(
+    `Оплата на доверии\n\nСумма: ${amount} ₽\nБанк: ${bank}\nНомер: ${phone}\n\nПосле перевода нажми OK.`
+  );
+  if (!ok) return;
+
+  const sender = (window.prompt('Введи время перевода из чека (например 14:25):') || '').trim();
+  if (!sender) {
+    notify('Укажи время перевода из чека');
+    return;
+  }
+
+  await apiFetch('/api/payment/report', {
+    method: 'POST',
+    body: JSON.stringify({ amount, sender_name: sender }),
+  });
+
+  notify('Заявка отправлена. Выдан временный доступ, ожидай проверку админом.');
+  loadUser();
+}
+
 document.getElementById('soloPay').addEventListener('click', async () => {
   try {
-    const res = await apiFetch('/api/subscribe', {
-      method: 'POST',
-      body: JSON.stringify({ tariff_id: 'solo', devices: 1 })
-    });
-    notify(`Solo активирован до ${res.expiry || 'даты в профиле'}`);
-    loadUser();
-    loadDevices();
-    loadTariffs();
+    const amount = Number((tariffMap[1] || {}).price || 150);
+    await submitTrustPayment(amount);
   } catch (e) {
-    notify(`Ошибка: ${e.message || 'subscribe'}`);
+    notify(`Ошибка: ${e.message || 'payment_report'}`);
   }
 });
 
 document.getElementById('flexPay').addEventListener('click', async () => {
   const devices = Math.max(2, Math.min(5, parseInt(flexSlider.value || '2', 10)));
   try {
-    const res = await apiFetch('/api/subscribe', {
-      method: 'POST',
-      body: JSON.stringify({ tariff_id: 'flex', devices })
-    });
-    notify(`Flex (${devices}) активирован до ${res.expiry || 'даты в профиле'}`);
-    loadUser();
-    loadDevices();
-    loadTariffs();
+    const amount = Number((tariffMap[devices] || {}).price || 225);
+    await submitTrustPayment(amount);
   } catch (e) {
-    notify(`Ошибка: ${e.message || 'subscribe'}`);
+    notify(`Ошибка: ${e.message || 'payment_report'}`);
   }
 });
 
@@ -494,6 +517,7 @@ document.getElementById('homeAdminBtn').addEventListener('click', () => {
   if (CURRENT_USER_ID !== ADMIN_ID) return notify('Нет доступа');
   pushScreen('screen-admin');
   loadAdminUsers();
+  loadAdminStats();
 });
 
 async function loadAdminStats() {
@@ -520,10 +544,29 @@ async function loadAdminStats() {
   } catch (e) {
     const box = document.getElementById('adminOnlineList');
     if (box) box.textContent = 'Ошибка загрузки статистики';
-    notify('Не удалось загрузить статистику');
+    notify('Не удалось загрузить статистику: ' + (e.message || 'stats'));
   }
 }
 document.getElementById('adminStats').addEventListener('click', () => { loadAdminStats(); notify('Данные сервера обновлены'); });
+const adminPaymentSettingsBtn = document.getElementById('adminPaymentSettings');
+if (adminPaymentSettingsBtn) {
+  adminPaymentSettingsBtn.addEventListener('click', async () => {
+    try {
+      const current = await adminFetch('/api/payment/settings');
+      const phone = (window.prompt('Номер для оплаты (СБП):', String(current.phone || '')) || '').trim();
+      if (!phone) return notify('Номер не задан');
+      const bank = (window.prompt('Банк (например: sber / alfa / tinkoff):', String(current.bank || '')) || '').trim();
+      if (!bank) return notify('Банк не задан');
+      await adminFetch('/api/admin/payment/settings', {
+        method: 'POST',
+        body: JSON.stringify({ phone, bank })
+      });
+      notify('Реквизиты оплаты сохранены');
+    } catch (e) {
+      notify('Ошибка сохранения реквизитов: ' + (e.message || 'payment_settings'));
+    }
+  });
+}
 
 document.getElementById('adminRestart').addEventListener('click', async () => {
   if (!confirmDanger('RESTART', 'Перезапуск Xray')) return;

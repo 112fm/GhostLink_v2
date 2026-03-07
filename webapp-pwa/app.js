@@ -796,6 +796,7 @@ document.getElementById('homeAdminBtn').addEventListener('click', () => {
   pushScreen('screen-admin');
   loadAdminUsers();
   loadAdminSbpSettings();
+  loadAdminStats();
 });
 
 async function loadAdminStats() {
@@ -822,7 +823,7 @@ async function loadAdminStats() {
   } catch (e) {
     const box = document.getElementById('adminOnlineList');
     if (box) box.textContent = 'Ошибка загрузки статистики';
-    notify('Не удалось загрузить статистику');
+    notify('Не удалось загрузить статистику: ' + (e.message || 'stats'));
   }
 }
 document.getElementById('adminStats').addEventListener('click', () => { loadAdminStats(); notify('Данные сервера обновлены'); });
