@@ -363,32 +363,14 @@ function renderDeviceList(items) {
     row.appendChild(left);
     row.appendChild(btn);
 
-    const keyBox = document.createElement('div');
-    keyBox.className = 'flex gap-2 mt-2 w-full';
-
-    const keyInput = document.createElement('input');
-    keyInput.className = 'flex-1 rounded-xl bg-black border border-white/20 text-muted-gray text-xs px-2 py-1 truncate';
-    keyInput.value = item.key || 'Ключ недоступен';
-    keyInput.readOnly = true;
-
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'ios-active bg-primary text-black font-bold px-3 py-1 rounded-xl text-xs whitespace-nowrap';
-    copyBtn.textContent = 'Копировать';
-    copyBtn.addEventListener('click', async () => {
-      if (!item.key) return;
-      try {
-        await navigator.clipboard.writeText(item.key);
-        notify('Ключ скопирован');
-      } catch (e) { }
-    });
-
-    keyBox.appendChild(keyInput);
-    keyBox.appendChild(copyBtn);
+    const keyHint = document.createElement('div');
+    keyHint.className = 'text-muted-gray text-xs mt-2';
+    keyHint.textContent = 'Ключ скрыт после выдачи. Для нового устройства используй "Добавить устройство".';
 
     const container = document.createElement('div');
     container.className = 'flex flex-col py-2 border-b border-white/10';
     container.appendChild(row);
-    container.appendChild(keyBox);
+    container.appendChild(keyHint);
 
     box.appendChild(container);
   });
