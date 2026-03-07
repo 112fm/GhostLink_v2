@@ -807,27 +807,18 @@ document.getElementById('adminRestart').addEventListener('click', async () => {
     notify('Ошибка');
   }
 });
+
 document.getElementById('adminOtpLogin').addEventListener('click', async () => {
   try {
-    const ipRes = await adminFetch('/api/admin/myip');
-    const ip = String((ipRes || {}).ip || '').trim();
-    if (!ip) throw new Error('ip_not_detected');
-
-    await adminFetch('/api/admin/panel/unlock', {
-      method: 'POST',
-      body: JSON.stringify({ ip })
-    });
-
     const res = await adminFetch('/api/admin/proxy_auth', { method: 'POST', body: JSON.stringify({}) });
     if (res && res.ok) {
       const proxyLinkDiv = document.getElementById('adminProxyLink');
       const proxyLinkAnchor = proxyLinkDiv ? proxyLinkDiv.querySelector('a') : null;
-      const panelUrl = String((res.panel_url || '').trim());
       const proxyUrl = String((res.proxy_url || '').trim());
-      const href = panelUrl || proxyUrl || (API_BASE + '/panel/');
+      const href = proxyUrl || (API_BASE + '/panel/');
       if (proxyLinkAnchor) proxyLinkAnchor.href = href;
       if (proxyLinkDiv) proxyLinkDiv.classList.remove('hidden');
-      notify('Панель открыта для твоего IP. Можешь переходить.');
+      notify('Панель открыта. Можешь переходить.');
     }
   } catch (e) {
     notify('Ошибка открытия панели: ' + (e.message || 'unknown'));
@@ -838,7 +829,7 @@ const adminPanelLockBtn = document.getElementById('adminPanelLockBtn');
 if (adminPanelLockBtn) {
   adminPanelLockBtn.addEventListener('click', async () => {
     try {
-      const r = await adminFetch('/api/admin/panel/lock', { method: 'POST' });
+      const r = await adminFetch('/api/admin/proxy_close', { method: 'POST' });
       const proxyLinkDiv = document.getElementById('adminProxyLink');
       if (proxyLinkDiv) proxyLinkDiv.classList.add('hidden');
       notify((r && r.message) ? r.message : 'Панель закрыта');
@@ -1569,5 +1560,7 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
+
+
 
 
