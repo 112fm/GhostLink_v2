@@ -684,6 +684,16 @@
   <script>
     window.location.hash = '';
   </script>
+  <section id="onboardingOverlay" class="fixed inset-0 bg-black/80 z-50 hidden items-end sm:items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-2xl border border-primary/40 bg-card-dark p-5">
+      <div class="text-white text-xl font-bold mb-2" id="onboardingTitle">Добро пожаловать</div>
+      <div class="text-muted-gray text-sm leading-6 min-h-[110px]" id="onboardingText"></div>
+      <div class="flex gap-2 mt-4">
+        <button id="onboardingSkip" class="ios-active border border-white/20 text-white/80 px-4 py-2 rounded-xl w-full">Пропустить</button>
+        <button id="onboardingNext" class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full">Далее</button>
+      </div>
+    </div>
+  </section>
   <script src="app.js?v=2"></script>
 
 </body>

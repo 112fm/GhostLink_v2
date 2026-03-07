@@ -513,7 +513,9 @@ async function loadAdminStats() {
       });
     }
   } catch (e) {
-    // silently fail
+    const box = document.getElementById('adminOnlineList');
+    if (box) box.textContent = 'Ошибка загрузки статистики';
+    notify('Не удалось загрузить статистику');
   }
 }
 document.getElementById('adminStats').addEventListener('click', () => { loadAdminStats(); notify('Данные сервера обновлены'); });
@@ -887,8 +889,64 @@ async function loadAdminUsers() {
   }
 }
 
+function setupFirstRunOnboarding(appLabel) {
+  const overlay = document.getElementById('onboardingOverlay');
+  const title = document.getElementById('onboardingTitle');
+  const text = document.getElementById('onboardingText');
+  const nextBtn = document.getElementById('onboardingNext');
+  const skipBtn = document.getElementById('onboardingSkip');
+  if (!overlay || !title || !text || !nextBtn || !skipBtn) return;
+
+  const key = `ghost_onboarding_done_${appLabel}`;
+  if (localStorage.getItem(key) === '1') return;
+
+  const steps = [
+    {
+      title: 'Добро пожаловать в GhostLink',
+      text: 'Это Mini App для быстрого управления доступом и ключами.'
+    },
+    {
+      title: 'Где взять ключ',
+      text: 'Открой "Мои ключи" -> "Добавить устройство". Ключ скопируется автоматически.'
+    },
+    {
+      title: 'Что делать дальше',
+      text: 'Вставь ключ в V2RayTun. Для оплаты используй "Поддержать проект", для вопросов — "Поддержка".'
+    }
+  ];
+
+  let idx = 0;
+  const render = () => {
+    title.textContent = steps[idx].title;
+    text.textContent = steps[idx].text;
+    nextBtn.textContent = idx === steps.length - 1 ? 'Готово' : 'Далее';
+  };
+
+  const finish = () => {
+    localStorage.setItem(key, '1');
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+  };
+
+  nextBtn.onclick = () => {
+    if (idx >= steps.length - 1) {
+      finish();
+      return;
+    }
+    idx += 1;
+    render();
+  };
+
+  skipBtn.onclick = finish;
+
+  overlay.classList.remove('hidden');
+  overlay.classList.add('flex');
+  render();
+}
+
 loadUser();
 loadTariffs();
+setTimeout(() => setupFirstRunOnboarding('mini'), 600);
 
 // Admin Tabs Logic
 document.querySelectorAll('.admin-tab-btn').forEach(btn => {
