@@ -843,21 +843,44 @@ document.getElementById('adminRestart').addEventListener('click', async () => {
 });
 document.getElementById('adminOtpLogin').addEventListener('click', async () => {
   try {
+    const ipRes = await adminFetch('/api/admin/myip');
+    const ip = String((ipRes || {}).ip || '').trim();
+    if (!ip) throw new Error('ip_not_detected');
+
+    await adminFetch('/api/admin/panel/unlock', {
+      method: 'POST',
+      body: JSON.stringify({ ip })
+    });
+
     const res = await adminFetch('/api/admin/proxy_auth', { method: 'POST', body: JSON.stringify({}) });
     if (res && res.ok) {
-      notify('Доступ разрешен на 1 час');
       const proxyLinkDiv = document.getElementById('adminProxyLink');
-      const proxyLinkAnchor = proxyLinkDiv.querySelector('a');
-      if (proxyLinkAnchor) {
-        proxyLinkAnchor.href = API_BASE + '/panel/';
-      }
-      proxyLinkDiv.classList.remove('hidden');
-      document.getElementById('adminOtpLogin').classList.add('hidden');
+      const proxyLinkAnchor = proxyLinkDiv ? proxyLinkDiv.querySelector('a') : null;
+      const panelUrl = String((res.panel_url || '').trim());
+      const proxyUrl = String((res.proxy_url || '').trim());
+      const href = panelUrl || proxyUrl || (API_BASE + '/panel/');
+      if (proxyLinkAnchor) proxyLinkAnchor.href = href;
+      if (proxyLinkDiv) proxyLinkDiv.classList.remove('hidden');
+      notify('Панель открыта для твоего IP. Можешь переходить.');
     }
   } catch (e) {
-    notify('Ошибка: ' + (e.message || 'неверная сессия'));
+    notify('Ошибка открытия панели: ' + (e.message || 'unknown'));
   }
 });
+
+const adminPanelLockBtn = document.getElementById('adminPanelLockBtn');
+if (adminPanelLockBtn) {
+  adminPanelLockBtn.addEventListener('click', async () => {
+    try {
+      const r = await adminFetch('/api/admin/panel/lock', { method: 'POST' });
+      const proxyLinkDiv = document.getElementById('adminProxyLink');
+      if (proxyLinkDiv) proxyLinkDiv.classList.add('hidden');
+      notify((r && r.message) ? r.message : 'Панель закрыта');
+    } catch (e) {
+      notify('Ошибка закрытия панели: ' + (e.message || 'unknown'));
+    }
+  });
+}
 document.getElementById('adminAddSlots').addEventListener('click', async () => {
   try {
     const r = await adminFetch('/api/admin/add_slots', { method: 'POST' });
@@ -1580,4 +1603,5 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
+
 

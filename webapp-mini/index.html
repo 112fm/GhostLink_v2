@@ -424,15 +424,18 @@
               <div class="text-muted-gray text-sm mb-3">
                 Прямой доступ к панели X-UI через защищенный шлюз.
               </div>
-              <div class="mt-3">
+              <div class="mt-3 grid grid-cols-2 gap-2">
                 <button id="adminOtpLogin"
-                  class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-xl w-full">Разблокировать
-                  доступ</button>
+                  class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-xl w-full">Открыть
+                  панель</button>
+                <button id="adminPanelLockBtn"
+                  class="ios-active border border-accent-red text-accent-red font-bold px-4 py-3 rounded-xl w-full">Закрыть
+                  панель</button>
               </div>
               <div id="adminProxyLink" class="mt-4 hidden">
                 <a href="/panel/" target="_blank"
-                  class="block ios-active bg-primary text-black text-center font-bold px-3 py-3 rounded-xl w-full">Открыть
-                  панель</a>
+                  class="block ios-active bg-primary text-black text-center font-bold px-3 py-3 rounded-xl w-full">Перейти
+                  в панель</a>
                 <div class="text-muted-gray text-xs mt-2 text-center">
                   Сессия активна 1 час. Порт наружу закрыт.
                 </div>
@@ -532,4 +535,5 @@
 </body>
 
 </html>
+
 
