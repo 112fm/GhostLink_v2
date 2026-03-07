@@ -642,15 +642,19 @@ flexSlider.addEventListener('input', () => {
   renderTariffs();
 });
 
-let paymentSettings = { phone: '+79857719139', bank: 'alfa' };
+let paymentSettings = { phone: '+79857719139', bank: 'alfa', recipient: 'Арсений А' };
+let currentPaymentLabel = '';
 
 async function loadPaymentSettings() {
   try {
     paymentSettings = await apiFetch('/api/payment/settings');
-  } catch (e) { }
+  } catch (e) {
+    paymentSettings = { phone: '+79857719139', bank: 'alfa', recipient: 'Арсений А' };
+  }
 }
 
-function openPaymentScreen(amount) {
+function openPaymentScreen(amount, label) {
+  currentPaymentLabel = String(label || '').trim();
   document.getElementById('paymentAmountDisplay').textContent = `${amount} ₽`;
   loadPaymentSettings().then(() => {
     document.getElementById('paymentPhoneDisplay').textContent = paymentSettings.phone || '+79857719139';
@@ -661,15 +665,14 @@ function openPaymentScreen(amount) {
     if (bankName.includes('tinkoff') || bankName.includes('t-bank')) bankDisplay = 'Т-Банк';
     if (bankName.includes('yandex')) bankDisplay = 'Яндекс Банк';
     document.getElementById('paymentBankDisplay').textContent = bankDisplay;
+    const recipientEl = document.getElementById('paymentRecipientDisplay');
+    if (recipientEl) recipientEl.textContent = paymentSettings.recipient || '—';
   });
 
-  if (CURRENT_USER_DATA && CURRENT_USER_DATA.subscription && CURRENT_USER_DATA.subscription.payment_status === 'pending_verification') {
-    document.getElementById('paymentPendingBox').classList.remove('hidden');
-    document.getElementById('paymentFormBox').classList.add('hidden');
-  } else {
-    document.getElementById('paymentPendingBox').classList.add('hidden');
-    document.getElementById('paymentFormBox').classList.remove('hidden');
-  }
+  const pendingBox = document.getElementById('paymentPendingBox');
+  const formBox = document.getElementById('paymentFormBox');
+  if (pendingBox) pendingBox.classList.add('hidden');
+  if (formBox) formBox.classList.remove('hidden');
 
   document.getElementById('paymentSenderInput').value = '';
   pushScreen('screen-payment');
@@ -677,13 +680,13 @@ function openPaymentScreen(amount) {
 
 document.getElementById('soloPay').addEventListener('click', () => {
   const price = tariffMap[1] ? tariffMap[1].price : 150;
-  openPaymentScreen(price);
+  openPaymentScreen(price, 'Solo');
 });
 
 document.getElementById('flexPay').addEventListener('click', () => {
   const devices = Math.max(3, Math.min(5, parseInt(flexSlider.value || '3', 10)));
   const price = tariffMap[devices] ? tariffMap[devices].price : 225;
-  openPaymentScreen(price);
+  openPaymentScreen(price, `Flex ${devices}`);
 });
 
 const profilePayBtn = document.getElementById('profilePayBtn');
@@ -691,7 +694,7 @@ if (profilePayBtn) {
   profilePayBtn.addEventListener('click', () => {
     const limit = CURRENT_USER_DATA ? (CURRENT_USER_DATA.device_limit || 1) : 1;
     let price = tariffMap[limit] ? tariffMap[limit].price : 150;
-    openPaymentScreen(price);
+    openPaymentScreen(price, `Текущий тариф ${limit}`);
   });
 }
 
@@ -704,8 +707,8 @@ document.getElementById('copyPhoneBtn').addEventListener('click', async () => {
 });
 
 document.getElementById('submitPaymentBtn').addEventListener('click', async () => {
-  const timeVal = document.getElementById('paymentSenderInput').value.trim();
-  if (!timeVal) return notify('Укажите точное время из чека');
+  const senderVal = document.getElementById('paymentSenderInput').value.trim();
+  if (!/^[A-Za-zА-Яа-яЁё]{2,}\s+[A-Za-zА-Яа-яЁё]$/u.test(senderVal)) return notify('Формат: Имя Ф (например Иван П)');
 
   const amountText = document.getElementById('paymentAmountDisplay').textContent;
   const amount = parseInt(amountText.replace(/\D/g, ''), 10) || 150;
@@ -713,13 +716,11 @@ document.getElementById('submitPaymentBtn').addEventListener('click', async () =
   try {
     await apiFetch('/api/payment/report', {
       method: 'POST',
-      body: JSON.stringify({ amount: amount, sender_name: timeVal })
+      body: JSON.stringify({ amount: amount, sender_name: senderVal, payment_label: currentPaymentLabel })
     });
-    notify('Заявка отправлена. Ожидайте подтверждения.');
+    notify('Платеж отмечен. Доступ продлен на 7 дней, проверка идет у администратора.');
     loadUser();
-
-    document.getElementById('paymentPendingBox').classList.remove('hidden');
-    document.getElementById('paymentFormBox').classList.add('hidden');
+    pushScreen('screen-home');
   } catch (e) {
     notify('Ошибка отправки: ' + e.message);
   }
@@ -735,6 +736,8 @@ async function loadAdminSbpSettings() {
     const res = await apiFetch('/api/payment/settings');
     document.getElementById('adminSbpPhone').value = res.phone || '';
     document.getElementById('adminSbpBank').value = res.bank || 'sber';
+    const recipientInput = document.getElementById('adminSbpRecipient');
+    if (recipientInput) recipientInput.value = res.recipient || 'Арсений А';
   } catch (e) { }
 }
 
@@ -743,10 +746,11 @@ if (adminSbpSaveBtn) {
   adminSbpSaveBtn.addEventListener('click', async () => {
     const phone = document.getElementById('adminSbpPhone').value.trim();
     const bank = document.getElementById('adminSbpBank').value.trim();
+    const recipient = ((document.getElementById('adminSbpRecipient') || {}).value || '').trim();
     try {
       await adminFetch('/api/admin/payment/settings', {
         method: 'POST',
-        body: JSON.stringify({ phone, bank })
+        body: JSON.stringify({ phone, bank, recipient })
       });
       notify('Реквизиты сохранены');
     } catch (e) { notify('Ошибка сохранения: ' + e.message); }
@@ -994,7 +998,10 @@ document.getElementById('adminUserId').addEventListener('change', () => {
     paymentNotice.textContent = [
       'СБП ПЛАТЕЖ ОЖИДАЕТ ПРОВЕРКИ',
       `Заявленная сумма: ${u.payment_amount || 0} ₽`,
-      `Время по чеку: ${u.payment_sender || '—'}`
+      `Плательщик: ${u.payment_sender || '—'}`,
+      `Тариф: ${u.payment_label || '—'}`,
+      `Подтверждение (МСК): ${u.payment_time_msk || '—'}`,
+      `Реквизиты: ${u.payment_bank || '—'} · ${u.payment_phone || '—'} · ${u.payment_recipient || '—'}`
     ].join('\n');
     meta.appendChild(paymentNotice);
   }

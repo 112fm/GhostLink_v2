@@ -455,45 +455,46 @@ flexSlider.addEventListener('input', () => {
   renderTariffs();
 });
 
-let paymentSettings = { phone: '+79857719139', bank: 'alfa' };
+let paymentSettings = { phone: '+79857719139', bank: 'alfa', recipient: 'Арсений А' };
 
 async function loadPaymentSettings() {
   try {
     paymentSettings = await apiFetch('/api/payment/settings');
   } catch (e) {
-    paymentSettings = { phone: '+79857719139', bank: 'alfa' };
+    paymentSettings = { phone: '+79857719139', bank: 'alfa', recipient: 'Арсений А' };
   }
 }
 
-async function submitTrustPayment(amount) {
+async function submitTrustPayment(amount, label) {
   await loadPaymentSettings();
   const phone = String(paymentSettings.phone || '+79857719139').trim();
   const bank = String(paymentSettings.bank || 'Банк').trim();
+  const recipient = String(paymentSettings.recipient || 'Получатель').trim();
 
   const ok = window.confirm(
-    `Оплата на доверии\n\nСумма: ${amount} ₽\nБанк: ${bank}\nНомер: ${phone}\n\nПосле перевода нажми OK.`
+    `Оплата на доверии\n\nСумма: ${amount} ₽\nБанк: ${bank}\nНомер: ${phone}\nПолучатель: ${recipient}\n\nПосле перевода нажми OK.`
   );
   if (!ok) return;
 
-  const sender = (window.prompt('Введи время перевода из чека (например 14:25):') || '').trim();
-  if (!sender) {
-    notify('Укажи время перевода из чека');
+  const sender = (window.prompt('Введи плательщика в формате Имя Ф (например Иван П):') || '').trim();
+  if (!/^[A-Za-zА-Яа-яЁё]{2,}\s+[A-Za-zА-Яа-яЁё]$/u.test(sender)) {
+    notify('Формат: Имя Ф (например Иван П)');
     return;
   }
 
   await apiFetch('/api/payment/report', {
     method: 'POST',
-    body: JSON.stringify({ amount, sender_name: sender }),
+    body: JSON.stringify({ amount, sender_name: sender, payment_label: String(label || '') }),
   });
 
-  notify('Заявка отправлена. Выдан временный доступ, ожидай проверку админом.');
+  notify('Платеж отмечен. Доступ продлен на 7 дней, проверка идет у администратора.');
   loadUser();
 }
 
 document.getElementById('soloPay').addEventListener('click', async () => {
   try {
     const amount = Number((tariffMap[1] || {}).price || 150);
-    await submitTrustPayment(amount);
+    await submitTrustPayment(amount, 'Solo');
   } catch (e) {
     notify(`Ошибка: ${e.message || 'payment_report'}`);
   }
@@ -503,7 +504,7 @@ document.getElementById('flexPay').addEventListener('click', async () => {
   const devices = Math.max(2, Math.min(5, parseInt(flexSlider.value || '2', 10)));
   try {
     const amount = Number((tariffMap[devices] || {}).price || 225);
-    await submitTrustPayment(amount);
+    await submitTrustPayment(amount, `Flex ${devices}`);
   } catch (e) {
     notify(`Ошибка: ${e.message || 'payment_report'}`);
   }
@@ -557,9 +558,11 @@ if (adminPaymentSettingsBtn) {
       if (!phone) return notify('Номер не задан');
       const bank = (window.prompt('Банк (например: sber / alfa / tinkoff):', String(current.bank || '')) || '').trim();
       if (!bank) return notify('Банк не задан');
+      const recipient = (window.prompt('Получатель (например: Арсений А):', String(current.recipient || 'Арсений А')) || '').trim();
+      if (!recipient) return notify('Получатель не задан');
       await adminFetch('/api/admin/payment/settings', {
         method: 'POST',
-        body: JSON.stringify({ phone, bank })
+        body: JSON.stringify({ phone, bank, recipient })
       });
       notify('Реквизиты оплаты сохранены');
     } catch (e) {
@@ -568,6 +571,47 @@ if (adminPaymentSettingsBtn) {
   });
 }
 
+const adminApprovePaymentBtn = document.getElementById('adminApprovePaymentBtn');
+if (adminApprovePaymentBtn) {
+  adminApprovePaymentBtn.addEventListener('click', async () => {
+    const userId = document.getElementById('adminUserId').value.trim();
+    if (!userId) return notify('Выберите пользователя');
+    if (!window.confirm('Одобрить платеж и выдать 30 дней?')) return;
+    try {
+      await adminFetch('/api/admin/payment/approve', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId })
+      });
+      notify('Платеж одобрен');
+      await loadAdminUsers();
+      document.getElementById('adminUserId').value = userId;
+      document.getElementById('adminUserId').dispatchEvent(new Event('change'));
+    } catch (e) {
+      notify('Ошибка: ' + e.message);
+    }
+  });
+}
+
+const adminRejectPaymentBtn = document.getElementById('adminRejectPaymentBtn');
+if (adminRejectPaymentBtn) {
+  adminRejectPaymentBtn.addEventListener('click', async () => {
+    const userId = document.getElementById('adminUserId').value.trim();
+    if (!userId) return notify('Выберите пользователя');
+    if (!confirmDanger('REJECT', 'Отклонить платеж и ограничить доступ?')) return;
+    try {
+      await adminFetch('/api/admin/payment/reject', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId })
+      });
+      notify('Платеж отклонен, доступ ограничен');
+      await loadAdminUsers();
+      document.getElementById('adminUserId').value = userId;
+      document.getElementById('adminUserId').dispatchEvent(new Event('change'));
+    } catch (e) {
+      notify('Ошибка: ' + e.message);
+    }
+  });
+}
 document.getElementById('adminRestart').addEventListener('click', async () => {
   if (!confirmDanger('RESTART', 'Перезапуск Xray')) return;
   try {
@@ -691,6 +735,7 @@ document.getElementById('adminUserId').addEventListener('change', () => {
   const openBtn = document.getElementById('adminOpenTg');
   const actionsBox = document.getElementById('adminUserActions');
   const approveBtn = document.getElementById('adminApprovePaymentBtn');
+  const rejectBtn = document.getElementById('adminRejectPaymentBtn');
 
   if (!userId || !adminUsersById[userId]) {
     meta.textContent = 'Выбери пользователя, чтобы увидеть детали подписки.';
@@ -703,9 +748,14 @@ document.getElementById('adminUserId').addEventListener('change', () => {
   const u = adminUsersById[userId];
 
   if (approveBtn) {
-    if (u.status === 'pending') approveBtn.classList.remove('hidden');
+    if (u.payment_status === 'pending_verification') approveBtn.classList.remove('hidden');
     else approveBtn.classList.add('hidden');
   }
+  if (rejectBtn) {
+    if (u.payment_status === 'pending_verification') rejectBtn.classList.remove('hidden');
+    else rejectBtn.classList.add('hidden');
+  }
+
   const expiry = u.expiry_human || (u.expiry ? u.expiry : 'Без срока/нет');
   const days = Number(u.days_left);
   const daysText = Number.isFinite(days) ? `${days} дн` : '—';
@@ -713,6 +763,7 @@ document.getElementById('adminUserId').addEventListener('change', () => {
   const limit = Number(u.device_limit || 0);
   const ratio = `${connected}/${limit}`;
   const tierText = formatTierLabel(u.member_tier || 'regular');
+
   meta.classList.add('whitespace-pre-line');
   meta.textContent = [
     `Статус: ${u.status || 'none'}`,
@@ -722,6 +773,21 @@ document.getElementById('adminUserId').addEventListener('change', () => {
     `Категория: ${tierText}`,
     `Трафик: ${u.traffic_limit_gb || 0} GB/мес`
   ].join('\n');
+
+  if (u.payment_status === 'pending_verification') {
+    const paymentNotice = document.createElement('div');
+    paymentNotice.className = 'mt-3 p-2 bg-yellow-900/30 border border-yellow-500 text-yellow-200 rounded-lg text-xs leading-5 whitespace-pre-line';
+    paymentNotice.textContent = [
+      'СБП ПЛАТЕЖ ОЖИДАЕТ ПРОВЕРКИ',
+      `Заявленная сумма: ${u.payment_amount || 0} ₽`,
+      `Плательщик: ${u.payment_sender || '—'}`,
+      `Тариф: ${u.payment_label || '—'}`,
+      `Подтверждение (МСК): ${u.payment_time_msk || '—'}`,
+      `Реквизиты: ${u.payment_bank || '—'} · ${u.payment_phone || '—'} · ${u.payment_recipient || '—'}`
+    ].join('\n');
+    meta.appendChild(paymentNotice);
+  }
+
   openBtn.disabled = !(u.tg_link || u.tg_username);
 });
 

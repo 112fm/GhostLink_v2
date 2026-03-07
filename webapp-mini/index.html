@@ -329,9 +329,12 @@
               </button>
 
               <div id="adminUserActions" class="hidden mt-3 flex-col gap-2">
-                <button id="adminApprovePaymentBtn"
-                  class="hidden ios-active bg-primary text-black font-bold px-3 py-3 rounded-xl w-full shadow-lg shadow-primary/20">💸
-                  Одобрить платеж (СБП)</button>
+                <div class="grid grid-cols-2 gap-2">
+                  <button id="adminApprovePaymentBtn"
+                    class="hidden ios-active bg-primary text-black font-bold px-3 py-3 rounded-xl w-full shadow-lg shadow-primary/20">✅ Одобрить</button>
+                  <button id="adminRejectPaymentBtn"
+                    class="hidden ios-active bg-accent-red text-white font-bold px-3 py-3 rounded-xl w-full shadow-lg shadow-accent-red/20">❌ Обман</button>
+                </div>
 
                 <!-- Блок управления подпиской -->
                 <button id="adminManageSubToggle"
