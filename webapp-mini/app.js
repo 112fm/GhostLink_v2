@@ -1,4 +1,4 @@
-const screens = Array.from(document.querySelectorAll('.screen'));
+﻿const screens = Array.from(document.querySelectorAll('.screen'));
 const backBtn = document.getElementById('backBtn');
 const stack = ['screen-home'];
 let accessClosed = false;
@@ -32,7 +32,7 @@ if (tg) tg.ready();
 
 const API_BASE = "https://api.112prd.ru:2053";
 const INIT_DATA = tg ? tg.initData : '';
-const PWA_TOKEN = localStorage.getItem('ghost_pwa_token') || '';
+let PWA_TOKEN = '';
 const ADMIN_ID = 312826672;
 let CURRENT_USER_ID = 0;
 function extractUserId() {
@@ -61,6 +61,7 @@ function apiFetch(path, options = {}) {
   if (PWA_TOKEN) authHeaders['X-PWA-Token'] = PWA_TOKEN;
   return fetch(API_BASE + path, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...authHeaders,
@@ -146,7 +147,7 @@ function formatSubLine(sub) {
 }
 
 function loadUser() {
-  if (!API_BASE || (!INIT_DATA && !PWA_TOKEN)) return;
+  if (!API_BASE || !INIT_DATA) return;
   apiFetch('/api/user')
     .then(data => {
       CURRENT_USER_ID = Number((data.user && data.user.id) || CURRENT_USER_ID || 0);
@@ -307,7 +308,13 @@ function loadReferrals() {
         const row = document.createElement('div');
         row.className = 'flex items-center justify-between py-2 border-b border-white/10 text-sm';
         const status = item.status === 'paid' ? 'Оплачено' : 'Ожидает оплаты';
-        row.innerHTML = `<span>${item.name}</span><span class="text-muted-gray">${status}</span>`;
+        const nameEl = document.createElement('span');
+        nameEl.textContent = item.name || 'Без имени';
+        const statusEl = document.createElement('span');
+        statusEl.className = 'text-muted-gray';
+        statusEl.textContent = status;
+        row.appendChild(nameEl);
+        row.appendChild(statusEl);
         box.appendChild(row);
       });
     })
@@ -656,13 +663,15 @@ document.getElementById('adminUserId').addEventListener('change', () => {
   const limit = Number(u.device_limit || 0);
   const ratio = `${connected}/${limit}`;
   const tierText = formatTierLabel(u.member_tier || 'regular');
-  meta.innerHTML =
-    `Статус: ${u.status || 'none'}<br>` +
-    `Подписка до: ${expiry}<br>` +
-    `Осталось: ${daysText}<br>` +
-    `Тариф: ${u.tariff_name || '—'} · Устройства: ${ratio}<br>` +
-    `Категория: ${tierText}<br>` +
-    `Трафик: ${u.traffic_limit_gb || 0} GB/мес`;
+  meta.classList.add('whitespace-pre-line');
+  meta.textContent = [
+    `Статус: ${u.status || 'none'}`,
+    `Подписка до: ${expiry}`,
+    `Осталось: ${daysText}`,
+    `Тариф: ${u.tariff_name || '—'} · Устройства: ${ratio}`,
+    `Категория: ${tierText}`,
+    `Трафик: ${u.traffic_limit_gb || 0} GB/мес`
+  ].join('\n');
   openBtn.disabled = !(u.tg_link || u.tg_username);
 });
 

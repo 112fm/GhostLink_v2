@@ -1,4 +1,4 @@
-const screens = Array.from(document.querySelectorAll('.screen'));
+﻿const screens = Array.from(document.querySelectorAll('.screen'));
 const backBtn = document.getElementById('backBtn');
 const stack = ['screen-home'];
 let accessClosed = false;
@@ -32,7 +32,7 @@ if (tg) tg.ready();
 
 const API_BASE = "https://api.112prd.ru:2053";
 const INIT_DATA = tg ? tg.initData : '';
-let PWA_TOKEN = localStorage.getItem('ghost_pwa_token') || '';
+let PWA_TOKEN = '';
 const PWA_BOT_USERNAME = 'ghostlink112_bot';
 const ADMIN_ID = 312826672;
 let CURRENT_USER_ID = 0;
@@ -96,7 +96,6 @@ async function subscribePush() {
         method: 'POST',
         body: JSON.stringify(subscription)
       });
-      console.log('Push subscribed', publicVapidKey);
     } catch (e) {
       console.log('Push subscription failed', e);
     }
@@ -127,7 +126,7 @@ function showPwaLocked(text) {
 }
 
 async function loginByPwaCode(rawCode) {
-  const code = String(rawCode || '').trim();
+  const code = String(rawCode || '').trim().toUpperCase();
   if (!code) {
     const codeErr = document.getElementById('pwaCodeError');
     if (codeErr) codeErr.textContent = 'Введи код из Telegram.';
@@ -136,13 +135,13 @@ async function loginByPwaCode(rawCode) {
   try {
     const resp = await fetch(API_BASE + '/api/pwa/auth/code', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code }),
     });
     const data = await resp.json().catch(() => ({}));
-    if (!resp.ok || !data.token) throw new Error(data.detail || 'bad_code');
-    localStorage.setItem('ghost_pwa_token', data.token);
-    PWA_TOKEN = data.token;
+    if (!resp.ok) throw new Error(data.detail || 'bad_code');
+    PWA_TOKEN = '';
     const codeInput = document.getElementById('pwaCodeInput');
     const codeErr = document.getElementById('pwaCodeError');
     if (codeInput) codeInput.value = '';
@@ -177,13 +176,13 @@ async function bootstrapPwaAuth() {
     try {
       const resp = await fetch(API_BASE + '/api/pwa/auth', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ login_token: loginToken }),
       });
       const data = await resp.json().catch(() => ({}));
-      if (!resp.ok || !data.token) throw new Error(data.detail || 'pwa_auth_failed');
-      localStorage.setItem('ghost_pwa_token', data.token);
-      PWA_TOKEN = data.token;
+      if (!resp.ok) throw new Error(data.detail || 'pwa_auth_failed');
+      PWA_TOKEN = '';
       window.history.replaceState({}, '', window.location.pathname);
       accessClosed = false;
       return true;
@@ -193,9 +192,7 @@ async function bootstrapPwaAuth() {
     }
   }
 
-  if (PWA_TOKEN) return true;
-  showPwaLocked('Доступ только по приглашению. Войди через Telegram.');
-  return false;
+  return true;
 }
 
 function apiFetch(path, options = {}) {
@@ -205,6 +202,7 @@ function apiFetch(path, options = {}) {
   if (PWA_TOKEN) authHeaders['X-PWA-Token'] = PWA_TOKEN;
   return fetch(API_BASE + path, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...authHeaders,
@@ -290,7 +288,7 @@ function formatSubLine(sub) {
 }
 
 function loadUser() {
-  if (!API_BASE || (!INIT_DATA && !PWA_TOKEN)) return;
+  if (!API_BASE) return;
   apiFetch('/api/user')
     .then(data => {
       CURRENT_USER_ID = Number((data.user && data.user.id) || CURRENT_USER_ID || 0);
@@ -330,7 +328,6 @@ function loadUser() {
     })
     .catch((err) => {
       if (err && (err.status === 401 || err.status === 403)) {
-        localStorage.removeItem('ghost_pwa_token');
         PWA_TOKEN = '';
         accessClosed = true;
         showPwaLocked('Сессия истекла. Войди через Telegram или одноразовый код.');
@@ -373,7 +370,6 @@ document.getElementById('moreRulesBtn').addEventListener('click', () => pushScre
 const pwaReloginBtn = document.getElementById('pwaReloginBtn');
 if (pwaReloginBtn) {
   pwaReloginBtn.addEventListener('click', () => {
-    localStorage.removeItem('ghost_pwa_token');
     PWA_TOKEN = '';
     showPwaLocked('Сессия сброшена. Войди через Telegram.');
   });
@@ -474,7 +470,13 @@ function loadReferrals() {
         const row = document.createElement('div');
         row.className = 'flex items-center justify-between py-2 border-b border-white/10 text-sm';
         const status = item.status === 'paid' ? 'Оплачено' : 'Ожидает оплаты';
-        row.innerHTML = `<span>${item.name}</span><span class="text-muted-gray">${status}</span>`;
+        const nameEl = document.createElement('span');
+        nameEl.textContent = item.name || 'Без имени';
+        const statusEl = document.createElement('span');
+        statusEl.className = 'text-muted-gray';
+        statusEl.textContent = status;
+        row.appendChild(nameEl);
+        row.appendChild(statusEl);
         box.appendChild(row);
       });
     })
@@ -959,16 +961,25 @@ document.getElementById('adminUserId').addEventListener('change', () => {
   const ratio = `${connected}/${limit}`;
   const tierText = formatTierLabel(u.member_tier || 'regular');
 
-  meta.innerHTML =
-    `Статус: ${u.status || 'none'}<br>` +
-    `Подписка до: ${expiry}<br>` +
-    `Осталось: ${daysText}<br>` +
-    `Тариф: ${u.tariff_name || '—'} · Устройства: ${ratio}<br>` +
-    `Категория: ${tierText}<br>` +
-    `Трафик: ${u.traffic_limit_gb || 0} GB/мес`;
+  meta.classList.add('whitespace-pre-line');
+  meta.textContent = [
+    `Статус: ${u.status || 'none'}`,
+    `Подписка до: ${expiry}`,
+    `Осталось: ${daysText}`,
+    `Тариф: ${u.tariff_name || '—'} · Устройства: ${ratio}`,
+    `Категория: ${tierText}`,
+    `Трафик: ${u.traffic_limit_gb || 0} GB/мес`
+  ].join('\n');
 
   if (u.payment_status === 'pending_verification') {
-    meta.innerHTML += `<div class="mt-3 p-2 bg-yellow-900/30 border border-yellow-500 text-yellow-200 rounded-lg text-xs leading-5"><b>СБП ПЛАТЕЖ ОЖИДАЕТ ПРОВЕРКИ</b><br>Заявленная сумма: <span class="text-white text-sm font-bold">${u.payment_amount} ₽</span><br>Время по чеку: <span class="text-white text-sm font-bold font-mono tracking-wider">${u.payment_sender}</span></div>`;
+    const paymentNotice = document.createElement('div');
+    paymentNotice.className = 'mt-3 p-2 bg-yellow-900/30 border border-yellow-500 text-yellow-200 rounded-lg text-xs leading-5 whitespace-pre-line';
+    paymentNotice.textContent = [
+      'СБП ПЛАТЕЖ ОЖИДАЕТ ПРОВЕРКИ',
+      `Заявленная сумма: ${u.payment_amount || 0} ₽`,
+      `Время по чеку: ${u.payment_sender || '—'}`
+    ].join('\n');
+    meta.appendChild(paymentNotice);
   }
 
   openBtn.disabled = !(u.tg_link || u.tg_username);
@@ -1241,7 +1252,14 @@ async function loadInbox() {
     [...res.items].reverse().forEach(msg => {
       const div = document.createElement('div');
       div.className = 'bg-card-dark p-3 rounded-xl shadow border border-white/5';
-      div.innerHTML = '<div class="text-xs text-primary mb-1">' + msg.ts + '</div><div class="text-sm whitespace-pre-wrap">' + msg.text + '</div>';
+      const ts = document.createElement('div');
+      ts.className = 'text-xs text-primary mb-1';
+      ts.textContent = msg.ts || '';
+      const body = document.createElement('div');
+      body.className = 'text-sm whitespace-pre-wrap';
+      body.textContent = msg.text || '';
+      div.appendChild(ts);
+      div.appendChild(body);
       list.appendChild(div);
     });
   } catch (e) { }

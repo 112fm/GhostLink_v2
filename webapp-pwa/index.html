@@ -5,7 +5,8 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
   <meta name="theme-color" content="#1E1E1E" />
-  <meta name="description" content="GhostLink Private Network" />
+  <meta name="description" content="Private access app" />
+  <meta name="referrer" content="no-referrer" />
   <title>GhostLink</title>
   <meta name="apple-mobile-web-app-title" content="GhostLink">
   <link rel="manifest" href="./manifest.json" />
@@ -60,9 +61,9 @@
       <div class="mt-4 w-full max-w-sm">
         <div class="text-muted-gray text-sm mb-2">Или введи одноразовый код из Telegram</div>
         <div class="flex items-center gap-2">
-          <input id="pwaCodeInput" inputmode="numeric" maxlength="6"
+          <input id="pwaCodeInput" inputmode="text" maxlength="8" autocapitalize="characters"
             class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2 text-center tracking-[0.2em]"
-            placeholder="123456" />
+            placeholder="AB12CD34" />
           <button id="pwaCodeBtn"
             class="ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl">Войти</button>
         </div>
@@ -681,10 +682,7 @@
   </main>
 
   <script>
-    const userRole = (INIT_DATA && USER_ID === ADMIN_ID) || PWA_TOKEN ? 'admin' : 'user';
-    if (userRole === 'user') {
-      window.location.hash = ''; // clear hash
-    }
+    window.location.hash = '';
   </script>
   <script src="app.js?v=2"></script>
 
