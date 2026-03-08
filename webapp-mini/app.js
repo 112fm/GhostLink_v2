@@ -611,7 +611,9 @@ document.getElementById('adminOtpLogin').addEventListener('click', async () => {
       const proxyLinkDiv = document.getElementById('adminProxyLink');
       const proxyLinkAnchor = proxyLinkDiv ? proxyLinkDiv.querySelector('a') : null;
       const proxyUrl = String((res.proxy_url || '').trim());
-      const href = proxyUrl || (API_BASE + '/panel/');
+      const token = String((res.proxy_token || '').trim());
+      const hrefBase = proxyUrl || (API_BASE + '/panel/');
+      const href = token ? `${hrefBase}${hrefBase.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}` : hrefBase;
       if (proxyLinkAnchor) proxyLinkAnchor.href = href;
       if (proxyLinkDiv) proxyLinkDiv.classList.remove('hidden');
       notify('Панель открыта. Можешь переходить.');
@@ -1183,6 +1185,8 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
+
+
 
 
 
