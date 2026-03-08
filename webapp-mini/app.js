@@ -225,8 +225,9 @@ document.getElementById('moreGetKeyBtn').addEventListener('click', async () => {
     const res = await apiFetch('/api/key', { method: 'POST' });
     const key = (res && res.key) ? String(res.key) : '';
     if (!key) return notify('Ключ не получен');
-    await navigator.clipboard.writeText(key).catch(() => { });
-    notify('Ключ скопирован');
+    revealIssuedKey(key, 180);
+    const copied = await navigator.clipboard.writeText(key).then(() => true).catch(() => false);
+    notify(copied ? 'Ключ показан и скопирован' : 'Ключ показан. Скопируй вручную.');
   } catch (e) {
     notify('Не удалось получить ключ');
   }
@@ -326,6 +327,64 @@ function loadReferrals() {
     .catch(() => { });
 }
 
+let issuedKeyTimer = null;
+function revealIssuedKey(key, ttlSec = 180) {
+  const host = document.getElementById('deviceList');
+  if (!host || !host.parentElement) return;
+
+  let box = document.getElementById('issuedKeyReveal');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'issuedKeyReveal';
+    box.className = 'mb-3 bg-card-dark border border-primary rounded-2xl p-3';
+    host.parentElement.insertBefore(box, host);
+  }
+
+  const safeKey = String(key || '').trim();
+  const safeTtl = Math.max(30, Number(ttlSec || 180));
+  let left = safeTtl;
+
+  box.innerHTML = `
+    <div class="text-primary font-bold mb-2">Твой новый ключ (временно)</div>
+    <div class="text-xs text-muted-gray mb-2">Сохрани ключ в V2Ray. Через время он снова скроется.</div>
+    <div class="w-full break-all bg-black/40 border border-primary rounded-xl px-3 py-2 text-white text-sm select-all" id="issuedKeyValue">${safeKey}</div>
+    <div class="flex items-center gap-2 mt-2">
+      <button id="issuedKeyCopyBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm">Скопировать</button>
+      <button id="issuedKeyHideBtn" class="ios-active border border-white/20 text-white font-bold px-3 py-2 rounded-xl text-sm">Скрыть</button>
+    </div>
+    <div id="issuedKeyTimer" class="text-xs text-muted-gray mt-2"></div>
+  `;
+
+  const timerEl = document.getElementById('issuedKeyTimer');
+  const hide = () => {
+    if (issuedKeyTimer) {
+      clearInterval(issuedKeyTimer);
+      issuedKeyTimer = null;
+    }
+    if (box && box.parentElement) box.parentElement.removeChild(box);
+  };
+
+  const tick = () => {
+    if (timerEl) timerEl.textContent = `Скрытие через ${left} сек`;
+    left -= 1;
+    if (left < 0) hide();
+  };
+
+  if (issuedKeyTimer) clearInterval(issuedKeyTimer);
+  tick();
+  issuedKeyTimer = setInterval(tick, 1000);
+
+  const copyBtn = document.getElementById('issuedKeyCopyBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const ok = await navigator.clipboard.writeText(safeKey).then(() => true).catch(() => false);
+      notify(ok ? 'Ключ скопирован' : 'Не удалось скопировать. Выдели ключ вручную.');
+    });
+  }
+
+  const hideBtn = document.getElementById('issuedKeyHideBtn');
+  if (hideBtn) hideBtn.addEventListener('click', hide);
+}
 function renderDeviceList(items) {
   const box = document.getElementById('deviceList');
   box.innerHTML = '';
@@ -365,7 +424,7 @@ function renderDeviceList(items) {
 
     const keyHint = document.createElement('div');
     keyHint.className = 'text-muted-gray text-xs mt-2';
-    keyHint.textContent = 'Ключ скрыт после выдачи. Для нового устройства используй "Добавить устройство".';
+    keyHint.textContent = 'Ключ показывается временно после выдачи (вверху экрана). Для нового устройства используй "Добавить устройство".';
 
     const container = document.createElement('div');
     container.className = 'flex flex-col py-2 border-b border-white/10';
@@ -399,11 +458,16 @@ document.getElementById('addDeviceBtn').addEventListener('click', async () => {
       body: JSON.stringify({ device_type: deviceType, device_name: deviceName })
     });
     if (res.key) {
-      await navigator.clipboard.writeText(res.key).catch(() => { });
+      revealIssuedKey(res.key, 180);
+      const copied = await navigator.clipboard.writeText(res.key).then(() => true).catch(() => false);
       if (res.upgraded) {
-        notify(`Лимит увеличен: ${res.upgraded.old_limit}→${res.upgraded.new_limit}. Доплата: ${res.upgraded.topup_min_pay} ₽ (полная ${res.upgraded.topup_price} ₽). Ключ скопирован.`);
+        notify(copied
+          ? `Лимит увеличен: ${res.upgraded.old_limit}→${res.upgraded.new_limit}. Доплата: ${res.upgraded.topup_min_pay} ₽ (полная ${res.upgraded.topup_price} ₽). Ключ показан и скопирован.`
+          : `Лимит увеличен: ${res.upgraded.old_limit}→${res.upgraded.new_limit}. Доплата: ${res.upgraded.topup_min_pay} ₽ (полная ${res.upgraded.topup_price} ₽). Ключ показан, скопируй вручную.`);
       } else {
-        notify(`Устройство добавлено (${res.devices_ratio || ''}). Ключ скопирован.`);
+        notify(copied
+          ? `Устройство добавлено (${res.devices_ratio || ''}). Ключ показан и скопирован.`
+          : `Устройство добавлено (${res.devices_ratio || ''}). Ключ показан, скопируй вручную.`);
       }
     } else {
       notify('Устройство добавлено');
@@ -417,19 +481,21 @@ document.getElementById('addDeviceBtn').addEventListener('click', async () => {
   }
 });
 
-document.getElementById('resetDeviceBtn').addEventListener('click', () => {
+document.getElementById('resetDeviceBtn').addEventListener('click', async () => {
   if (!confirmDanger('RESET', 'Сброс ключа устройства')) return;
-  apiFetch('/api/device/reset', { method: 'POST' })
-    .then((res) => {
-      if (res.key) {
-        navigator.clipboard.writeText(res.key).catch(() => { });
-        notify('Ключ после сброса скопирован');
-      } else {
-        notify('Ключ сброшен');
-      }
-      loadDevices();
-    })
-    .catch(() => notify('Не удалось сбросить ключ'));
+  try {
+    const res = await apiFetch('/api/device/reset', { method: 'POST' });
+    if (res.key) {
+      revealIssuedKey(res.key, 180);
+      const copied = await navigator.clipboard.writeText(res.key).then(() => true).catch(() => false);
+      notify(copied ? 'Ключ после сброса показан и скопирован' : 'Ключ после сброса показан. Скопируй вручную.');
+    } else {
+      notify('Ключ сброшен');
+    }
+    loadDevices();
+  } catch (e) {
+    notify('Не удалось сбросить ключ');
+  }
 });
 
 const flexSlider = document.getElementById('flexSlider');
@@ -1185,6 +1251,7 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
+
 
 
 
