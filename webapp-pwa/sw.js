@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ghostlink-pwa-v5';
+const CACHE_NAME = 'ghostlink-pwa-v6';
 const STATIC_FILES = [
   './',
   './index.html',
@@ -84,3 +84,4 @@ self.addEventListener('notificationclick', function (event) {
     );
   }
 });
+
