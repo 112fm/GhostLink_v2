@@ -951,6 +951,14 @@ document.getElementById('adminRestart').addEventListener('click', async () => {
 
 const adminPanelOpenBtn = document.getElementById('adminOtpLogin');
 const adminPanelCloseBtn = document.getElementById('adminPanelLockBtn');
+let panelStatePollHandle = null;
+
+function formatPanelLeft(seconds) {
+  const sec = Math.max(0, Number(seconds) || 0);
+  const mm = Math.floor(sec / 60);
+  const ss = sec % 60;
+  return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+}
 
 function setPanelButtonsState(isOpen) {
   if (adminPanelOpenBtn) {
@@ -961,6 +969,14 @@ function setPanelButtonsState(isOpen) {
     adminPanelCloseBtn.classList.toggle('hidden', !isOpen);
     adminPanelCloseBtn.disabled = !isOpen;
   }
+}
+
+function setPanelUiState(isOpen, secondsLeft = 0) {
+  setPanelButtonsState(!!isOpen);
+  const statusEl = document.getElementById('adminPanelStatusText');
+  const timerEl = document.getElementById('adminPanelTimer');
+  if (statusEl) statusEl.textContent = isOpen ? 'открыта' : 'закрыта';
+  if (timerEl) timerEl.textContent = isOpen ? formatPanelLeft(secondsLeft) : '--:--';
 }
 
 function setPanelLinkHref(href) {
@@ -984,13 +1000,15 @@ function openPanelExternal(href) {
 async function refreshPanelProxyState() {
   try {
     const r = await adminFetch('/api/admin/proxy_status');
-    setPanelButtonsState(!!(r && r.open));
-    if (!(r && r.open)) {
+    const isOpen = !!(r && r.open);
+    const secondsLeft = Number((r && r.seconds_left) || 0);
+    setPanelUiState(isOpen, secondsLeft);
+    if (!isOpen) {
       const proxyLinkDiv = document.getElementById('adminProxyLink');
       if (proxyLinkDiv) proxyLinkDiv.classList.add('hidden');
     }
   } catch (e) {
-    setPanelButtonsState(false);
+    setPanelUiState(false, 0);
   }
 }
 
@@ -1004,13 +1022,13 @@ if (adminPanelOpenBtn) {
         const hrefBase = proxyUrl || (API_BASE + '/panel/');
         const href = token ? `${hrefBase}${hrefBase.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : hrefBase;
         setPanelLinkHref(href);
-        setPanelButtonsState(true);
+        setPanelUiState(true, Number((res && res.ttl_sec) || 900));
         openPanelExternal(href);
-        notify('Панель открыта');
+        notify('Панель открыта на 15 минут');
       }
     } catch (e) {
-      setPanelButtonsState(false);
-      notify('Сессия панели не создана. Нажми «Открыть панель» еще раз.');
+      setPanelUiState(false, 0);
+      notify('Не удалось открыть панель. Повтори через пару секунд.');
     }
   });
 }
@@ -1018,11 +1036,11 @@ if (adminPanelOpenBtn) {
 if (adminPanelCloseBtn) {
   adminPanelCloseBtn.addEventListener('click', async () => {
     try {
-      const r = await adminFetch('/api/admin/proxy_close', { method: 'POST' });
+      await adminFetch('/api/admin/proxy_close', { method: 'POST' });
       const proxyLinkDiv = document.getElementById('adminProxyLink');
       if (proxyLinkDiv) proxyLinkDiv.classList.add('hidden');
-      setPanelButtonsState(false);
-      notify((r && r.message) ? r.message : 'Панель закрыта');
+      setPanelUiState(false, 0);
+      notify('Панель закрыта');
     } catch (e) {
       notify('Ошибка закрытия панели: ' + (e.message || 'unknown'));
     }
@@ -1030,6 +1048,9 @@ if (adminPanelCloseBtn) {
 }
 
 refreshPanelProxyState();
+if (!panelStatePollHandle) {
+  panelStatePollHandle = setInterval(refreshPanelProxyState, 10000);
+}
 document.getElementById('adminAddSlots').addEventListener('click', async () => {
   try {
     const r = await adminFetch('/api/admin/add_slots', { method: 'POST' });
@@ -1752,12 +1773,4 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
-
-
-
-
-
-
-
-
 
