@@ -731,10 +731,8 @@ if (adminPanelOpenBtn) {
         notify('Панель открыта');
       }
     } catch (e) {
-      const fallbackHref = API_BASE + '/panel/';
-      setPanelLinkHref(fallbackHref);
-      notify('Не удалось запросить новый доступ. Пробуем открыть текущую сессию.');
-      openPanelExternal(fallbackHref);
+      setPanelButtonsState(false);
+      notify('Сессия панели не создана. Нажми «Открыть панель» еще раз.');
     }
   });
 }
@@ -1303,6 +1301,7 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
+
 
 
 
