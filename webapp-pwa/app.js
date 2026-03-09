@@ -1012,24 +1012,39 @@ async function refreshPanelProxyState() {
   }
 }
 
+async function openPanelWithFreshSession(silent = false) {
+  try {
+    const res = await adminFetch('/api/admin/proxy_auth', { method: 'POST', body: JSON.stringify({}) });
+    if (res && res.ok) {
+      const proxyUrl = String((res.proxy_url || '').trim());
+      const token = String((res.proxy_token || '').trim());
+      const hrefBase = proxyUrl || (API_BASE + '/panel/');
+      const href = token ? `${hrefBase}${hrefBase.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : hrefBase;
+      setPanelLinkHref(href);
+      setPanelUiState(true, Number((res && res.ttl_sec) || 900));
+      openPanelExternal(href);
+      if (!silent) notify('Панель открыта на 15 минут');
+      return true;
+    }
+  } catch (e) {
+    setPanelUiState(false, 0);
+    notify('Не удалось открыть панель. Повтори через пару секунд.');
+  }
+  return false;
+}
+
 if (adminPanelOpenBtn) {
   adminPanelOpenBtn.addEventListener('click', async () => {
-    try {
-      const res = await adminFetch('/api/admin/proxy_auth', { method: 'POST', body: JSON.stringify({}) });
-      if (res && res.ok) {
-        const proxyUrl = String((res.proxy_url || '').trim());
-        const token = String((res.proxy_token || '').trim());
-        const hrefBase = proxyUrl || (API_BASE + '/panel/');
-        const href = token ? `${hrefBase}${hrefBase.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : hrefBase;
-        setPanelLinkHref(href);
-        setPanelUiState(true, Number((res && res.ttl_sec) || 900));
-        openPanelExternal(href);
-        notify('Панель открыта на 15 минут');
-      }
-    } catch (e) {
-      setPanelUiState(false, 0);
-      notify('Не удалось открыть панель. Повтори через пару секунд.');
-    }
+    await openPanelWithFreshSession(false);
+  });
+}
+
+const panelLinkWrap = document.getElementById('adminProxyLink');
+const panelLinkAnchor = panelLinkWrap ? panelLinkWrap.querySelector('a') : null;
+if (panelLinkAnchor) {
+  panelLinkAnchor.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await openPanelWithFreshSession(true);
   });
 }
 
