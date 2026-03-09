@@ -170,10 +170,84 @@ async function loginByPwaCode(rawCode) {
   }
 }
 
+let __swReg = null;
+let __swReloading = false;
+
+function showPwaUpdateBanner(registration) {
+  let banner = document.getElementById('pwaUpdateBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'pwaUpdateBanner';
+    banner.className = 'fixed left-4 right-4 bottom-4 z-[9999] bg-card-dark border border-primary rounded-2xl p-3 shadow-lg';
+    banner.innerHTML = `
+      <div class="text-white font-bold text-sm mb-1">Доступно обновление</div>
+      <div class="text-muted-gray text-xs mb-2">Нажми «Обновить», чтобы применить новую версию.</div>
+      <div class="flex gap-2">
+        <button id="pwaUpdateNowBtn" class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl text-sm">Обновить</button>
+        <button id="pwaUpdateLaterBtn" class="ios-active border border-white/20 text-white px-3 py-2 rounded-xl text-sm">Позже</button>
+      </div>
+    `;
+    document.body.appendChild(banner);
+
+    const laterBtn = document.getElementById('pwaUpdateLaterBtn');
+    if (laterBtn) {
+      laterBtn.addEventListener('click', () => {
+        banner.remove();
+      });
+    }
+  }
+
+  const nowBtn = document.getElementById('pwaUpdateNowBtn');
+  if (nowBtn) {
+    nowBtn.onclick = () => {
+      if (registration && registration.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+    };
+  }
+}
+
+function setupSwUpdateFlow(registration) {
+  if (!registration) return;
+
+  const notifyIfWaiting = () => {
+    if (registration.waiting) showPwaUpdateBanner(registration);
+  };
+
+  registration.addEventListener('updatefound', () => {
+    const newWorker = registration.installing;
+    if (!newWorker) return;
+    newWorker.addEventListener('statechange', () => {
+      if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+        notifyIfWaiting();
+      }
+    });
+  });
+
+  notifyIfWaiting();
+}
+
+function requestSwUpdateCheck() {
+  if (__swReg) __swReg.update().catch(() => { });
+}
+
 async function bootstrapPwaAuth() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(() => { });
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (__swReloading) return;
+      __swReloading = true;
+      window.location.reload();
+    });
+
+    window.addEventListener('load', async () => {
+      try {
+        __swReg = await navigator.serviceWorker.register('./sw.js');
+        setupSwUpdateFlow(__swReg);
+        setInterval(requestSwUpdateCheck, 2 * 60 * 1000);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') requestSwUpdateCheck();
+        });
+      } catch (e) { }
     });
   }
 
@@ -1628,6 +1702,7 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
+
 
 
 

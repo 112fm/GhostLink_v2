@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ghostlink-pwa-v6';
+const CACHE_NAME = 'ghostlink-pwa-v7';
 const STATIC_FILES = [
   './',
   './index.html',
@@ -9,9 +9,7 @@ const STATIC_FILES = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_FILES)).then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_FILES)));
 });
 
 self.addEventListener('activate', (event) => {
@@ -31,6 +29,31 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  const isSameOrigin = url.origin === self.location.origin;
+  const isCriticalAsset =
+    req.mode === 'navigate' ||
+    req.destination === 'document' ||
+    req.destination === 'script' ||
+    req.destination === 'style' ||
+    req.destination === 'manifest';
+
+  // Для HTML/JS/CSS: сеть сначала, чтобы обновления прилетали без переустановки PWA.
+  if (isSameOrigin && isCriticalAsset) {
+    event.respondWith(
+      fetch(req)
+        .then((resp) => {
+          if (resp && resp.status === 200 && resp.type === 'basic') {
+            const copy = resp.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+          }
+          return resp;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Для остальных ассетов: cache-first.
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
@@ -44,6 +67,11 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
 self.addEventListener('push', function (event) {
   if (event.data) {
@@ -59,11 +87,11 @@ self.addEventListener('push', function (event) {
         }
       };
       event.waitUntil(
-        self.registration.showNotification(data.title || 'Чашка Кофе', options)
+        self.registration.showNotification(data.title || 'GhostLink', options)
       );
     } catch (e) {
       event.waitUntil(
-        self.registration.showNotification('Чашка Кофе', {
+        self.registration.showNotification('GhostLink', {
           body: event.data.text(),
           icon: 'ghost_ava.png'
         })
@@ -84,4 +112,3 @@ self.addEventListener('notificationclick', function (event) {
     );
   }
 });
-
