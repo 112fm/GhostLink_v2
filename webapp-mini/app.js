@@ -827,9 +827,14 @@ if (adminPanelOpenBtn) {
 const panelLinkWrap = document.getElementById('adminProxyLink');
 const panelLinkAnchor = panelLinkWrap ? panelLinkWrap.querySelector('a') : null;
 if (panelLinkAnchor) {
-  panelLinkAnchor.addEventListener('click', async (e) => {
+  panelLinkAnchor.addEventListener('click', (e) => {
     e.preventDefault();
-    await openPanelWithFreshSession(true);
+    const href = String(panelLinkAnchor.getAttribute('href') || '').trim();
+    if (!href) {
+      notify('Сначала открой панель, затем переходи по ссылке.');
+      return;
+    }
+    openPanelExternal(href);
   });
 }
 
@@ -1407,5 +1412,6 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
+
 
 
