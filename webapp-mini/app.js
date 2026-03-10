@@ -504,6 +504,7 @@ flexSlider.addEventListener('input', () => {
 });
 
 let paymentSettings = { phone: '+79857719139', bank: 'alfa', recipient: 'Арсений А' };
+let currentPaymentLabel = '';
 
 async function loadPaymentSettings() {
   try {
@@ -513,48 +514,76 @@ async function loadPaymentSettings() {
   }
 }
 
-async function submitTrustPayment(amount, label) {
-  await loadPaymentSettings();
-  const phone = String(paymentSettings.phone || '+79857719139').trim();
-  const bank = String(paymentSettings.bank || 'Банк').trim();
-  const recipient = String(paymentSettings.recipient || 'Получатель').trim();
-
-  const ok = window.confirm(
-    `Оплата на доверии\n\nСумма: ${amount} ₽\nБанк: ${bank}\nНомер: ${phone}\nПолучатель: ${recipient}\n\nПосле перевода нажми OK.`
-  );
-  if (!ok) return;
-
-  const sender = (window.prompt('Введи плательщика в формате Имя Ф (например Иван П):') || '').trim();
-  if (!/^[A-Za-zА-Яа-яЁё]{2,}\s+[A-Za-zА-Яа-яЁё]$/u.test(sender)) {
-    notify('Формат: Имя Ф (например Иван П)');
-    return;
-  }
-
-  await apiFetch('/api/payment/report', {
-    method: 'POST',
-    body: JSON.stringify({ amount, sender_name: sender, payment_label: String(label || '') }),
+function openPaymentScreen(amount, label) {
+  currentPaymentLabel = String(label || '').trim();
+  document.getElementById('paymentAmountDisplay').textContent = `${amount} ₽`;
+  loadPaymentSettings().then(() => {
+    document.getElementById('paymentPhoneDisplay').textContent = paymentSettings.phone || '+79857719139';
+    const bankName = String(paymentSettings.bank || 'alfa').toLowerCase();
+    let bankDisplay = 'Альфа-Банк';
+    if (bankName.includes('sber')) bankDisplay = 'Сбербанк';
+    if (bankName.includes('ozon')) bankDisplay = 'Ozon Банк';
+    if (bankName.includes('tinkoff') || bankName.includes('t-bank')) bankDisplay = 'Т-Банк';
+    if (bankName.includes('yandex')) bankDisplay = 'Яндекс Банк';
+    document.getElementById('paymentBankDisplay').textContent = bankDisplay;
+    const recipientEl = document.getElementById('paymentRecipientDisplay');
+    if (recipientEl) recipientEl.textContent = paymentSettings.recipient || '—';
   });
 
-  notify('Платеж отмечен. Доступ продлен на 7 дней, проверка идет у администратора.');
-  loadUser();
+  const pendingBox = document.getElementById('paymentPendingBox');
+  const formBox = document.getElementById('paymentFormBox');
+  if (pendingBox) pendingBox.classList.add('hidden');
+  if (formBox) formBox.classList.remove('hidden');
+
+  document.getElementById('paymentSenderInput').value = '';
+  pushScreen('screen-payment');
 }
 
-document.getElementById('soloPay').addEventListener('click', async () => {
-  try {
-    const amount = Number((tariffMap[1] || {}).price || 150);
-    await submitTrustPayment(amount, 'Solo');
-  } catch (e) {
-    notify(`Ошибка: ${e.message || 'payment_report'}`);
-  }
+document.getElementById('soloPay').addEventListener('click', () => {
+  const price = tariffMap[1] ? tariffMap[1].price : 150;
+  openPaymentScreen(price, 'Solo');
 });
 
-document.getElementById('flexPay').addEventListener('click', async () => {
-  const devices = Math.max(2, Math.min(5, parseInt(flexSlider.value || '2', 10)));
+document.getElementById('flexPay').addEventListener('click', () => {
+  const devices = Math.max(3, Math.min(5, parseInt(flexSlider.value || '3', 10)));
+  const price = tariffMap[devices] ? tariffMap[devices].price : 225;
+  openPaymentScreen(price, `Flex ${devices}`);
+});
+
+const profilePayBtn = document.getElementById('profilePayBtn');
+if (profilePayBtn) {
+  profilePayBtn.addEventListener('click', () => {
+    const limit = CURRENT_USER_DATA ? (CURRENT_USER_DATA.device_limit || 1) : 1;
+    let price = tariffMap[limit] ? tariffMap[limit].price : 150;
+    openPaymentScreen(price, `Текущий тариф ${limit}`);
+  });
+}
+
+document.getElementById('copyPhoneBtn').addEventListener('click', async () => {
   try {
-    const amount = Number((tariffMap[devices] || {}).price || 225);
-    await submitTrustPayment(amount, `Flex ${devices}`);
+    const phone = document.getElementById('paymentPhoneDisplay').textContent;
+    await navigator.clipboard.writeText(phone);
+    notify('Номер телефона скопирован!');
+  } catch (e) { }
+});
+
+document.getElementById('submitPaymentBtn').addEventListener('click', async () => {
+  const senderVal = document.getElementById('paymentSenderInput').value.trim();
+  if (!/^[A-Za-zА-Яа-яЁё]{2,}\s+[A-Za-zА-Яа-яЁё]$/u.test(senderVal)) return notify('Формат: Имя Ф (например Иван П)');
+
+  const amountText = document.getElementById('paymentAmountDisplay').textContent;
+  const amount = parseInt(amountText.replace(/\D/g, ''), 10) || 150;
+
+  try {
+    await apiFetch('/api/payment/report', {
+      method: 'POST',
+      body: JSON.stringify({ amount: amount, sender_name: senderVal, payment_label: currentPaymentLabel })
+    });
+    notify('Платеж отмечен. Доступ продлен на 7 дней, проверка идет у администратора.');
+    loadUser();
+    pushScreen('screen-home');
   } catch (e) {
-    notify(`Ошибка: ${e.message || 'payment_report'}`);
+    notify('Ошибка отправки: ' + e.message);
   }
 });
 
@@ -674,23 +703,32 @@ document.getElementById('adminRestart').addEventListener('click', async () => {
 const adminPanelOpenBtn = document.getElementById('adminOtpLogin');
 const adminPanelCloseBtn = document.getElementById('adminPanelLockBtn');
 let panelStatePollHandle = null;
+let panelActionInFlight = false;
+let panelLastKnownOpen = false;
+let panelStatusSyncLostNotified = false;
 
 function formatPanelLeft(seconds) {
   const sec = Math.max(0, Number(seconds) || 0);
   const mm = Math.floor(sec / 60);
   const ss = sec % 60;
-  return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+  return String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
 }
 
 function setPanelButtonsState(isOpen) {
+  panelLastKnownOpen = !!isOpen;
   if (adminPanelOpenBtn) {
     adminPanelOpenBtn.classList.toggle('hidden', !!isOpen);
-    adminPanelOpenBtn.disabled = !!isOpen;
+    adminPanelOpenBtn.disabled = panelActionInFlight || !!isOpen;
   }
   if (adminPanelCloseBtn) {
     adminPanelCloseBtn.classList.toggle('hidden', !isOpen);
-    adminPanelCloseBtn.disabled = !isOpen;
+    adminPanelCloseBtn.disabled = panelActionInFlight || !isOpen;
   }
+}
+
+function setPanelActionBusy(busy) {
+  panelActionInFlight = !!busy;
+  setPanelButtonsState(panelLastKnownOpen);
 }
 
 function setPanelUiState(isOpen, secondsLeft = 0) {
@@ -708,6 +746,11 @@ function setPanelLinkHref(href) {
   if (proxyLinkDiv) proxyLinkDiv.classList.remove('hidden');
 }
 
+function hidePanelLink() {
+  const proxyLinkDiv = document.getElementById('adminProxyLink');
+  if (proxyLinkDiv) proxyLinkDiv.classList.add('hidden');
+}
+
 function openPanelExternal(href) {
   const url = String(href || '').trim();
   if (!url) return;
@@ -719,40 +762,60 @@ function openPanelExternal(href) {
   }
 }
 
-async function refreshPanelProxyState() {
+async function refreshPanelProxyState(silent = true) {
   try {
     const r = await adminFetch('/api/admin/proxy_status');
     const isOpen = !!(r && r.open);
     const secondsLeft = Number((r && r.seconds_left) || 0);
+    panelStatusSyncLostNotified = false;
     setPanelUiState(isOpen, secondsLeft);
-    if (!isOpen) {
-      const proxyLinkDiv = document.getElementById('adminProxyLink');
-      if (proxyLinkDiv) proxyLinkDiv.classList.add('hidden');
-    }
+    if (!isOpen) hidePanelLink();
+    return true;
   } catch (e) {
-    setPanelUiState(false, 0);
+    if (e && (e.status === 401 || e.status === 403)) {
+      setPanelUiState(false, 0);
+      hidePanelLink();
+      if (!silent) notify('Нет доступа к панели');
+      return false;
+    }
+
+    if (!panelStatusSyncLostNotified && !silent) {
+      notify('Связь с API нестабильна. Повтори через пару секунд.');
+      panelStatusSyncLostNotified = true;
+    }
+    return false;
   }
 }
 
 async function openPanelWithFreshSession(silent = false) {
+  if (panelActionInFlight) return false;
+  setPanelActionBusy(true);
   try {
     const res = await adminFetch('/api/admin/proxy_auth', { method: 'POST', body: JSON.stringify({}) });
     if (res && res.ok) {
       const proxyUrl = String((res.proxy_url || '').trim());
       const token = String((res.proxy_token || '').trim());
       const hrefBase = proxyUrl || (API_BASE + '/panel/');
-      const href = token ? `${hrefBase}${hrefBase.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : hrefBase;
+      const href = token ? (hrefBase + (hrefBase.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(token)) : hrefBase;
+      panelStatusSyncLostNotified = false;
       setPanelLinkHref(href);
       setPanelUiState(true, Number((res && res.ttl_sec) || 900));
       openPanelExternal(href);
       if (!silent) notify('Панель открыта на 15 минут');
       return true;
     }
+
+    if (!silent) notify('Не удалось открыть панель. Повтори через пару секунд.');
+    await refreshPanelProxyState(true);
+    return false;
   } catch (e) {
-    setPanelUiState(false, 0);
-    notify('Не удалось открыть панель. Повтори через пару секунд.');
+    if (e && (e.status === 401 || e.status === 403)) notify('Нет доступа к панели');
+    else notify('Не удалось открыть панель. Проверь сеть и повтори.');
+    await refreshPanelProxyState(true);
+    return false;
+  } finally {
+    setPanelActionBusy(false);
   }
-  return false;
 }
 
 if (adminPanelOpenBtn) {
@@ -772,21 +835,28 @@ if (panelLinkAnchor) {
 
 if (adminPanelCloseBtn) {
   adminPanelCloseBtn.addEventListener('click', async () => {
+    if (panelActionInFlight) return;
+    setPanelActionBusy(true);
     try {
       await adminFetch('/api/admin/proxy_close', { method: 'POST' });
-      const proxyLinkDiv = document.getElementById('adminProxyLink');
-      if (proxyLinkDiv) proxyLinkDiv.classList.add('hidden');
+      hidePanelLink();
       setPanelUiState(false, 0);
       notify('Панель закрыта');
     } catch (e) {
-      notify('Ошибка закрытия панели: ' + (e.message || 'unknown'));
+      if (e && (e.status === 401 || e.status === 403)) notify('Нет доступа к панели');
+      else notify('Ошибка закрытия панели. Повтори еще раз.');
+      await refreshPanelProxyState(true);
+    } finally {
+      setPanelActionBusy(false);
     }
   });
 }
 
-refreshPanelProxyState();
+refreshPanelProxyState(true);
 if (!panelStatePollHandle) {
-  panelStatePollHandle = setInterval(refreshPanelProxyState, 10000);
+  panelStatePollHandle = setInterval(() => {
+    refreshPanelProxyState(true);
+  }, 10000);
 }
 document.getElementById('adminAddSlots').addEventListener('click', async () => {
   try {
@@ -1337,4 +1407,5 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
+
 

@@ -145,6 +145,56 @@
       <div class="text-muted-gray text-sm mt-4" id="tariffHint">Оплата активирует/продлевает доступ на 30 дней.</div>
     </section>
 
+    <section id="screen-payment" class="screen">
+      <h2 class="text-2xl font-bold mb-4">Оплата СБП</h2>
+      <div id="paymentPendingBox"
+        class="hidden mb-4 p-4 border border-yellow-500 bg-yellow-900/30 rounded-2xl text-yellow-200">
+        <div class="font-bold flex items-center gap-2">
+          <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+          </svg>
+          Платеж проверяется
+        </div>
+        <p class="text-sm mt-2">Администратор проверяет ваш перевод. Вам выдан временный доступ на 7 дней, чтобы сервис продолжал работать.</p>
+      </div>
+
+      <div id="paymentFormBox">
+        <div class="text-muted-gray mb-4 text-sm">Переведите <strong id="paymentAmountDisplay" class="text-white text-lg">0 ₽</strong> по номеру телефона (СБП). Сервис продолжит работать сразу после подтверждения платежа.</div>
+
+        <div class="bg-card-dark rounded-2xl p-4 mb-4 flex justify-between items-center border border-primary/20">
+          <div>
+            <div class="text-xs text-muted-gray mb-1">Номер телефона (<span id="paymentBankDisplay">...</span>)</div>
+            <div class="text-xl font-bold font-mono tracking-wide" id="paymentPhoneDisplay">+7 000 000-00-00</div>
+            <div class="text-xs text-muted-gray mt-2">Получатель: <span class="text-white font-bold" id="paymentRecipientDisplay">—</span></div>
+          </div>
+          <button id="copyPhoneBtn" class="bg-secondary p-3 rounded-xl text-white active:scale-95 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-4 gap-2 mb-6" id="bankLinksBox">
+          <a href="sberbank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#21a038] text-white flex items-center justify-center font-bold text-xs">С</div>Сбер</a>
+          <a href="tinkoffbank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#ffe600] text-black flex items-center justify-center font-bold text-xs">Т</div>Т-Банк</a>
+          <a href="alfabank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#ef3124] text-white flex items-center justify-center font-bold text-xs">А</div>Альфа</a>
+          <a href="ozon://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#005bff] text-white flex items-center justify-center font-bold text-xs">O</div>Ozon</a>
+        </div>
+
+        <div class="text-sm font-bold mb-2">Подтверждение перевода</div>
+        <p class="text-xs text-muted-gray mb-3 pb-3 border-b border-primary/20">Введи имя и первую букву фамилии. Формат: <b>Имя Ф</b></p>
+
+        <label class="text-muted-gray text-xs mb-1 block">Плательщик (Имя Ф)</label>
+        <div class="flex gap-2">
+          <input id="paymentSenderInput" type="text" class="w-full bg-card-dark text-white rounded-xl px-4 py-3 border border-primary/50 focus:border-primary outline-none text-center text-lg font-mono" placeholder="Иван П">
+        </div>
+
+        <button id="submitPaymentBtn" class="bg-primary text-black font-bold px-4 py-4 rounded-xl w-full mt-6 ios-active shadow-[0_0_15px_rgba(202,138,4,0.3)]">Я перевел деньги</button>
+      </div>
+    </section>
     <section id="screen-more" class="screen">
       <h2 class="text-2xl font-bold mb-3">Ещё</h2>
       <div class="flex flex-col gap-3">
@@ -313,7 +363,7 @@
         <div class="flex-1 overflow-y-auto">
           <!-- ТАБ Пользователи -->
           <div id="admin-tab-users" class="admin-tab-content block">
-            <div class="border border-primary rounded-2xl p-4 mb-4">
+            <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
               <div class="text-white font-bold mb-2">Пользователи</div>
               <select id="adminUserId"
                 class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2">
@@ -396,12 +446,12 @@
 
           <!-- ТАБ Клиенты -->
           <div id="admin-tab-clients" class="admin-tab-content hidden">
-            <div class="border border-primary rounded-2xl p-4 mb-4">
+            <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
               <div class="text-white font-bold mb-2">Прямое управление (X-UI)</div>
               <button id="adminClientsRefresh"
                 class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Обновить
                 список устройств</button>
-              <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input id="adminClientEmail"
                   class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2 col-span-2"
                   placeholder="Название/Email клиента" />
@@ -419,24 +469,24 @@
 
           <!-- ТАБ Доступ -->
           <div id="admin-tab-access" class="admin-tab-content hidden">
-            <div class="border border-primary rounded-2xl p-4 mb-4">
+            <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
               <div class="text-white font-bold mb-2">Оригинальная панель XUI</div>
               <div class="text-muted-gray text-sm mb-3">
                 Доступ к панели через защищенный шлюз (без IP-настроек).
               </div>
-              <div id="adminPanelStatus" class="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm mb-3">
+              <div id="adminPanelStatus" class="rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-sm mb-3 flex items-center justify-between gap-3">
                 <span class="text-muted-gray">Статус:</span> <span id="adminPanelStatusText" class="text-white font-semibold">закрыта</span>
                 <span class="text-muted-gray"> · </span><span id="adminPanelTimer" class="text-primary">--:--</span>
               </div>
-              <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button id="adminOtpLogin"
-                  class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-xl w-full">Открыть
+                  class="ios-active border border-primary bg-primary text-black font-bold px-4 py-3 rounded-xl w-full">Открыть
                   панель</button>
                 <button id="adminPanelLockBtn"
-                  class="ios-active border border-accent-red text-accent-red font-bold px-4 py-3 rounded-xl w-full">Закрыть
+                  class="ios-active border border-accent-red text-accent-red bg-black/30 font-bold px-4 py-3 rounded-xl w-full">Закрыть
                   панель</button>
               </div>
-              <div id="adminProxyLink" class="mt-4 hidden">
+              <div id="adminProxyLink" class="mt-4 hidden rounded-xl border border-primary bg-black/30 p-2">
                 <a href="/panel/" target="_blank"
                   class="block ios-active bg-primary text-black text-center font-bold px-3 py-3 rounded-xl w-full">Перейти
                   в панель</a>
@@ -496,7 +546,7 @@
               </div>
             </div>
 
-            <div class="border border-primary rounded-2xl p-4 mb-4">
+            <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
               <div class="text-white font-bold mb-2">Пользователи онлайн</div>
               <div class="mt-2 text-sm text-muted-gray max-h-32 overflow-y-auto no-scrollbar" id="adminOnlineList">
                 Загрузка...
@@ -539,5 +589,8 @@
 </body>
 
 </html>
+
+
+
 
 

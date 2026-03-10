@@ -185,13 +185,13 @@
           </svg>
           Платеж проверяется
         </div>
-        <p class="text-sm mt-2">Администратор проверяет ваш перевод. Вам выдан временный доступ на 7 дней, чтобы VPN
+        <p class="text-sm mt-2">Администратор проверяет ваш перевод. Вам выдан временный доступ на 7 дней, чтобы сервис
           продолжал работать!</p>
       </div>
 
       <div id="paymentFormBox">
         <div class="text-muted-gray mb-4 text-sm">Переведите <strong id="paymentAmountDisplay"
-            class="text-white text-lg">0 ₽</strong> по номеру телефона (СБП). VPN продолжит работать сразу после
+            class="text-white text-lg">0 ₽</strong> по номеру телефона (СБП). Сервис продолжит работать сразу после
           подтверждения платежа.</div>
 
         <div class="bg-card-dark rounded-2xl p-4 mb-4 flex justify-between items-center border border-primary/20">
@@ -443,7 +443,7 @@
         <div class="flex-1 overflow-y-auto">
           <!-- ТАБ Обзор -->
           <div id="admin-tab-overview" class="admin-tab-content block">
-            <div class="border border-primary rounded-2xl p-4 mb-4">
+            <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
               <div class="text-white font-bold mb-2 flex justify-between items-center">
                 <span>Ожидают одобрения</span>
                 <button id="adminPendingRefresh" class="text-primary text-xs">Обновить</button>
@@ -452,7 +452,7 @@
                 <div class="text-muted-gray">Нет заявок</div>
               </div>
             </div>
-            <div class="border border-primary rounded-2xl p-4 mb-4">
+            <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
               <div class="text-white font-bold mb-2">Настройки СБП</div>
               <input id="adminSbpPhone"
                 class="w-full bg-card-dark text-white rounded-xl px-3 py-2 border border-primary/50 text-sm mb-2"
@@ -473,7 +473,7 @@
                 class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Сохранить
                 реквизиты</button>
             </div>
-            <div class="border border-primary rounded-2xl p-4 mb-4">
+            <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
               <div class="text-white font-bold mb-2">Рассылка (Push + Inbox)</div>
               <textarea id="adminBroadcastText" rows="3"
                 class="w-full bg-card-dark text-white rounded-xl px-3 py-2 border border-primary/50 text-sm mb-2"
@@ -485,7 +485,7 @@
 
           <!-- ТАБ Пользователи -->
           <div id="admin-tab-users" class="admin-tab-content hidden">
-            <div class="border border-primary rounded-2xl p-4 mb-4">
+            <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
               <div class="text-white font-bold mb-2">Управление пользователями</div>
               <select id="adminUserId"
                 class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2">
@@ -570,12 +570,12 @@
 
           <!-- ТАБ Клиенты -->
           <div id="admin-tab-clients" class="admin-tab-content hidden">
-            <div class="border border-primary rounded-2xl p-4 mb-4">
+            <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
               <div class="text-white font-bold mb-2">Прямое управление (X-UI)</div>
               <button id="adminClientsRefresh"
                 class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Обновить
                 список устройств</button>
-              <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input id="adminClientEmail"
                   class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2 col-span-2"
                   placeholder="Название/Email клиента" />
@@ -593,24 +593,24 @@
 
           <!-- ТАБ Доступ -->
           <div id="admin-tab-access" class="admin-tab-content hidden">
-            <div class="border border-primary rounded-2xl p-4 mb-4">
+            <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
               <div class="text-white font-bold mb-2">Оригинальная панель XUI</div>
               <div class="text-muted-gray text-sm mb-3">
                 Доступ к панели через защищенный шлюз (без IP-настроек).
               </div>
-              <div id="adminPanelStatus" class="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm mb-3">
+              <div id="adminPanelStatus" class="rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-sm mb-3 flex items-center justify-between gap-3">
                 <span class="text-muted-gray">Статус:</span> <span id="adminPanelStatusText" class="text-white font-semibold">закрыта</span>
                 <span class="text-muted-gray"> · </span><span id="adminPanelTimer" class="text-primary">--:--</span>
               </div>
-              <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button id="adminOtpLogin"
-                  class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-xl w-full">Открыть
+                  class="ios-active border border-primary bg-primary text-black font-bold px-4 py-3 rounded-xl w-full">Открыть
                   панель</button>
                 <button id="adminPanelLockBtn"
-                  class="ios-active border border-accent-red text-accent-red font-bold px-4 py-3 rounded-xl w-full">Закрыть
+                  class="ios-active border border-accent-red text-accent-red bg-black/30 font-bold px-4 py-3 rounded-xl w-full">Закрыть
                   панель</button>
               </div>
-              <div id="adminProxyLink" class="mt-4 hidden">
+              <div id="adminProxyLink" class="mt-4 hidden rounded-xl border border-primary bg-black/30 p-2">
                 <a href="/panel/" target="_blank"
                   class="block ios-active bg-primary text-black text-center font-bold px-3 py-3 rounded-xl w-full">Перейти
                   в панель</a>
@@ -711,5 +711,8 @@
 </body>
 
 </html>
+
+
+
 
 

@@ -1,12 +1,12 @@
 ﻿{
-  "name": "GhostLink VPN",
+  "name": "GhostLink Service",
   "short_name": "GhostLink",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#1E1E1E",
   "theme_color": "#1E1E1E",
-  "description": "GhostLink Private Network",
+  "description": "GhostLink Private Service",
   "icons": [
     {
       "src": "./ghost_ava.png",
@@ -20,3 +20,4 @@
     }
   ]
 }
+
