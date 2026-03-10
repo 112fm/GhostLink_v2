@@ -1,4 +1,4 @@
-﻿const screens = Array.from(document.querySelectorAll('.screen'));
+const screens = Array.from(document.querySelectorAll('.screen'));
 const backBtn = document.getElementById('backBtn');
 const helpBtn = document.getElementById('helpBtn');
 const stack = ['screen-home'];
@@ -1686,39 +1686,127 @@ async function loadAdminUsers() {
 
 function setupFirstRunOnboarding(appLabel, forceShow = false) {
   const overlay = document.getElementById('onboardingOverlay');
+  const card = overlay ? overlay.querySelector('div') : null;
   const title = document.getElementById('onboardingTitle');
   const text = document.getElementById('onboardingText');
   const nextBtn = document.getElementById('onboardingNext');
   const skipBtn = document.getElementById('onboardingSkip');
-  if (!overlay || !title || !text || !nextBtn || !skipBtn) return;
+  if (!overlay || !card || !title || !text || !nextBtn || !skipBtn) return;
+
+  const styleId = 'ghostOnboardingStyles';
+  if (!document.getElementById(styleId)) {
+    const st = document.createElement('style');
+    st.id = styleId;
+    st.textContent = `
+      .ghost-onboarding-target {
+        position: relative !important;
+        z-index: 72 !important;
+        box-shadow: 0 0 0 2px #b8ff00, 0 0 0 8px rgba(184, 255, 0, 0.22);
+        border-radius: 16px;
+      }
+      #onboardingOverlay { z-index: 70; }
+      #onboardingOverlay .onboarding-card {
+        position: fixed;
+        z-index: 80;
+        width: min(420px, calc(100vw - 24px));
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  card.classList.add('onboarding-card');
 
   const key = `ghost_onboarding_done_${appLabel}`;
   if (!forceShow && localStorage.getItem(key) === '1') return;
 
   const steps = [
     {
-      title: 'Main menu',
-      text: 'Three main buttons: Support project, My keys, Invite to club. Admin panel is visible only for admins.'
+      selector: '#homeDevicesBtn',
+      title: 'Мои ключи',
+      text: 'Здесь ты получаешь доступ. Нажми «Мои ключи» -> «Добавить устройство» и забери свой ключ.'
     },
     {
-      title: 'Where to get key',
-      text: 'Open My keys -> Add device. The key will be shown and can be copied.'
+      selector: '#buyBtn',
+      title: 'Поддержать проект',
+      text: 'Здесь выбирается тариф и подтверждается перевод. После подтверждения админом доступ продлевается.'
     },
     {
-      title: 'Secondary sections',
-      text: 'Button More opens support, privacy policy and club charter. Tap ? to replay this guide.'
+      selector: '#homeRefBtn',
+      title: 'Пригласить в клуб',
+      text: 'Тут твоя инвайт-ссылка. Приглашай людей и получай скидку после их первой оплаты.'
+    },
+    {
+      selector: '#homeDevicesBtn',
+      title: 'Как подключить сервис',
+      text: '1) Скачай приложение V2Ray-клиент. 2) В «Мои ключи» создай устройство. 3) Скопируй ключ и вставь его в V2Ray.'
     }
   ];
 
   let idx = 0;
+  let currentTarget = null;
+
+  const clearTarget = () => {
+    if (currentTarget) {
+      currentTarget.classList.remove('ghost-onboarding-target');
+      currentTarget = null;
+    }
+  };
+
+  const placeCard = (targetEl) => {
+    const margin = 12;
+    card.style.left = `${margin}px`;
+    card.style.top = `${margin}px`;
+
+    const cardRect = card.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    if (!targetEl) {
+      const left = Math.max(margin, Math.min((vw - cardRect.width) / 2, vw - cardRect.width - margin));
+      const top = Math.max(margin, vh - cardRect.height - margin);
+      card.style.left = `${Math.round(left)}px`;
+      card.style.top = `${Math.round(top)}px`;
+      return;
+    }
+
+    const rect = targetEl.getBoundingClientRect();
+    const left = Math.max(margin, Math.min(rect.left, vw - cardRect.width - margin));
+    const spaceBelow = vh - rect.bottom - margin;
+    const spaceAbove = rect.top - margin;
+
+    let top;
+    if (spaceBelow >= cardRect.height + 8 || spaceBelow >= spaceAbove) {
+      top = Math.min(vh - cardRect.height - margin, rect.bottom + 10);
+    } else {
+      top = Math.max(margin, rect.top - cardRect.height - 10);
+    }
+
+    card.style.left = `${Math.round(left)}px`;
+    card.style.top = `${Math.round(top)}px`;
+  };
+
+  const onViewportChange = () => {
+    placeCard(currentTarget);
+  };
+
   const render = () => {
-    title.textContent = steps[idx].title;
-    text.textContent = steps[idx].text;
+    const step = steps[idx];
+    title.textContent = step.title;
+    text.textContent = step.text;
     nextBtn.textContent = idx === steps.length - 1 ? 'Готово' : 'Далее';
+
+    clearTarget();
+    currentTarget = step.selector ? document.querySelector(step.selector) : null;
+    if (currentTarget) currentTarget.classList.add('ghost-onboarding-target');
+
+    requestAnimationFrame(() => placeCard(currentTarget));
   };
 
   const finish = () => {
     localStorage.setItem(key, '1');
+    clearTarget();
+    window.removeEventListener('resize', onViewportChange);
+    window.removeEventListener('orientationchange', onViewportChange);
     overlay.classList.add('hidden');
     overlay.classList.remove('flex');
   };
@@ -1736,12 +1824,18 @@ function setupFirstRunOnboarding(appLabel, forceShow = false) {
 
   overlay.classList.remove('hidden');
   overlay.classList.add('flex');
+
+  window.addEventListener('resize', onViewportChange);
+  window.addEventListener('orientationchange', onViewportChange);
+
   render();
 }
 
 bootstrapPwaAuth().then((ok) => {
   if (!ok) return;
-  loadUser();
+  loadUser().then((loaded) => {
+    if (loaded) setupFirstRunOnboarding('pwa');
+  });
   setTimeout(subscribePush, 2000);
   loadTariffs();
 });
