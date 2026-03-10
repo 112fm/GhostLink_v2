@@ -1,5 +1,6 @@
 ﻿const screens = Array.from(document.querySelectorAll('.screen'));
 const backBtn = document.getElementById('backBtn');
+const helpBtn = document.getElementById('helpBtn');
 const stack = ['screen-home'];
 let accessClosed = false;
 
@@ -10,8 +11,9 @@ function showScreen(id) {
   screens.forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
-  backBtn.classList.toggle('hidden', stack.length <= 1);
+  if (backBtn) backBtn.classList.toggle('hidden', stack.length <= 1);
   if (header) header.classList.toggle('hidden', locked);
+  if (helpBtn) helpBtn.classList.toggle('hidden', locked || id !== 'screen-home');
 }
 
 function pushScreen(id) {
@@ -176,7 +178,6 @@ function loadUser() {
       }
       accessClosed = false;
       showScreen(stack[stack.length - 1] || 'screen-home');
-      setTimeout(() => setupFirstRunOnboarding('mini'), 400);
       return true;
     })
     .catch((err) => {
@@ -211,34 +212,26 @@ function adminFetch(path, options = {}) {
   return apiFetch(path, options);
 }
 
-document.getElementById('buyBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
-document.getElementById('homeDevicesBtn').addEventListener('click', () => { pushScreen('screen-devices'); loadDevices(); });
-document.getElementById('homeRefBtn').addEventListener('click', () => { pushScreen('screen-ref'); loadReferrals(); });
-document.getElementById('supportBtn').addEventListener('click', () => pushScreen('screen-support'));
-document.getElementById('homeMoreBtn').addEventListener('click', () => pushScreen('screen-more'));
+const bindClick = (id, fn) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', fn);
+};
 
-document.getElementById('moreProfileBtn').addEventListener('click', () => pushScreen('screen-profile'));
-document.getElementById('moreShareBtn').addEventListener('click', () => { pushScreen('screen-share'); renderShareBlock(); });
-document.getElementById('moreRulesBtn').addEventListener('click', () => pushScreen('screen-rules'));
-document.getElementById('moreGetKeyBtn').addEventListener('click', async () => {
-  try {
-    const res = await apiFetch('/api/key', { method: 'POST' });
-    const key = (res && res.key) ? String(res.key) : '';
-    if (!key) return notify('Ключ не получен');
-    revealIssuedKey(key, 180);
-    const copied = await navigator.clipboard.writeText(key).then(() => true).catch(() => false);
-    notify(copied ? 'Ключ показан и скопирован' : 'Ключ показан. Скопируй вручную.');
-  } catch (e) {
-    notify('Не удалось получить ключ');
-  }
-});
+bindClick('buyBtn', () => pushScreen('screen-tariffs'));
+bindClick('homeDevicesBtn', () => { pushScreen('screen-devices'); loadDevices(); });
+bindClick('homeRefBtn', () => { pushScreen('screen-ref'); loadReferrals(); });
+bindClick('homeMoreBtn', () => pushScreen('screen-more'));
 
-document.getElementById('profilePayBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
-document.getElementById('profileRefBtn').addEventListener('click', () => { pushScreen('screen-ref'); loadReferrals(); });
-document.getElementById('profileShareBtn').addEventListener('click', () => { pushScreen('screen-share'); renderShareBlock(); });
-document.getElementById('profileSupportBtn').addEventListener('click', () => pushScreen('screen-support'));
-document.getElementById('profileRulesBtn').addEventListener('click', () => pushScreen('screen-rules'));
-document.getElementById('profileDevicesBtn').addEventListener('click', () => { pushScreen('screen-devices'); loadDevices(); });
+bindClick('moreSupportBtn', () => pushScreen('screen-support'));
+bindClick('morePolicyBtn', () => pushScreen('screen-rules'));
+bindClick('moreCharterBtn', () => pushScreen('screen-charter'));
+
+bindClick('profilePayBtn', () => pushScreen('screen-tariffs'));
+bindClick('profileRefBtn', () => { pushScreen('screen-ref'); loadReferrals(); });
+bindClick('profileShareBtn', () => { pushScreen('screen-share'); renderShareBlock(); });
+bindClick('profileSupportBtn', () => pushScreen('screen-support'));
+bindClick('profileRulesBtn', () => pushScreen('screen-rules'));
+bindClick('profileDevicesBtn', () => { pushScreen('screen-devices'); loadDevices(); });
 
 document.getElementById('copyRefBtn').addEventListener('click', async () => {
   const text = document.getElementById('refLink').textContent;
@@ -1241,16 +1234,16 @@ function setupFirstRunOnboarding(appLabel, forceShow = false) {
 
   const steps = [
     {
-      title: 'Добро пожаловать в GhostLink',
-      text: 'Это личный кабинет в Telegram для управления доступом и ключами.'
+      title: 'Main menu',
+      text: 'Three main buttons: Support project, My keys, Invite to club. Admin panel is visible only for admins.'
     },
     {
-      title: 'Где взять ключ',
-      text: 'Открой "Мои ключи" -> "Добавить устройство". Ключ скопируется автоматически.'
+      title: 'Where to get key',
+      text: 'Open My keys -> Add device. The key will be shown and can be copied.'
     },
     {
-      title: 'Что делать дальше',
-      text: 'Вставь ключ в V2RayTun. Для оплаты используй "Поддержать проект", для вопросов — "Поддержка".'
+      title: 'Secondary sections',
+      text: 'Button More opens support, privacy policy and club charter. Tap ? to replay this guide.'
     }
   ];
 
@@ -1286,7 +1279,6 @@ function setupFirstRunOnboarding(appLabel, forceShow = false) {
 loadUser();
 loadTariffs();
 
-const helpBtn = document.getElementById('helpBtn');
 if (helpBtn) {
   helpBtn.addEventListener('click', () => setupFirstRunOnboarding('mini', true));
 }

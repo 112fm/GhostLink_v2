@@ -1,5 +1,6 @@
 ﻿const screens = Array.from(document.querySelectorAll('.screen'));
 const backBtn = document.getElementById('backBtn');
+const helpBtn = document.getElementById('helpBtn');
 const stack = ['screen-home'];
 let accessClosed = false;
 
@@ -10,8 +11,9 @@ function showScreen(id) {
   screens.forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
-  backBtn.classList.toggle('hidden', stack.length <= 1);
+  if (backBtn) backBtn.classList.toggle('hidden', stack.length <= 1);
   if (header) header.classList.toggle('hidden', locked);
+  if (helpBtn) helpBtn.classList.toggle('hidden', locked || id !== 'screen-home');
 }
 
 function pushScreen(id) {
@@ -118,19 +120,76 @@ function buildPwaTgAuthLink() {
   return `https://t.me/${PWA_BOT_USERNAME}?start=${encodeURIComponent(start)}`;
 }
 
+function detectPlatform() {
+  const ua = String(navigator.userAgent || '').toLowerCase();
+  if (/iphone|ipad|ipod|ios/.test(ua)) return 'ios';
+  if (/android/.test(ua)) return 'android';
+  return 'desktop';
+}
+
+function isTelegramWebView() {
+  const ua = String(navigator.userAgent || '').toLowerCase();
+  const hasTgObject = Boolean(window.Telegram && Telegram.WebApp);
+  return hasTgObject || ua.includes('telegram') || ua.includes('webview') || ua.includes('; wv');
+}
+
+function renderPreAuthGuide() {
+  const guideTitle = document.getElementById('pwaGuideTitle');
+  const guideText = document.getElementById('pwaGuideText');
+  const guideWarn = document.getElementById('pwaGuideWarn');
+  const platform = detectPlatform();
+  const inTgWebView = isTelegramWebView();
+
+  if (guideTitle) guideTitle.textContent = 'How to open correctly';
+
+  let steps = '';
+  if (platform === 'ios') {
+    steps = '1. Open the link in Safari.\n2. Tap Share -> Add to Home Screen.\n3. Return and enter code from Telegram.';
+  } else if (platform === 'android') {
+    steps = '1. Open the link in Chrome or your browser.\n2. Add to home screen.\n3. Return and enter code from Telegram.';
+  } else {
+    steps = '1. Open the link in a regular browser (not Telegram WebView).\n2. Enter code from Telegram.\n3. Pin it as app if needed.';
+  }
+
+  if (guideText) guideText.textContent = steps;
+
+  if (guideWarn) {
+    if (inTgWebView) {
+      guideWarn.classList.remove('hidden');
+      guideWarn.textContent = 'Opened inside Telegram WebView. Install is unavailable here. Open in Safari/Chrome.';
+    } else {
+      guideWarn.classList.add('hidden');
+      guideWarn.textContent = '';
+    }
+  }
+}
+
+function toggleAuthForm(show) {
+  const authBox = document.getElementById('pwaAuthBox');
+  const continueBtn = document.getElementById('pwaPreAuthContinue');
+  if (authBox) authBox.classList.toggle('hidden', !show);
+  if (continueBtn) continueBtn.classList.toggle('hidden', show);
+}
+
+function showPostAuthHint() {
+  notify('Install once. Then just open the app and use Update when needed.');
+}
+
 function showPwaLocked(text) {
   accessClosed = true;
   const title = document.getElementById('pwaLockedTitle');
   const msg = document.getElementById('pwaLockedText');
   const link = document.getElementById('pwaOpenTgLink');
   const codeErr = document.getElementById('pwaCodeError');
-  if (title) title.textContent = 'Требуется авторизация';
-  if (msg) msg.textContent = text || 'Открой Telegram и войди в клуб.';
+  if (title) title.textContent = 'Authorization required';
+  if (msg) msg.textContent = text || 'Invite-only access.';
   if (codeErr) codeErr.textContent = '';
   if (link) {
     link.href = buildPwaTgAuthLink();
     link.classList.remove('hidden');
   }
+  renderPreAuthGuide();
+  toggleAuthForm(false);
   showScreen('screen-locked');
 }
 
@@ -162,6 +221,7 @@ async function loginByPwaCode(rawCode) {
     loadUser();
     setTimeout(subscribePush, 2000);
     loadTariffs();
+    showPostAuthHint();
     return true;
   } catch (e) {
     const codeErr = document.getElementById('pwaCodeError');
@@ -268,6 +328,7 @@ async function bootstrapPwaAuth() {
       savePwaToken(data.session_token || '');
       window.history.replaceState({}, '', window.location.pathname);
       accessClosed = false;
+      showPostAuthHint();
       return true;
     } catch (e) {
       showPwaLocked('Ошибка авторизации. Нажми «Войти через Telegram».');
@@ -410,7 +471,6 @@ function loadUser() {
       }
       accessClosed = false;
       showScreen(stack[stack.length - 1] || 'screen-home');
-      setTimeout(() => setupFirstRunOnboarding('pwa'), 400);
       return true;
     })
     .catch((err) => {
@@ -446,41 +506,33 @@ function adminFetch(path, options = {}) {
   return apiFetch(path, options);
 }
 
-document.getElementById('buyBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
-document.getElementById('homeDevicesBtn').addEventListener('click', () => { pushScreen('screen-devices'); loadDevices(); });
-document.getElementById('homeRefBtn').addEventListener('click', () => { pushScreen('screen-ref'); loadReferrals(); });
-document.getElementById('supportBtn').addEventListener('click', () => pushScreen('screen-support'));
-document.getElementById('homeMoreBtn').addEventListener('click', () => pushScreen('screen-more'));
+const bindClick = (id, fn) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', fn);
+};
 
-document.getElementById('moreProfileBtn').addEventListener('click', () => pushScreen('screen-profile'));
-document.getElementById('moreShareBtn').addEventListener('click', () => { pushScreen('screen-share'); renderShareBlock(); });
-document.getElementById('moreRulesBtn').addEventListener('click', () => pushScreen('screen-rules'));
+bindClick('buyBtn', () => pushScreen('screen-tariffs'));
+bindClick('homeDevicesBtn', () => { pushScreen('screen-devices'); loadDevices(); });
+bindClick('homeRefBtn', () => { pushScreen('screen-ref'); loadReferrals(); });
+bindClick('homeMoreBtn', () => pushScreen('screen-more'));
+
+bindClick('moreSupportBtn', () => pushScreen('screen-support'));
+bindClick('morePolicyBtn', () => pushScreen('screen-rules'));
+bindClick('moreCharterBtn', () => pushScreen('screen-charter'));
 const pwaReloginBtn = document.getElementById('pwaReloginBtn');
 if (pwaReloginBtn) {
   pwaReloginBtn.addEventListener('click', () => {
     clearPwaToken();
-    showPwaLocked('Сессия сброшена. Войди через Telegram.');
+    showPwaLocked('Session reset. Log in via Telegram.');
   });
 }
-document.getElementById('moreGetKeyBtn').addEventListener('click', async () => {
-  try {
-    const res = await apiFetch('/api/key', { method: 'POST' });
-    const key = (res && res.key) ? String(res.key) : '';
-    if (!key) return notify('Ключ не получен');
-    revealIssuedKey(key, 180);
-    const copied = await navigator.clipboard.writeText(key).then(() => true).catch(() => false);
-    notify(copied ? 'Ключ показан и скопирован' : 'Ключ показан. Скопируй вручную.');
-  } catch (e) {
-    notify('Не удалось получить ключ');
-  }
-});
 
-document.getElementById('profilePayBtn').addEventListener('click', () => pushScreen('screen-tariffs'));
-document.getElementById('profileRefBtn').addEventListener('click', () => { pushScreen('screen-ref'); loadReferrals(); });
-document.getElementById('profileShareBtn').addEventListener('click', () => { pushScreen('screen-share'); renderShareBlock(); });
-document.getElementById('profileSupportBtn').addEventListener('click', () => pushScreen('screen-support'));
-document.getElementById('profileRulesBtn').addEventListener('click', () => pushScreen('screen-rules'));
-document.getElementById('profileDevicesBtn').addEventListener('click', () => { pushScreen('screen-devices'); loadDevices(); });
+bindClick('profilePayBtn', () => pushScreen('screen-tariffs'));
+bindClick('profileRefBtn', () => { pushScreen('screen-ref'); loadReferrals(); });
+bindClick('profileShareBtn', () => { pushScreen('screen-share'); renderShareBlock(); });
+bindClick('profileSupportBtn', () => pushScreen('screen-support'));
+bindClick('profileRulesBtn', () => pushScreen('screen-rules'));
+bindClick('profileDevicesBtn', () => { pushScreen('screen-devices'); loadDevices(); });
 
 document.getElementById('copyRefBtn').addEventListener('click', async () => {
   const text = document.getElementById('refLink').textContent;
@@ -1645,16 +1697,16 @@ function setupFirstRunOnboarding(appLabel, forceShow = false) {
 
   const steps = [
     {
-      title: 'Добро пожаловать в GhostLink',
-      text: 'Это закрытый клуб. Вся настройка делается внутри приложения без ручных команд.'
+      title: 'Main menu',
+      text: 'Three main buttons: Support project, My keys, Invite to club. Admin panel is visible only for admins.'
     },
     {
-      title: 'Где получить ключ',
-      text: 'Открой экран "Устройства" и нажми "Добавить устройство". Новый ключ будет скопирован автоматически.'
+      title: 'Where to get key',
+      text: 'Open My keys -> Add device. The key will be shown and can be copied.'
     },
     {
-      title: 'Как подключиться',
-      text: 'Вставь ключ в V2RayTun (или другой V2Ray-клиент). Если доступ не работает, открой вкладку "Поддержка".'
+      title: 'Secondary sections',
+      text: 'Button More opens support, privacy policy and club charter. Tap ? to replay this guide.'
     }
   ];
 
@@ -1708,7 +1760,14 @@ if (pwaCodeInput) {
   });
 }
 
-const helpBtn = document.getElementById('helpBtn');
+const pwaPreAuthContinue = document.getElementById('pwaPreAuthContinue');
+if (pwaPreAuthContinue) {
+  pwaPreAuthContinue.addEventListener('click', () => {
+    toggleAuthForm(true);
+    if (pwaCodeInput) pwaCodeInput.focus();
+  });
+}
+
 if (helpBtn) {
   helpBtn.addEventListener('click', () => setupFirstRunOnboarding('pwa', true));
 }
