@@ -36,6 +36,11 @@ const API_BASE = "https://api.112prd.ru:2053";
 const INIT_DATA = tg ? tg.initData : '';
 const PWA_LOCAL_TOKEN_KEY = 'ghost_pwa_token_local';
 let PWA_TOKEN = localStorage.getItem(PWA_LOCAL_TOKEN_KEY) || '';
+function getPwaToken() {
+  const live = localStorage.getItem(PWA_LOCAL_TOKEN_KEY) || '';
+  if (live && live !== PWA_TOKEN) PWA_TOKEN = live;
+  return PWA_TOKEN || '';
+}
 function savePwaToken(token) {
   PWA_TOKEN = String(token || '').trim();
   if (PWA_TOKEN) localStorage.setItem(PWA_LOCAL_TOKEN_KEY, PWA_TOKEN);
@@ -356,8 +361,9 @@ async function bootstrapPwaAuth() {
 function apiFetch(path, options = {}) {
   if (!API_BASE) return Promise.reject(new Error('no_api'));
   const authHeaders = {};
+  const livePwaToken = getPwaToken();
   if (INIT_DATA) authHeaders['X-Telegram-InitData'] = INIT_DATA;
-  if (PWA_TOKEN) authHeaders['X-PWA-Token'] = PWA_TOKEN;
+  if (livePwaToken) authHeaders['X-PWA-Token'] = livePwaToken;
   return fetch(API_BASE + path, {
     ...options,
     credentials: 'include',
