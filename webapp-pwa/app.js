@@ -129,8 +129,22 @@ function detectPlatform() {
 
 function isTelegramWebView() {
   const ua = String(navigator.userAgent || '').toLowerCase();
-  const hasTgObject = Boolean(window.Telegram && Telegram.WebApp);
-  return hasTgObject || ua.includes('telegram') || ua.includes('webview') || ua.includes('; wv');
+  // telegram-web-app.js can exist in normal browser too, so rely on UA + initData
+  const hasInitData = Boolean(tg && (tg.initData || '').trim());
+  const hasTgUa = ua.includes('telegram');
+  const hasWvUa = ua.includes('; wv') || ua.includes(' webview ');
+  return hasInitData || hasTgUa || hasWvUa;
+}
+
+function normalizePwaCode(raw) {
+  const ruToLat = {
+    'А': 'A', 'В': 'B', 'С': 'C', 'Е': 'E', 'Н': 'H', 'К': 'K',
+    'М': 'M', 'О': 'O', 'Р': 'P', 'Т': 'T', 'У': 'Y', 'Х': 'X'
+  };
+  return String(raw || '')
+    .toUpperCase()
+    .replace(/[\s\-_]/g, '')
+    .replace(/[АВСЕНКМОРТУХ]/g, (ch) => ruToLat[ch] || ch);
 }
 
 function renderPreAuthGuide() {
@@ -194,7 +208,7 @@ function showPwaLocked(text) {
 }
 
 async function loginByPwaCode(rawCode) {
-  const code = String(rawCode || '').trim().toUpperCase();
+  const code = normalizePwaCode(rawCode);
   if (!code) {
     const codeErr = document.getElementById('pwaCodeError');
     if (codeErr) codeErr.textContent = 'Введи код из Telegram.';
@@ -523,7 +537,7 @@ const pwaReloginBtn = document.getElementById('pwaReloginBtn');
 if (pwaReloginBtn) {
   pwaReloginBtn.addEventListener('click', () => {
     clearPwaToken();
-    showPwaLocked('Session reset. Log in via Telegram.');
+    showPwaLocked('Сессия сброшена. Войди через Telegram.');
   });
 }
 
