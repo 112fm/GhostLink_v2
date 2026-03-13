@@ -432,8 +432,32 @@ function renderDeviceList(items) {
       }
     });
 
+    const rotateBtn = document.createElement('button');
+    rotateBtn.className = 'ios-active border border-primary text-primary font-bold px-2 py-1 rounded-lg text-xs';
+    rotateBtn.textContent = 'Обновить ключ';
+    rotateBtn.addEventListener('click', async () => {
+      try {
+        const res = await apiFetch('/api/device/rotate', { method: 'POST', body: JSON.stringify({ uuid: item.uuid }) });
+        if (res && res.key) {
+          revealIssuedKey(res.key, 180);
+          await navigator.clipboard.writeText(res.key).catch(() => { });
+          notify('Ключ устройства обновлен');
+        } else {
+          notify('Ключ обновлен');
+        }
+        loadDevices();
+      } catch (e) {
+        notify('Не удалось обновить ключ устройства');
+      }
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'flex flex-col gap-2';
+    actions.appendChild(rotateBtn);
+    actions.appendChild(btn);
+
     row.appendChild(left);
-    row.appendChild(btn);
+    row.appendChild(actions);
 
     const keyHint = document.createElement('div');
     keyHint.className = 'text-muted-gray text-xs mt-2';
