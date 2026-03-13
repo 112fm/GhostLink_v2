@@ -140,15 +140,15 @@ function renderPreAuthGuide() {
   const platform = detectPlatform();
   const inTgWebView = isTelegramWebView();
 
-  if (guideTitle) guideTitle.textContent = 'How to open correctly';
+  if (guideTitle) guideTitle.textContent = 'Как открыть правильно';
 
   let steps = '';
   if (platform === 'ios') {
-    steps = '1. Open the link in Safari.\n2. Tap Share -> Add to Home Screen.\n3. Return and enter code from Telegram.';
+    steps = '1. Открой ссылку в Safari.\n2. Нажми Поделиться -> На экран «Домой».\n3. Вернись и введи код из Telegram.';
   } else if (platform === 'android') {
-    steps = '1. Open the link in Chrome or your browser.\n2. Add to home screen.\n3. Return and enter code from Telegram.';
+    steps = '1. Открой ссылку в Chrome или другом браузере.\n2. Добавь на главный экран.\n3. Вернись и введи код из Telegram.';
   } else {
-    steps = '1. Open the link in a regular browser (not Telegram WebView).\n2. Enter code from Telegram.\n3. Pin it as app if needed.';
+    steps = '1. Открой ссылку в обычном браузере (не встроенном окне Telegram).\n2. Введи код из Telegram.\n3. При необходимости закрепи как приложение.';
   }
 
   if (guideText) guideText.textContent = steps;
@@ -156,7 +156,7 @@ function renderPreAuthGuide() {
   if (guideWarn) {
     if (inTgWebView) {
       guideWarn.classList.remove('hidden');
-      guideWarn.textContent = 'Opened inside Telegram WebView. Install is unavailable here. Open in Safari/Chrome.';
+      guideWarn.textContent = 'Открыто во встроенном окне Telegram. Установка тут недоступна. Открой в Safari/Chrome.';
     } else {
       guideWarn.classList.add('hidden');
       guideWarn.textContent = '';
@@ -172,7 +172,7 @@ function toggleAuthForm(show) {
 }
 
 function showPostAuthHint() {
-  notify('Install once. Then just open the app and use Update when needed.');
+  notify('Установи один раз, дальше просто открывай приложение и нажимай «Обновить» при необходимости.');
 }
 
 function showPwaLocked(text) {
@@ -181,8 +181,8 @@ function showPwaLocked(text) {
   const msg = document.getElementById('pwaLockedText');
   const link = document.getElementById('pwaOpenTgLink');
   const codeErr = document.getElementById('pwaCodeError');
-  if (title) title.textContent = 'Authorization required';
-  if (msg) msg.textContent = text || 'Invite-only access.';
+  if (title) title.textContent = 'Требуется авторизация';
+  if (msg) msg.textContent = text || 'Доступ только по приглашению.';
   if (codeErr) codeErr.textContent = '';
   if (link) {
     link.href = buildPwaTgAuthLink();
