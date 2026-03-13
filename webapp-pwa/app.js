@@ -597,6 +597,16 @@ document.getElementById('copySubscriptionBtn').addEventListener('click', async (
   }
 });
 
+function setLegacySubscriptionVisibility(show) {
+  const linkEl = document.getElementById('subscriptionLink');
+  const copyBtn = document.getElementById('copySubscriptionBtn');
+  const titleEl = linkEl ? linkEl.previousElementSibling : null;
+  [titleEl, linkEl, copyBtn].forEach((el) => {
+    if (!el) return;
+    el.classList.toggle('hidden', !show);
+  });
+}
+
 document.getElementById('shareAppBtn').addEventListener('click', async () => {
   try {
     if (navigator.share) {
@@ -725,6 +735,7 @@ function revealIssuedKey(key, ttlSec = 180) {
 function renderDeviceList(items) {
   const box = document.getElementById('deviceList');
   box.innerHTML = '';
+  setLegacySubscriptionVisibility(false);
   if (!items || items.length === 0) {
     box.textContent = 'Устройства не найдены.';
     return;
@@ -787,10 +798,33 @@ function renderDeviceList(items) {
     keyHint.className = 'text-muted-gray text-xs mt-2';
     keyHint.textContent = 'Ключ показывается временно после выдачи (вверху экрана). Для нового устройства используй "Добавить устройство".';
 
+    const subWrap = document.createElement('div');
+    subWrap.className = 'mt-2 rounded-xl border border-primary/30 p-2 bg-card-dark';
+    const subUrl = item && item.uuid ? `${API_BASE}/sub/${encodeURIComponent(item.uuid)}` : '';
+    const subText = document.createElement('div');
+    subText.className = 'text-xs break-all text-white/90 mb-2';
+    subText.textContent = subUrl || 'Ссылка недоступна';
+    const subBtn = document.createElement('button');
+    subBtn.className = 'ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs w-full';
+    subBtn.textContent = 'Скопировать ссылку этого устройства';
+    subBtn.disabled = !subUrl;
+    subBtn.addEventListener('click', async () => {
+      if (!subUrl) return;
+      try {
+        await navigator.clipboard.writeText(subUrl);
+        notify('Ссылка устройства скопирована');
+      } catch (e) {
+        notify('Не удалось скопировать ссылку');
+      }
+    });
+    subWrap.appendChild(subText);
+    subWrap.appendChild(subBtn);
+
     const container = document.createElement('div');
     container.className = 'flex flex-col py-2 border-b border-white/10';
     container.appendChild(row);
     container.appendChild(keyHint);
+    container.appendChild(subWrap);
 
     box.appendChild(container);
   });
@@ -838,12 +872,13 @@ document.getElementById('addDeviceBtn').addEventListener('click', async () => {
     loadDevices();
   } catch (e) {
     if (e && e.message === 'device_limit_reached') notify('Достигнут лимит устройств (максимум 5).');
+    else if (e && (e.status === 401 || e.status === 403)) notify('Сессия истекла. Зайди заново через Telegram.');
     else notify('Не удалось добавить устройство');
   }
 });
 
 document.getElementById('resetDeviceBtn').addEventListener('click', async () => {
-  if (!confirmDanger('RESET', 'Сброс ключа устройства')) return;
+  if (!window.confirm('Сбросить ключ пользователя? Старые подключения перестанут работать.')) return;
   try {
     const res = await apiFetch('/api/device/reset', { method: 'POST' });
     if (res.key) {
@@ -1727,8 +1762,14 @@ async function loadAdminUsers() {
       adminUsersById[u.id] = u;
       const opt = document.createElement('option');
       opt.value = u.id;
-      const label = (u.display_name || u.name || u.id).trim();
-      const withId = label === u.id || label === `ID ${u.id}` ? label : `${label} (${u.id})`;
+      const tgUser = (u.tg_username || '').trim();
+      const tgFullName = (u.tg_full_name || '').trim();
+      const baseLabel = (u.display_name || u.name || '').trim();
+      let label = '';
+      if (tgUser && tgFullName) label = `${tgUser} (${tgFullName})`;
+      else if (tgUser && baseLabel && baseLabel !== tgUser) label = `${tgUser} (${baseLabel})`;
+      else label = tgUser || baseLabel || `ID ${u.id}`;
+      const withId = label.includes(`(${u.id})`) || label === `ID ${u.id}` ? label : `${label} (${u.id})`;
       const d = Number(u.days_left);
       const subText = u.expiry_human ? ` до ${u.expiry_human}` : '';
       const leftText = Number.isFinite(d) ? ` · ${d}д` : '';
