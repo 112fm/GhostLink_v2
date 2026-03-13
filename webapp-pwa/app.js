@@ -399,6 +399,7 @@ function setSubStatus(active) {
 
 let supportUrl = '';
 let appShareUrl = `${window.location.origin}${window.location.pathname}`;
+let subscriptionUrl = '';
 let adminUsersById = {};
 let tariffMap = { 1: { price: 150, min_pay: 100 }, 2: { price: 225, min_pay: 150 }, 3: { price: 300, min_pay: 200 }, 4: { price: 375, min_pay: 250 }, 5: { price: 450, min_pay: 300 } };
 let currentTier = 'regular';
@@ -480,9 +481,11 @@ function loadUser() {
       document.getElementById('profileMonthlyPrice').textContent = `${data.monthly_min_pay || 0} ₽ (полная ${data.monthly_price || 0} ₽)`;
       supportUrl = data.support_link || 'https://t.me/ghostlink112_bot';
       appShareUrl = data.app_link || appShareUrl;
+      subscriptionUrl = data.subscription_url || subscriptionUrl || '';
       const supportLink = document.getElementById('supportLink');
       supportLink.href = supportUrl;
       renderShareBlock();
+      renderSubscriptionBlock();
       renderTariffs();
       IS_ADMIN = Boolean(data.user && data.user.is_admin) || String(CURRENT_USER_ID) === String(ADMIN_ID);
       if (IS_ADMIN) {
@@ -568,12 +571,29 @@ function renderShareBlock() {
   }
 }
 
+function renderSubscriptionBlock() {
+  const linkEl = document.getElementById('subscriptionLink');
+  const copyBtn = document.getElementById('copySubscriptionBtn');
+  if (linkEl) linkEl.textContent = subscriptionUrl || '—';
+  if (copyBtn) copyBtn.disabled = !subscriptionUrl;
+}
+
 document.getElementById('copyAppLinkBtn').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(appShareUrl || '');
     notify('Ссылка скопирована');
   } catch (e) {
     notify('Не удалось скопировать ссылку');
+  }
+});
+
+document.getElementById('copySubscriptionBtn').addEventListener('click', async () => {
+  try {
+    if (!subscriptionUrl) return notify('Ссылка подписки пока недоступна');
+    await navigator.clipboard.writeText(subscriptionUrl);
+    notify('Ссылка подписки скопирована');
+  } catch (e) {
+    notify('Не удалось скопировать ссылку подписки');
   }
 });
 
