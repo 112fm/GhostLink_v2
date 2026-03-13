@@ -54,26 +54,26 @@
   <section id="screen-locked" class="screen">
     <div class="h-full flex flex-col items-center justify-center text-center">
       <div class="w-full max-w-md">
-        <div class="text-2xl font-bold mb-2" id="pwaLockedTitle">Authorization required</div>
-        <div class="text-muted-gray text-sm mb-4" id="pwaLockedText">Invite-only access.</div>
+        <div class="text-2xl font-bold mb-2" id="pwaLockedTitle">Требуется авторизация</div>
+        <div class="text-muted-gray text-sm mb-4" id="pwaLockedText">Доступ только по приглашению.</div>
         <div id="pwaPreAuthGuide" class="text-left bg-card-dark border border-primary/30 rounded-2xl p-4 mb-4">
-          <div class="text-white font-bold mb-2" id="pwaGuideTitle">How to open correctly</div>
+          <div class="text-white font-bold mb-2" id="pwaGuideTitle">Как открыть правильно</div>
           <div class="text-muted-gray text-sm leading-6" id="pwaGuideText"></div>
           <div id="pwaGuideWarn"
             class="hidden mt-3 border border-accent-red/60 bg-accent-red/10 text-accent-red rounded-xl px-3 py-2 text-xs leading-5"></div>
         </div>
-        <button id="pwaPreAuthContinue" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl w-full">I opened in browser, continue</button>
+        <button id="pwaPreAuthContinue" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl w-full">Открыл в браузере, продолжить</button>
         <div id="pwaAuthBox" class="hidden mt-4">
           <a id="pwaOpenTgLink" href="#"
-            class="ios-active hidden bg-primary text-black font-bold px-4 py-3 rounded-2xl inline-block w-full text-center">Open
+            class="ios-active hidden bg-primary text-black font-bold px-4 py-3 rounded-2xl inline-block w-full text-center">Открыть
             Telegram</a>
-          <div class="text-muted-gray text-sm mt-4 mb-2">Enter one-time code from Telegram</div>
+          <div class="text-muted-gray text-sm mt-4 mb-2">Введи одноразовый код из Telegram</div>
           <div class="flex items-center gap-2">
             <input id="pwaCodeInput" inputmode="text" maxlength="8" autocapitalize="characters"
               class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2 text-center tracking-[0.2em]"
               placeholder="AB12CD34" />
             <button id="pwaCodeBtn"
-              class="ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl">Login</button>
+              class="ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl">Войти</button>
           </div>
           <div id="pwaCodeError" class="text-accent-red text-sm mt-2 min-h-[20px]"></div>
         </div>
