@@ -1,4 +1,4 @@
-const screens = Array.from(document.querySelectorAll('.screen'));
+﻿const screens = Array.from(document.querySelectorAll('.screen'));
 const backBtn = document.getElementById('backBtn');
 const helpBtn = document.getElementById('helpBtn');
 const stack = ['screen-home'];
@@ -84,11 +84,11 @@ function apiFetch(path, options = {}) {
 function setSubStatus(active) {
   const el = document.getElementById('subStatus');
   if (active) {
-    el.textContent = 'ПОДПИСКА АКТИВНА';
+    el.textContent = 'РџРћР”РџРРЎРљРђ РђРљРўРР’РќРђ';
     el.classList.remove('text-accent-red');
     el.classList.add('text-primary');
   } else {
-    el.textContent = 'ПОДПИСКА НЕАКТИВНА';
+    el.textContent = 'РџРћР”РџРРЎРљРђ РќР•РђРљРўРР’РќРђ';
     el.classList.remove('text-primary');
     el.classList.add('text-accent-red');
   }
@@ -103,9 +103,9 @@ let currentTier = 'regular';
 
 function formatTierLabel(tier) {
   const v = String(tier || '').toLowerCase();
-  if (v === 'own') return 'свой';
+  if (v === 'own') return 'СЃРІРѕР№';
   if (v === 'vip') return 'vip';
-  return 'обычный';
+  return 'РѕР±С‹С‡РЅС‹Р№';
 }
 
 function renderTariffs() {
@@ -117,7 +117,7 @@ function renderTariffs() {
   document.getElementById('tierBadge').textContent = formatTierLabel(currentTier);
   document.getElementById('soloPrice').textContent = `${solo.price}`;
   document.getElementById('soloMinPay').textContent = `${solo.min_pay}`;
-  document.getElementById('flexPrice').textContent = `${devices} устройства — ${flex.price} ₽`;
+  document.getElementById('flexPrice').textContent = `${devices} СѓСЃС‚СЂРѕР№СЃС‚РІР° вЂ” ${flex.price} в‚Ѕ`;
   document.getElementById('flexMinPay').textContent = `${flex.min_pay}`;
 }
 
@@ -141,11 +141,11 @@ async function loadTariffs() {
 }
 
 function formatSubLine(sub) {
-  if (!sub || !sub.active) return 'нет подписки';
-  if (!sub.expiry) return 'Без срока';
+  if (!sub || !sub.active) return 'РЅРµС‚ РїРѕРґРїРёСЃРєРё';
+  if (!sub.expiry) return 'Р‘РµР· СЃСЂРѕРєР°';
   const human = sub.expiry_human || sub.expiry;
   const days = Number(sub.days_left);
-  if (Number.isFinite(days)) return `${human} · ${days} дн`;
+  if (Number.isFinite(days)) return `${human} В· ${days} РґРЅ`;
   return human;
 }
 
@@ -154,19 +154,19 @@ function loadUser() {
   return apiFetch('/api/user')
     .then(data => {
       CURRENT_USER_ID = Number((data.user && data.user.id) || CURRENT_USER_ID || 0);
-      document.getElementById('balanceValue').textContent = (data.balance || 0) + '₽';
+      document.getElementById('balanceValue').textContent = (data.balance || 0) + 'в‚Ѕ';
       document.getElementById('expiryValue').textContent = formatSubLine(data.subscription);
       setSubStatus(data.subscription.active);
-      document.getElementById('profileName').textContent = data.user.name || 'Пользователь';
+      document.getElementById('profileName').textContent = data.user.name || 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ';
       document.getElementById('profileId').textContent = 'ID: ' + data.user.id;
       document.getElementById('deviceLimit').textContent = data.device_limit || 3;
       document.getElementById('profileDevicesRatio').textContent = data.devices_ratio || `${data.connected_devices || 0}/${data.device_limit || 0}`;
       currentTier = data.member_tier || currentTier;
       const dc = document.getElementById('deviceCount');
       if (dc) dc.textContent = data.connected_devices || 0;
-      document.getElementById('refLink').textContent = data.referral_link || 'нет ссылки';
-      document.getElementById('discountValue').textContent = data.discount_text || ((data.discount || 0) + ' ₽');
-      document.getElementById('profileMonthlyPrice').textContent = `${data.monthly_min_pay || 0} ₽ (полная ${data.monthly_price || 0} ₽)`;
+      document.getElementById('refLink').textContent = data.referral_link || 'РЅРµС‚ СЃСЃС‹Р»РєРё';
+      document.getElementById('discountValue').textContent = data.discount_text || ((data.discount || 0) + ' в‚Ѕ');
+      document.getElementById('profileMonthlyPrice').textContent = `${data.monthly_min_pay || 0} в‚Ѕ (РїРѕР»РЅР°СЏ ${data.monthly_price || 0} в‚Ѕ)`;
       supportUrl = data.support_link || 'https://t.me/ghostlink112_bot';
       appShareUrl = data.app_link || appShareUrl;
       subscriptionUrl = data.subscription_url || subscriptionUrl || '';
@@ -205,9 +205,9 @@ function notify(text) {
 }
 
 function confirmDanger(code, title) {
-  const ok1 = window.confirm(`Опасное действие: ${title}.\nПродолжить?`);
+  const ok1 = window.confirm(`РћРїР°СЃРЅРѕРµ РґРµР№СЃС‚РІРёРµ: ${title}.\nРџСЂРѕРґРѕР»Р¶РёС‚СЊ?`);
   if (!ok1) return false;
-  const typed = window.prompt(`Введи ${code} для подтверждения:`) || '';
+  const typed = window.prompt(`Р’РІРµРґРё ${code} РґР»СЏ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ:`) || '';
   return typed.trim().toUpperCase() === code;
 }
 
@@ -244,7 +244,7 @@ document.getElementById('copyRefBtn').addEventListener('click', async () => {
 function renderShareBlock() {
   const linkEl = document.getElementById('appShareLink');
   const qrEl = document.getElementById('appQrImg');
-  if (linkEl) linkEl.textContent = appShareUrl || '—';
+  if (linkEl) linkEl.textContent = appShareUrl || 'вЂ”';
   if (qrEl && appShareUrl) {
     qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(appShareUrl)}`;
   }
@@ -253,26 +253,26 @@ function renderShareBlock() {
 function renderSubscriptionBlock() {
   const linkEl = document.getElementById('subscriptionLink');
   const copyBtn = document.getElementById('copySubscriptionBtn');
-  if (linkEl) linkEl.textContent = subscriptionUrl || '—';
+  if (linkEl) linkEl.textContent = subscriptionUrl || 'вЂ”';
   if (copyBtn) copyBtn.disabled = !subscriptionUrl;
 }
 
 document.getElementById('copyAppLinkBtn').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(appShareUrl || '');
-    notify('Ссылка скопирована');
+    notify('РЎСЃС‹Р»РєР° СЃРєРѕРїРёСЂРѕРІР°РЅР°');
   } catch (e) {
-    notify('Не удалось скопировать ссылку');
+    notify('РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ СЃСЃС‹Р»РєСѓ');
   }
 });
 
 document.getElementById('copySubscriptionBtn').addEventListener('click', async () => {
   try {
-    if (!subscriptionUrl) return notify('Ссылка подписки пока недоступна');
+    if (!subscriptionUrl) return notify('РЎСЃС‹Р»РєР° РїРѕРґРїРёСЃРєРё РїРѕРєР° РЅРµРґРѕСЃС‚СѓРїРЅР°');
     await navigator.clipboard.writeText(subscriptionUrl);
-    notify('Ссылка подписки скопирована');
+    notify('РЎСЃС‹Р»РєР° РїРѕРґРїРёСЃРєРё СЃРєРѕРїРёСЂРѕРІР°РЅР°');
   } catch (e) {
-    notify('Не удалось скопировать ссылку подписки');
+    notify('РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ СЃСЃС‹Р»РєСѓ РїРѕРґРїРёСЃРєРё');
   }
 });
 
@@ -289,10 +289,10 @@ function setLegacySubscriptionVisibility(show) {
 document.getElementById('shareAppBtn').addEventListener('click', async () => {
   try {
     if (navigator.share) {
-      await navigator.share({ title: 'GhostLink', text: 'Личный кабинет GhostLink', url: appShareUrl });
+      await navigator.share({ title: 'GhostLink', text: 'Р›РёС‡РЅС‹Р№ РєР°Р±РёРЅРµС‚ GhostLink', url: appShareUrl });
     } else {
       await navigator.clipboard.writeText(appShareUrl || '');
-      notify('Ссылка скопирована');
+      notify('РЎСЃС‹Р»РєР° СЃРєРѕРїРёСЂРѕРІР°РЅР°');
     }
   } catch (e) { }
 });
@@ -321,13 +321,13 @@ function loadReferrals() {
       const pending = Number(data.pending || 0);
       const summary = document.createElement('div');
       summary.className = 'text-sm text-muted-gray mb-3';
-      summary.textContent = `Приглашено: ${total} · Оплатили: ${paid} · Ожидают: ${pending}`;
+      summary.textContent = `РџСЂРёРіР»Р°С€РµРЅРѕ: ${total} В· РћРїР»Р°С‚РёР»Рё: ${paid} В· РћР¶РёРґР°СЋС‚: ${pending}`;
       if (!data.items || data.items.length === 0) {
         box.innerHTML = '';
         box.appendChild(summary);
         const empty = document.createElement('div');
         empty.className = 'text-muted-gray text-sm';
-        empty.textContent = 'Пока никого нет.';
+        empty.textContent = 'РџРѕРєР° РЅРёРєРѕРіРѕ РЅРµС‚.';
         box.appendChild(empty);
         return;
       }
@@ -336,9 +336,9 @@ function loadReferrals() {
       data.items.forEach(item => {
         const row = document.createElement('div');
         row.className = 'flex items-center justify-between py-2 border-b border-white/10 text-sm';
-        const status = item.status === 'paid' ? 'Оплачено' : 'Ожидает оплаты';
+        const status = item.status === 'paid' ? 'РћРїР»Р°С‡РµРЅРѕ' : 'РћР¶РёРґР°РµС‚ РѕРїР»Р°С‚С‹';
         const nameEl = document.createElement('span');
-        nameEl.textContent = item.name || 'Без имени';
+        nameEl.textContent = item.name || 'Р‘РµР· РёРјРµРЅРё';
         const statusEl = document.createElement('span');
         statusEl.className = 'text-muted-gray';
         statusEl.textContent = status;
@@ -389,12 +389,12 @@ function revealIssuedKey(key, ttlSec = 180) {
   let left = safeTtl;
 
   box.innerHTML = `
-    <div class="text-primary font-bold mb-2">Твой новый ключ (временно)</div>
-    <div class="text-xs text-muted-gray mb-2">Сохрани ключ в V2Ray. Через время он снова скроется.</div>
+    <div class="text-primary font-bold mb-2">РўРІРѕР№ РЅРѕРІС‹Р№ РєР»СЋС‡ (РІСЂРµРјРµРЅРЅРѕ)</div>
+    <div class="text-xs text-muted-gray mb-2">РЎРѕС…СЂР°РЅРё РєР»СЋС‡ РІ V2Ray. Р§РµСЂРµР· РІСЂРµРјСЏ РѕРЅ СЃРЅРѕРІР° СЃРєСЂРѕРµС‚СЃСЏ.</div>
     <div class="w-full truncate bg-black/40 border border-primary rounded-xl px-3 py-2 text-white text-xs" id="issuedKeyValue" title="${safeKey.replace(/"/g, '&quot;')}">${previewKey}</div>
     <div class="flex items-center gap-2 mt-2">
-      <button id="issuedKeyCopyBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm">Скопировать</button>
-      <button id="issuedKeyHideBtn" class="ios-active border border-white/20 text-white font-bold px-3 py-2 rounded-xl text-sm">Скрыть</button>
+      <button id="issuedKeyCopyBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm">РЎРєРѕРїРёСЂРѕРІР°С‚СЊ</button>
+      <button id="issuedKeyHideBtn" class="ios-active border border-white/20 text-white font-bold px-3 py-2 rounded-xl text-sm">РЎРєСЂС‹С‚СЊ</button>
     </div>
     <div id="issuedKeyTimer" class="text-xs text-muted-gray mt-2"></div>
   `;
@@ -409,7 +409,7 @@ function revealIssuedKey(key, ttlSec = 180) {
   };
 
   const tick = () => {
-    if (timerEl) timerEl.textContent = `Скрытие через ${left} сек`;
+    if (timerEl) timerEl.textContent = `РЎРєСЂС‹С‚РёРµ С‡РµСЂРµР· ${left} СЃРµРє`;
     left -= 1;
     if (left < 0) hide();
   };
@@ -422,7 +422,7 @@ function revealIssuedKey(key, ttlSec = 180) {
   if (copyBtn) {
     copyBtn.addEventListener('click', async () => {
       const ok = await navigator.clipboard.writeText(safeKey).then(() => true).catch(() => false);
-      notify(ok ? 'Ключ скопирован' : 'Не удалось скопировать. Выдели ключ вручную.');
+      notify(ok ? 'РљР»СЋС‡ СЃРєРѕРїРёСЂРѕРІР°РЅ' : 'РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ. Р’С‹РґРµР»Рё РєР»СЋС‡ РІСЂСѓС‡РЅСѓСЋ.');
     });
   }
 
@@ -434,7 +434,7 @@ function renderDeviceList(items) {
   box.innerHTML = '';
   setLegacySubscriptionVisibility(false);
   if (!items || items.length === 0) {
-    box.textContent = '���������� �� �������.';
+    box.textContent = 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.';
     return;
   }
 
@@ -442,87 +442,92 @@ function renderDeviceList(items) {
     const subUrl = (item && item.subscription_url) ? String(item.subscription_url) : (item && item.uuid ? `${API_BASE}/sub/${encodeURIComponent(item.uuid)}` : '');
 
     const container = document.createElement('div');
-    container.className = 'py-3 border-b border-white/10';
+    container.className = 'mb-3 rounded-2xl border border-primary/30 bg-black/20 p-3';
 
-    const row = document.createElement('div');
-    row.className = 'flex items-start justify-between gap-3';
+    const headerRow = document.createElement('div');
+    headerRow.className = 'flex items-start justify-between gap-3';
 
-    const left = document.createElement('div');
-    left.className = 'flex flex-col min-w-0 flex-1';
+    const info = document.createElement('div');
+    info.className = 'min-w-0 flex-1';
 
     const title = document.createElement('div');
-    title.className = 'text-white truncate text-sm font-semibold';
+    title.className = 'text-white text-sm font-semibold truncate';
     title.textContent = item.email || item.uuid;
 
     const meta = document.createElement('div');
-    meta.className = 'text-muted-gray text-xs';
-    meta.textContent = `${item.online ? '������' : '������'} � ${formatBytes(item.total || 0)}`;
+    meta.className = 'text-muted-gray text-xs mt-1';
+    meta.textContent = `${item.online ? 'пїЅпїЅпїЅпїЅпїЅпїЅ' : 'пїЅпїЅпїЅпїЅпїЅпїЅ'} пїЅ ${formatBytes(item.total || 0)}`;
+
+    info.appendChild(title);
+    info.appendChild(meta);
+    headerRow.appendChild(info);
+    container.appendChild(headerRow);
+
+    const bodyRow = document.createElement('div');
+    bodyRow.className = 'mt-3 grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_160px] gap-2 items-stretch';
 
     const subWrap = document.createElement('div');
-    subWrap.className = 'mt-2 rounded-xl border border-primary/30 p-2 bg-card-dark';
+    subWrap.className = 'rounded-xl border border-primary/30 p-2 bg-card-dark min-w-0 flex flex-col';
 
     const subText = document.createElement('div');
-    subText.className = 'text-xs text-white/90 mb-2 truncate';
-    subText.textContent = subUrl ? shortPreview(subUrl, 28, 12) : '������ ����������';
+    subText.className = 'text-xs text-white/90 truncate';
+    subText.textContent = subUrl ? shortPreview(subUrl, 28, 12) : 'пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ';
     if (subUrl) subText.title = subUrl;
 
     const subBtn = document.createElement('button');
-    subBtn.className = 'ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs w-full';
-    subBtn.textContent = '����������� ������';
+    subBtn.className = 'ios-active border border-primary text-primary font-bold px-3 h-[42px] rounded-xl text-xs mt-2 w-full';
+    subBtn.textContent = 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ';
     subBtn.disabled = !subUrl;
     subBtn.addEventListener('click', async () => {
       if (!subUrl) return;
       try {
         await navigator.clipboard.writeText(subUrl);
-        notify('������ ���������� �����������');
+        notify('пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
       } catch (e) {
-        notify('�� ������� ����������� ������');
+        notify('пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ');
       }
     });
 
     subWrap.appendChild(subText);
     subWrap.appendChild(subBtn);
 
-    left.appendChild(title);
-    left.appendChild(meta);
-    left.appendChild(subWrap);
-
     const actions = document.createElement('div');
-    actions.className = 'flex flex-col gap-2 shrink-0';
+    actions.className = 'flex flex-col gap-2';
 
     const rotateBtn = document.createElement('button');
-    rotateBtn.className = 'ios-active border border-primary text-primary font-bold px-2 py-1 rounded-lg text-xs';
-    rotateBtn.textContent = '�������� ����';
+    rotateBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[42px] rounded-xl text-xs';
+    rotateBtn.textContent = 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ';
     rotateBtn.addEventListener('click', async () => {
       try {
         const res = await apiFetch('/api/device/rotate', { method: 'POST', body: JSON.stringify({ uuid: item.uuid }) });
         const ready = await isSubscriptionUrlReady((res && res.subscription_url) || subUrl);
-        notify(ready ? '���� ��������, ������ ������' : '���� ��������, ������ ��� �� ������');
+        notify(ready ? 'пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ' : 'пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ');
         loadDevices();
       } catch (e) {
-        notify('�� ������� �������� ���� ����������');
+        notify('пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
       }
     });
 
     const delBtn = document.createElement('button');
-    delBtn.className = 'ios-active border border-primary text-primary font-bold px-2 py-1 rounded-lg text-xs';
-    delBtn.textContent = '�������';
+    delBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[42px] rounded-xl text-xs';
+    delBtn.textContent = 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅ';
     delBtn.addEventListener('click', async () => {
       try {
         await apiFetch('/api/device/remove', { method: 'POST', body: JSON.stringify({ uuid: item.uuid }) });
-        notify('���������� �������');
+        notify('пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
         loadDevices();
       } catch (e) {
-        notify('�� ������� ������� ����������');
+        notify('пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
       }
     });
 
     actions.appendChild(rotateBtn);
     actions.appendChild(delBtn);
 
-    row.appendChild(left);
-    row.appendChild(actions);
-    container.appendChild(row);
+    bodyRow.appendChild(subWrap);
+    bodyRow.appendChild(actions);
+    container.appendChild(bodyRow);
+
     box.appendChild(container);
   });
 }
@@ -538,7 +543,7 @@ function loadDevices() {
 
       const addBtn = document.getElementById('addDeviceBtn');
       if (addBtn) {
-        addBtn.textContent = `�������� ���������� (${connected}/${limit})`;
+        addBtn.textContent = `пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (${connected}/${limit})`;
         addBtn.disabled = !!limit && connected >= limit;
       }
 
@@ -546,7 +551,7 @@ function loadDevices() {
     })
     .catch(() => {
       const box = document.getElementById('deviceList');
-      box.textContent = '�� ������� ��������� ����������.';
+      box.textContent = 'пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.';
     });
 }
 
@@ -561,31 +566,31 @@ document.getElementById('addDeviceBtn').addEventListener('click', async () => {
     const ready = await isSubscriptionUrlReady(res && res.subscription_url);
 
     if (res && res.upgraded) {
-      notify(`����� ��������: ${res.upgraded.old_limit}>${res.upgraded.new_limit}. �������: ${res.upgraded.topup_min_pay} ?.`);
+      notify(`пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: ${res.upgraded.old_limit}>${res.upgraded.new_limit}. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: ${res.upgraded.topup_min_pay} ?.`);
     } else {
-      notify(ready ? `���������� ��������� (${res.devices_ratio || ''}). ������ ������.` : `���������� ��������� (${res.devices_ratio || ''}). ������ ��� �� ������.`);
+      notify(ready ? `пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (${res.devices_ratio || ''}). пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.` : `пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (${res.devices_ratio || ''}). пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.`);
     }
 
     const nameInput = document.getElementById('deviceName');
     if (nameInput) nameInput.value = '';
     loadDevices();
   } catch (e) {
-    if (e && e.message === 'device_limit_reached') notify('��������� ����� ��������� (�������� 5).');
-    else if (e && e.message === 'access_closed') notify('������ ���������. ������� ��������� �������� � �������.');
-    else if (e && e.status === 401) notify('������ �������. ����� ������ ����� Telegram.');
-    else if (e && e.status === 403) notify('�������� ��������� ��� �������� ������� ��������.');
-    else notify('�� ������� �������� ����������: ' + (e && e.message ? e.message : 'unknown_error'));
+    if (e && e.message === 'device_limit_reached') notify('пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 5).');
+    else if (e && e.message === 'access_closed') notify('пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.');
+    else if (e && e.status === 401) notify('пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ Telegram.');
+    else if (e && e.status === 403) notify('пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.');
+    else notify('пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: ' + (e && e.message ? e.message : 'unknown_error'));
   }
 });
 
 document.getElementById('resetDeviceBtn').addEventListener('click', async () => {
-  if (!window.confirm('�������� ���� ������������? ������ ����������� ���������� ��������.')) return;
+  if (!window.confirm('пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ? пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.')) return;
   try {
     await apiFetch('/api/device/reset', { method: 'POST' });
-    notify('���� �������. ������ ���������� �� ������ ����.');
+    notify('пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ.');
     loadDevices();
   } catch (e) {
-    notify('�� ������� �������� ����');
+    notify('пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ');
   }
 });
 
@@ -594,31 +599,31 @@ flexSlider.addEventListener('input', () => {
   renderTariffs();
 });
 
-let paymentSettings = { phone: '+79857719139', bank: 'alfa', recipient: 'Арсений А' };
+let paymentSettings = { phone: '+79857719139', bank: 'alfa', recipient: 'РђСЂСЃРµРЅРёР№ Рђ' };
 let currentPaymentLabel = '';
 
 async function loadPaymentSettings() {
   try {
     paymentSettings = await apiFetch('/api/payment/settings');
   } catch (e) {
-    paymentSettings = { phone: '+79857719139', bank: 'alfa', recipient: 'Арсений А' };
+    paymentSettings = { phone: '+79857719139', bank: 'alfa', recipient: 'РђСЂСЃРµРЅРёР№ Рђ' };
   }
 }
 
 function openPaymentScreen(amount, label) {
   currentPaymentLabel = String(label || '').trim();
-  document.getElementById('paymentAmountDisplay').textContent = `${amount} ₽`;
+  document.getElementById('paymentAmountDisplay').textContent = `${amount} в‚Ѕ`;
   loadPaymentSettings().then(() => {
     document.getElementById('paymentPhoneDisplay').textContent = paymentSettings.phone || '+79857719139';
     const bankName = String(paymentSettings.bank || 'alfa').toLowerCase();
-    let bankDisplay = 'Альфа-Банк';
-    if (bankName.includes('sber')) bankDisplay = 'Сбербанк';
-    if (bankName.includes('ozon')) bankDisplay = 'Ozon Банк';
-    if (bankName.includes('tinkoff') || bankName.includes('t-bank')) bankDisplay = 'Т-Банк';
-    if (bankName.includes('yandex')) bankDisplay = 'Яндекс Банк';
+    let bankDisplay = 'РђР»СЊС„Р°-Р‘Р°РЅРє';
+    if (bankName.includes('sber')) bankDisplay = 'РЎР±РµСЂР±Р°РЅРє';
+    if (bankName.includes('ozon')) bankDisplay = 'Ozon Р‘Р°РЅРє';
+    if (bankName.includes('tinkoff') || bankName.includes('t-bank')) bankDisplay = 'Рў-Р‘Р°РЅРє';
+    if (bankName.includes('yandex')) bankDisplay = 'РЇРЅРґРµРєСЃ Р‘Р°РЅРє';
     document.getElementById('paymentBankDisplay').textContent = bankDisplay;
     const recipientEl = document.getElementById('paymentRecipientDisplay');
-    if (recipientEl) recipientEl.textContent = paymentSettings.recipient || '—';
+    if (recipientEl) recipientEl.textContent = paymentSettings.recipient || 'вЂ”';
   });
 
   const pendingBox = document.getElementById('paymentPendingBox');
@@ -646,7 +651,7 @@ if (profilePayBtn) {
   profilePayBtn.addEventListener('click', () => {
     const limit = CURRENT_USER_DATA ? (CURRENT_USER_DATA.device_limit || 1) : 1;
     let price = tariffMap[limit] ? tariffMap[limit].price : 150;
-    openPaymentScreen(price, `Текущий тариф ${limit}`);
+    openPaymentScreen(price, `РўРµРєСѓС‰РёР№ С‚Р°СЂРёС„ ${limit}`);
   });
 }
 
@@ -654,13 +659,13 @@ document.getElementById('copyPhoneBtn').addEventListener('click', async () => {
   try {
     const phone = document.getElementById('paymentPhoneDisplay').textContent;
     await navigator.clipboard.writeText(phone);
-    notify('Номер телефона скопирован!');
+    notify('РќРѕРјРµСЂ С‚РµР»РµС„РѕРЅР° СЃРєРѕРїРёСЂРѕРІР°РЅ!');
   } catch (e) { }
 });
 
 document.getElementById('submitPaymentBtn').addEventListener('click', async () => {
   const senderVal = document.getElementById('paymentSenderInput').value.trim();
-  if (!/^[\\p{L}]{2,}\\s+[\\p{L}]$/u.test(senderVal)) return notify('Формат: Имя Ф (например Иван П)');
+  if (!/^[\\p{L}]{2,}\\s+[\\p{L}]$/u.test(senderVal)) return notify('Р¤РѕСЂРјР°С‚: РРјСЏ Р¤ (РЅР°РїСЂРёРјРµСЂ РРІР°РЅ Рџ)');
 
   const amountText = document.getElementById('paymentAmountDisplay').textContent;
   const amount = parseInt(amountText.replace(/\D/g, ''), 10) || 150;
@@ -670,11 +675,11 @@ document.getElementById('submitPaymentBtn').addEventListener('click', async () =
       method: 'POST',
       body: JSON.stringify({ amount: amount, sender_name: senderVal, payment_label: currentPaymentLabel })
     });
-    notify('Платеж отмечен. Доступ продлен на 7 дней, проверка идет у администратора.');
+    notify('РџР»Р°С‚РµР¶ РѕС‚РјРµС‡РµРЅ. Р”РѕСЃС‚СѓРї РїСЂРѕРґР»РµРЅ РЅР° 7 РґРЅРµР№, РїСЂРѕРІРµСЂРєР° РёРґРµС‚ Сѓ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°.');
     loadUser();
     pushScreen('screen-home');
   } catch (e) {
-    notify('Ошибка отправки: ' + e.message);
+    notify('РћС€РёР±РєР° РѕС‚РїСЂР°РІРєРё: ' + e.message);
   }
 });
 
@@ -683,7 +688,7 @@ if (USER_ID === ADMIN_ID) {
   adminBtn.classList.remove('hidden');
 }
 document.getElementById('homeAdminBtn').addEventListener('click', () => {
-  if (CURRENT_USER_ID !== ADMIN_ID) return notify('Нет доступа');
+  if (CURRENT_USER_ID !== ADMIN_ID) return notify('РќРµС‚ РґРѕСЃС‚СѓРїР°');
   pushScreen('screen-admin');
   loadAdminUsers();
   loadAdminStats();
@@ -702,40 +707,40 @@ async function loadAdminStats() {
     const box = document.getElementById('adminOnlineList');
     box.innerHTML = '';
     if (!data.online || data.online.length === 0) {
-      box.textContent = 'Никого нет онлайн';
+      box.textContent = 'РќРёРєРѕРіРѕ РЅРµС‚ РѕРЅР»Р°Р№РЅ';
     } else {
       data.online.forEach((name) => {
         const row = document.createElement('div');
         row.className = 'py-1 border-b border-white/10';
-        row.textContent = `• ${name}`;
+        row.textContent = `вЂў ${name}`;
         box.appendChild(row);
       });
     }
   } catch (e) {
     const box = document.getElementById('adminOnlineList');
-    if (box) box.textContent = 'Ошибка загрузки статистики';
-    notify('Не удалось загрузить статистику: ' + (e.message || 'stats'));
+    if (box) box.textContent = 'РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё СЃС‚Р°С‚РёСЃС‚РёРєРё';
+    notify('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ СЃС‚Р°С‚РёСЃС‚РёРєСѓ: ' + (e.message || 'stats'));
   }
 }
-document.getElementById('adminStats').addEventListener('click', () => { loadAdminStats(); notify('Данные сервера обновлены'); });
+document.getElementById('adminStats').addEventListener('click', () => { loadAdminStats(); notify('Р”Р°РЅРЅС‹Рµ СЃРµСЂРІРµСЂР° РѕР±РЅРѕРІР»РµРЅС‹'); });
 const adminPaymentSettingsBtn = document.getElementById('adminPaymentSettings');
 if (adminPaymentSettingsBtn) {
   adminPaymentSettingsBtn.addEventListener('click', async () => {
     try {
       const current = await adminFetch('/api/payment/settings');
-      const phone = (window.prompt('Номер для оплаты (СБП):', String(current.phone || '')) || '').trim();
-      if (!phone) return notify('Номер не задан');
-      const bank = (window.prompt('Банк (например: sber / alfa / tinkoff):', String(current.bank || '')) || '').trim();
-      if (!bank) return notify('Банк не задан');
-      const recipient = (window.prompt('Получатель (например: Арсений А):', String(current.recipient || 'Арсений А')) || '').trim();
-      if (!recipient) return notify('Получатель не задан');
+      const phone = (window.prompt('РќРѕРјРµСЂ РґР»СЏ РѕРїР»Р°С‚С‹ (РЎР‘Рџ):', String(current.phone || '')) || '').trim();
+      if (!phone) return notify('РќРѕРјРµСЂ РЅРµ Р·Р°РґР°РЅ');
+      const bank = (window.prompt('Р‘Р°РЅРє (РЅР°РїСЂРёРјРµСЂ: sber / alfa / tinkoff):', String(current.bank || '')) || '').trim();
+      if (!bank) return notify('Р‘Р°РЅРє РЅРµ Р·Р°РґР°РЅ');
+      const recipient = (window.prompt('РџРѕР»СѓС‡Р°С‚РµР»СЊ (РЅР°РїСЂРёРјРµСЂ: РђСЂСЃРµРЅРёР№ Рђ):', String(current.recipient || 'РђСЂСЃРµРЅРёР№ Рђ')) || '').trim();
+      if (!recipient) return notify('РџРѕР»СѓС‡Р°С‚РµР»СЊ РЅРµ Р·Р°РґР°РЅ');
       await adminFetch('/api/admin/payment/settings', {
         method: 'POST',
         body: JSON.stringify({ phone, bank, recipient })
       });
-      notify('Реквизиты оплаты сохранены');
+      notify('Р РµРєРІРёР·РёС‚С‹ РѕРїР»Р°С‚С‹ СЃРѕС…СЂР°РЅРµРЅС‹');
     } catch (e) {
-      notify('Ошибка сохранения реквизитов: ' + (e.message || 'payment_settings'));
+      notify('РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ СЂРµРєРІРёР·РёС‚РѕРІ: ' + (e.message || 'payment_settings'));
     }
   });
 }
@@ -744,19 +749,19 @@ const adminApprovePaymentBtn = document.getElementById('adminApprovePaymentBtn')
 if (adminApprovePaymentBtn) {
   adminApprovePaymentBtn.addEventListener('click', async () => {
     const userId = document.getElementById('adminUserId').value.trim();
-    if (!userId) return notify('Выберите пользователя');
-    if (!window.confirm('Одобрить платеж и выдать 30 дней?')) return;
+    if (!userId) return notify('Р’С‹Р±РµСЂРёС‚Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ');
+    if (!window.confirm('РћРґРѕР±СЂРёС‚СЊ РїР»Р°С‚РµР¶ Рё РІС‹РґР°С‚СЊ 30 РґРЅРµР№?')) return;
     try {
       await adminFetch('/api/admin/payment/approve', {
         method: 'POST',
         body: JSON.stringify({ user_id: userId })
       });
-      notify('Платеж одобрен');
+      notify('РџР»Р°С‚РµР¶ РѕРґРѕР±СЂРµРЅ');
       await loadAdminUsers();
       document.getElementById('adminUserId').value = userId;
       document.getElementById('adminUserId').dispatchEvent(new Event('change'));
     } catch (e) {
-      notify('Ошибка: ' + e.message);
+      notify('РћС€РёР±РєР°: ' + e.message);
     }
   });
 }
@@ -765,29 +770,29 @@ const adminRejectPaymentBtn = document.getElementById('adminRejectPaymentBtn');
 if (adminRejectPaymentBtn) {
   adminRejectPaymentBtn.addEventListener('click', async () => {
     const userId = document.getElementById('adminUserId').value.trim();
-    if (!userId) return notify('Выберите пользователя');
-    if (!confirmDanger('REJECT', 'Отклонить платеж и ограничить доступ?')) return;
+    if (!userId) return notify('Р’С‹Р±РµСЂРёС‚Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ');
+    if (!confirmDanger('REJECT', 'РћС‚РєР»РѕРЅРёС‚СЊ РїР»Р°С‚РµР¶ Рё РѕРіСЂР°РЅРёС‡РёС‚СЊ РґРѕСЃС‚СѓРї?')) return;
     try {
       await adminFetch('/api/admin/payment/reject', {
         method: 'POST',
         body: JSON.stringify({ user_id: userId })
       });
-      notify('Платеж отклонен, доступ ограничен');
+      notify('РџР»Р°С‚РµР¶ РѕС‚РєР»РѕРЅРµРЅ, РґРѕСЃС‚СѓРї РѕРіСЂР°РЅРёС‡РµРЅ');
       await loadAdminUsers();
       document.getElementById('adminUserId').value = userId;
       document.getElementById('adminUserId').dispatchEvent(new Event('change'));
     } catch (e) {
-      notify('Ошибка: ' + e.message);
+      notify('РћС€РёР±РєР°: ' + e.message);
     }
   });
 }
 document.getElementById('adminRestart').addEventListener('click', async () => {
-  if (!confirmDanger('RESTART', 'Перезапуск Xray')) return;
+  if (!confirmDanger('RESTART', 'РџРµСЂРµР·Р°РїСѓСЃРє Xray')) return;
   try {
     await adminFetch('/api/admin/xray/restart', { method: 'POST' });
-    notify('Xray перезапущен');
+    notify('Xray РїРµСЂРµР·Р°РїСѓС‰РµРЅ');
   } catch (e) {
-    notify('Ошибка');
+    notify('РћС€РёР±РєР°');
   }
 });
 
@@ -826,7 +831,7 @@ function setPanelUiState(isOpen, secondsLeft = 0) {
   setPanelButtonsState(!!isOpen);
   const statusEl = document.getElementById('adminPanelStatusText');
   const timerEl = document.getElementById('adminPanelTimer');
-  if (statusEl) statusEl.textContent = isOpen ? 'открыта' : 'закрыта';
+  if (statusEl) statusEl.textContent = isOpen ? 'РѕС‚РєСЂС‹С‚Р°' : 'Р·Р°РєСЂС‹С‚Р°';
   if (timerEl) timerEl.textContent = isOpen ? formatPanelLeft(secondsLeft) : '--:--';
 }
 
@@ -866,12 +871,12 @@ async function refreshPanelProxyState(silent = true) {
     if (e && (e.status === 401 || e.status === 403)) {
       setPanelUiState(false, 0);
       hidePanelLink();
-      if (!silent) notify('Нет доступа к панели');
+      if (!silent) notify('РќРµС‚ РґРѕСЃС‚СѓРїР° Рє РїР°РЅРµР»Рё');
       return false;
     }
 
     if (!panelStatusSyncLostNotified && !silent) {
-      notify('Связь с API нестабильна. Повтори через пару секунд.');
+      notify('РЎРІСЏР·СЊ СЃ API РЅРµСЃС‚Р°Р±РёР»СЊРЅР°. РџРѕРІС‚РѕСЂРё С‡РµСЂРµР· РїР°СЂСѓ СЃРµРєСѓРЅРґ.');
       panelStatusSyncLostNotified = true;
     }
     return false;
@@ -892,16 +897,16 @@ async function openPanelWithFreshSession(silent = false) {
       setPanelLinkHref(href);
       setPanelUiState(true, Number((res && res.ttl_sec) || 900));
       openPanelExternal(href);
-      if (!silent) notify('Панель открыта на 15 минут');
+      if (!silent) notify('РџР°РЅРµР»СЊ РѕС‚РєСЂС‹С‚Р° РЅР° 15 РјРёРЅСѓС‚');
       return true;
     }
 
-    if (!silent) notify('Не удалось открыть панель. Повтори через пару секунд.');
+    if (!silent) notify('РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РїР°РЅРµР»СЊ. РџРѕРІС‚РѕСЂРё С‡РµСЂРµР· РїР°СЂСѓ СЃРµРєСѓРЅРґ.');
     await refreshPanelProxyState(true);
     return false;
   } catch (e) {
-    if (e && (e.status === 401 || e.status === 403)) notify('Нет доступа к панели');
-    else notify('Не удалось открыть панель. Проверь сеть и повтори.');
+    if (e && (e.status === 401 || e.status === 403)) notify('РќРµС‚ РґРѕСЃС‚СѓРїР° Рє РїР°РЅРµР»Рё');
+    else notify('РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РїР°РЅРµР»СЊ. РџСЂРѕРІРµСЂСЊ СЃРµС‚СЊ Рё РїРѕРІС‚РѕСЂРё.');
     await refreshPanelProxyState(true);
     return false;
   } finally {
@@ -922,7 +927,7 @@ if (panelLinkAnchor) {
     e.preventDefault();
     const href = String(panelLinkAnchor.getAttribute('href') || '').trim();
     if (!href) {
-      notify('Сначала открой панель, затем переходи по ссылке.');
+      notify('РЎРЅР°С‡Р°Р»Р° РѕС‚РєСЂРѕР№ РїР°РЅРµР»СЊ, Р·Р°С‚РµРј РїРµСЂРµС…РѕРґРё РїРѕ СЃСЃС‹Р»РєРµ.');
       return;
     }
     openPanelExternal(href);
@@ -937,10 +942,10 @@ if (adminPanelCloseBtn) {
       await adminFetch('/api/admin/proxy_close', { method: 'POST' });
       hidePanelLink();
       setPanelUiState(false, 0);
-      notify('Панель закрыта');
+      notify('РџР°РЅРµР»СЊ Р·Р°РєСЂС‹С‚Р°');
     } catch (e) {
-      if (e && (e.status === 401 || e.status === 403)) notify('Нет доступа к панели');
-      else notify('Ошибка закрытия панели. Повтори еще раз.');
+      if (e && (e.status === 401 || e.status === 403)) notify('РќРµС‚ РґРѕСЃС‚СѓРїР° Рє РїР°РЅРµР»Рё');
+      else notify('РћС€РёР±РєР° Р·Р°РєСЂС‹С‚РёСЏ РїР°РЅРµР»Рё. РџРѕРІС‚РѕСЂРё РµС‰Рµ СЂР°Р·.');
       await refreshPanelProxyState(true);
     } finally {
       setPanelActionBusy(false);
@@ -957,102 +962,102 @@ if (!panelStatePollHandle) {
 document.getElementById('adminAddSlots').addEventListener('click', async () => {
   try {
     const r = await adminFetch('/api/admin/add_slots', { method: 'POST' });
-    notify(`Новый лимит: ${r.max_users}`);
+    notify(`РќРѕРІС‹Р№ Р»РёРјРёС‚: ${r.max_users}`);
   } catch (e) {
-    notify('Ошибка');
+    notify('РћС€РёР±РєР°');
   }
 });
-function adminErr(e, fallback = 'Ошибка') {
+function adminErr(e, fallback = 'РћС€РёР±РєР°') {
   const msg = (e && e.message) ? e.message : fallback;
   notify(`${fallback}: ${msg}`);
 }
 
 document.getElementById('adminBan').addEventListener('click', async () => {
   const userId = document.getElementById('adminUserId').value.trim();
-  if (!userId) return notify('Укажи Telegram ID');
+  if (!userId) return notify('РЈРєР°Р¶Рё Telegram ID');
   try {
     await adminFetch('/api/admin/user/ban', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
-    notify('Пользователь забанен');
+    notify('РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ Р·Р°Р±Р°РЅРµРЅ');
     await loadAdminUsers(userId, true);
     document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    adminErr(e, 'Ошибка бана');
+    adminErr(e, 'РћС€РёР±РєР° Р±Р°РЅР°');
   }
 });
 document.getElementById('adminUnban').addEventListener('click', async () => {
   const userId = document.getElementById('adminUserId').value.trim();
-  if (!userId) return notify('Укажи Telegram ID');
+  if (!userId) return notify('РЈРєР°Р¶Рё Telegram ID');
   try {
     await adminFetch('/api/admin/user/unban', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
-    notify('Пользователь разблокирован');
+    notify('РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЂР°Р·Р±Р»РѕРєРёСЂРѕРІР°РЅ');
     await loadAdminUsers(userId, true);
     document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    adminErr(e, 'Ошибка разбана');
+    adminErr(e, 'РћС€РёР±РєР° СЂР°Р·Р±Р°РЅР°');
   }
 });
 document.getElementById('adminDelete').addEventListener('click', async () => {
   const userId = document.getElementById('adminUserId').value.trim();
-  if (!userId) return notify('Укажи Telegram ID');
-  if (!confirmDanger('DELETE', `Удаление пользователя ${userId}`)) return;
+  if (!userId) return notify('РЈРєР°Р¶Рё Telegram ID');
+  if (!confirmDanger('DELETE', `РЈРґР°Р»РµРЅРёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ ${userId}`)) return;
   try {
     await adminFetch('/api/admin/user/delete', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
-    notify('Пользователь удален');
+    notify('РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ СѓРґР°Р»РµРЅ');
     await loadAdminUsers('', true);
   } catch (e) {
-    adminErr(e, 'Ошибка удаления');
+    adminErr(e, 'РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ');
   }
 });
 
 document.getElementById('adminTrial7').addEventListener('click', async () => {
   const userId = document.getElementById('adminUserId').value.trim();
-  if (!userId) return notify('Выбери пользователя');
+  if (!userId) return notify('Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ');
   try {
     await adminFetch('/api/admin/user/trial7', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
-    notify('Выдан trial 7 дней');
+    notify('Р’С‹РґР°РЅ trial 7 РґРЅРµР№');
     await loadAdminUsers(userId, true);
     document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    adminErr(e, 'Ошибка trial');
+    adminErr(e, 'РћС€РёР±РєР° trial');
   }
 });
 document.getElementById('adminExtend').addEventListener('click', async () => {
   const userId = document.getElementById('adminUserId').value.trim();
   const days = parseInt(document.getElementById('adminDays').value || '0', 10);
-  if (!userId) return notify('Выбери пользователя');
-  if (!days || days < 1) return notify('Укажи дни');
+  if (!userId) return notify('Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ');
+  if (!days || days < 1) return notify('РЈРєР°Р¶Рё РґРЅРё');
   try {
     await adminFetch('/api/admin/user/extend', { method: 'POST', body: JSON.stringify({ user_id: userId, days }) });
-    notify(`Продлено на ${days} дн.`);
+    notify(`РџСЂРѕРґР»РµРЅРѕ РЅР° ${days} РґРЅ.`);
     await loadAdminUsers(userId, true);
     document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    adminErr(e, 'Ошибка продления');
+    adminErr(e, 'РћС€РёР±РєР° РїСЂРѕРґР»РµРЅРёСЏ');
   }
 });
 document.getElementById('adminUnlimited').addEventListener('click', async () => {
   const userId = document.getElementById('adminUserId').value.trim();
-  if (!userId) return notify('Выбери пользователя');
+  if (!userId) return notify('Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ');
   try {
     await adminFetch('/api/admin/user/unlimited', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
-    notify('Выдан доступ без срока');
+    notify('Р’С‹РґР°РЅ РґРѕСЃС‚СѓРї Р±РµР· СЃСЂРѕРєР°');
     await loadAdminUsers(userId, true);
     document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    adminErr(e, 'Ошибка выдачи без срока');
+    adminErr(e, 'РћС€РёР±РєР° РІС‹РґР°С‡Рё Р±РµР· СЃСЂРѕРєР°');
   }
 });
 document.getElementById('adminResetSub').addEventListener('click', async () => {
   const userId = document.getElementById('adminUserId').value.trim();
-  if (!userId) return notify('Выбери пользователя');
-  if (!confirmDanger('RESET', `Сброс подписки пользователя ${userId}`)) return;
+  if (!userId) return notify('Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ');
+  if (!confirmDanger('RESET', `РЎР±СЂРѕСЃ РїРѕРґРїРёСЃРєРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ ${userId}`)) return;
   try {
     await adminFetch('/api/admin/user/reset_subscription', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
-    notify('Подписка сброшена');
+    notify('РџРѕРґРїРёСЃРєР° СЃР±СЂРѕС€РµРЅР°');
     await loadAdminUsers(userId, true);
     document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    adminErr(e, 'Ошибка сброса подписки');
+    adminErr(e, 'РћС€РёР±РєР° СЃР±СЂРѕСЃР° РїРѕРґРїРёСЃРєРё');
   }
 });
 document.getElementById('adminUsersRefresh').addEventListener('click', loadAdminUsers);
@@ -1065,7 +1070,7 @@ document.getElementById('adminUserId').addEventListener('change', () => {
   const rejectBtn = document.getElementById('adminRejectPaymentBtn');
 
   if (!userId || !adminUsersById[userId]) {
-    meta.textContent = 'Выбери пользователя, чтобы увидеть детали подписки.';
+    meta.textContent = 'Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, С‡С‚РѕР±С‹ СѓРІРёРґРµС‚СЊ РґРµС‚Р°Р»Рё РїРѕРґРїРёСЃРєРё.';
     openBtn.disabled = true;
     if (actionsBox) actionsBox.classList.add('hidden');
     return;
@@ -1083,9 +1088,9 @@ document.getElementById('adminUserId').addEventListener('change', () => {
     else rejectBtn.classList.add('hidden');
   }
 
-  const expiry = u.expiry_human || (u.expiry ? u.expiry : 'Без срока/нет');
+  const expiry = u.expiry_human || (u.expiry ? u.expiry : 'Р‘РµР· СЃСЂРѕРєР°/РЅРµС‚');
   const days = Number(u.days_left);
-  const daysText = Number.isFinite(days) ? `${days} дн` : '—';
+  const daysText = Number.isFinite(days) ? `${days} РґРЅ` : 'вЂ”';
   const connected = Number(u.connected_devices || 0);
   const limit = Number(u.device_limit || 0);
   const ratio = `${connected}/${limit}`;
@@ -1093,24 +1098,24 @@ document.getElementById('adminUserId').addEventListener('change', () => {
 
   meta.classList.add('whitespace-pre-line');
   meta.textContent = [
-    `Статус: ${u.status || 'none'}`,
-    `Подписка до: ${expiry}`,
-    `Осталось: ${daysText}`,
-    `Тариф: ${u.tariff_name || '—'} · Устройства: ${ratio}`,
-    `Категория: ${tierText}`,
-    `Трафик: ${u.traffic_limit_gb || 0} GB/мес`
+    `РЎС‚Р°С‚СѓСЃ: ${u.status || 'none'}`,
+    `РџРѕРґРїРёСЃРєР° РґРѕ: ${expiry}`,
+    `РћСЃС‚Р°Р»РѕСЃСЊ: ${daysText}`,
+    `РўР°СЂРёС„: ${u.tariff_name || 'вЂ”'} В· РЈСЃС‚СЂРѕР№СЃС‚РІР°: ${ratio}`,
+    `РљР°С‚РµРіРѕСЂРёСЏ: ${tierText}`,
+    `РўСЂР°С„РёРє: ${u.traffic_limit_gb || 0} GB/РјРµСЃ`
   ].join('\n');
 
   if (u.payment_status === 'pending_verification') {
     const paymentNotice = document.createElement('div');
     paymentNotice.className = 'mt-3 p-2 bg-yellow-900/30 border border-yellow-500 text-yellow-200 rounded-lg text-xs leading-5 whitespace-pre-line';
     paymentNotice.textContent = [
-      'СБП ПЛАТЕЖ ОЖИДАЕТ ПРОВЕРКИ',
-      `Заявленная сумма: ${u.payment_amount || 0} ₽`,
-      `Плательщик: ${u.payment_sender || '—'}`,
-      `Тариф: ${u.payment_label || '—'}`,
-      `Подтверждение (МСК): ${u.payment_time_msk || '—'}`,
-      `Реквизиты: ${u.payment_bank || '—'} · ${u.payment_phone || '—'} · ${u.payment_recipient || '—'}`
+      'РЎР‘Рџ РџР›РђРўР•Р– РћР–РР”РђР•Рў РџР РћР’Р•Р РљР',
+      `Р—Р°СЏРІР»РµРЅРЅР°СЏ СЃСѓРјРјР°: ${u.payment_amount || 0} в‚Ѕ`,
+      `РџР»Р°С‚РµР»СЊС‰РёРє: ${u.payment_sender || 'вЂ”'}`,
+      `РўР°СЂРёС„: ${u.payment_label || 'вЂ”'}`,
+      `РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ (РњРЎРљ): ${u.payment_time_msk || 'вЂ”'}`,
+      `Р РµРєРІРёР·РёС‚С‹: ${u.payment_bank || 'вЂ”'} В· ${u.payment_phone || 'вЂ”'} В· ${u.payment_recipient || 'вЂ”'}`
     ].join('\n');
     meta.appendChild(paymentNotice);
   }
@@ -1132,9 +1137,9 @@ if (adminManageSubToggle) {
 document.getElementById('adminOpenTg').addEventListener('click', () => {
   const userId = document.getElementById('adminUserId').value.trim();
   const u = adminUsersById[userId];
-  if (!u) return notify('Выбери пользователя');
+  if (!u) return notify('Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ');
   const link = u.tg_link || '';
-  if (!link) return notify('У пользователя нет username в Telegram');
+  if (!link) return notify('РЈ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РЅРµС‚ username РІ Telegram');
   if (tg && tg.openTelegramLink) {
     try { tg.openTelegramLink(link); } catch (e) { window.open(link, '_blank'); }
   } else {
@@ -1146,17 +1151,17 @@ document.getElementById('adminClientCreate').addEventListener('click', async () 
   const email = document.getElementById('adminClientEmail').value.trim();
   const tgId = document.getElementById('adminClientTgId').value.trim();
   const limit = parseInt(document.getElementById('adminClientLimit').value || '3', 10);
-  if (!email) return notify('Укажи название/email клиента');
+  if (!email) return notify('РЈРєР°Р¶Рё РЅР°Р·РІР°РЅРёРµ/email РєР»РёРµРЅС‚Р°');
   try {
     await adminFetch('/api/admin/client/create', {
       method: 'POST',
       body: JSON.stringify({ email: email, tg_id: tgId || 'manual', limit: limit })
     });
-    notify('Клиент добавлен');
+    notify('РљР»РёРµРЅС‚ РґРѕР±Р°РІР»РµРЅ');
     document.getElementById('adminClientEmail').value = '';
     loadAdminClients();
   } catch (e) {
-    notify('Ошибка');
+    notify('РћС€РёР±РєР°');
   }
 });
 document.getElementById('adminBackup').addEventListener('click', async () => {
@@ -1174,9 +1179,9 @@ document.getElementById('adminBackup').addEventListener('click', async () => {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    notify('Бэкап скачан');
+    notify('Р‘СЌРєР°Рї СЃРєР°С‡Р°РЅ');
   } catch (e) {
-    notify('Ошибка');
+    notify('РћС€РёР±РєР°');
   }
 });
 
@@ -1193,11 +1198,11 @@ function formatBytes(val) {
 
 async function loadAdminClients() {
   const box = document.getElementById('adminClients');
-  box.textContent = 'Загрузка...';
+  box.textContent = 'Р—Р°РіСЂСѓР·РєР°...';
   try {
     const data = await adminFetch('/api/admin/clients');
     if (!data.items || data.items.length === 0) {
-      box.textContent = 'Список пуст';
+      box.textContent = 'РЎРїРёСЃРѕРє РїСѓСЃС‚';
       return;
     }
     box.innerHTML = '';
@@ -1211,7 +1216,7 @@ async function loadAdminClients() {
       name.textContent = item.display_name || item.email || item.uuid;
       const meta = document.createElement('div');
       meta.className = 'text-muted-gray text-xs';
-      meta.textContent = `${item.online ? 'Онлайн' : 'Офлайн'} · ${formatBytes(item.total || 0)}`;
+      meta.textContent = `${item.online ? 'РћРЅР»Р°Р№РЅ' : 'РћС„Р»Р°Р№РЅ'} В· ${formatBytes(item.total || 0)}`;
       left.appendChild(name);
       left.appendChild(meta);
 
@@ -1220,35 +1225,35 @@ async function loadAdminClients() {
 
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'border border-accent-red text-accent-red font-bold px-2 py-1 rounded-lg text-xs hover:bg-accent-red/10';
-      deleteBtn.textContent = 'Удалить';
+      deleteBtn.textContent = 'РЈРґР°Р»РёС‚СЊ';
       deleteBtn.addEventListener('click', async () => {
-        if (!confirmDanger('DELETE', 'Удаление устройства: ' + (item.display_name || item.uuid))) return;
+        if (!confirmDanger('DELETE', 'РЈРґР°Р»РµРЅРёРµ СѓСЃС‚СЂРѕР№СЃС‚РІР°: ' + (item.display_name || item.uuid))) return;
         try {
           await adminFetch('/api/admin/client/delete', {
             method: 'POST',
             body: JSON.stringify({ uuid: item.uuid })
           });
-          notify('Устройство удалено');
+          notify('РЈСЃС‚СЂРѕР№СЃС‚РІРѕ СѓРґР°Р»РµРЅРѕ');
           loadAdminClients();
         } catch (e) {
-          notify('Ошибка удаления');
+          notify('РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ');
         }
       });
       right.appendChild(deleteBtn);
 
       const toggle = document.createElement('button');
       toggle.className = 'ios-active border border-primary text-primary font-bold px-2 py-1 rounded-lg text-xs';
-      toggle.textContent = item.enable ? 'Откл' : 'Вкл';
+      toggle.textContent = item.enable ? 'РћС‚РєР»' : 'Р’РєР»';
       toggle.addEventListener('click', async () => {
         try {
           await adminFetch('/api/admin/client/enable', {
             method: 'POST',
             body: JSON.stringify({ uuid: item.uuid, enable: !item.enable })
           });
-          notify('Сохранено');
+          notify('РЎРѕС…СЂР°РЅРµРЅРѕ');
           loadAdminClients();
         } catch (e) {
-          notify('Ошибка');
+          notify('РћС€РёР±РєР°');
         }
       });
       right.appendChild(toggle);
@@ -1258,17 +1263,17 @@ async function loadAdminClients() {
       box.appendChild(row);
     });
   } catch (e) {
-    box.textContent = 'Ошибка загрузки';
+    box.textContent = 'РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё';
   }
 }
 
 document.getElementById('adminClientsRefresh').addEventListener('click', loadAdminClients);
 document.getElementById('adminSetOwn').addEventListener('click', async () => {
   const userId = document.getElementById('adminUserId').value.trim();
-  if (!userId) return notify('Выбери пользователя');
+  if (!userId) return notify('Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ');
   try {
     await adminFetch('/api/admin/user/tier', { method: 'POST', body: JSON.stringify({ user_id: userId, tier: 'own' }) });
-    notify('Категория: СВОЙ');
+    notify('РљР°С‚РµРіРѕСЂРёСЏ: РЎР’РћР™');
     await loadAdminUsers();
     document.getElementById('adminUserId').value = userId;
     document.getElementById('adminUserId').dispatchEvent(new Event('change'));
@@ -1277,15 +1282,15 @@ document.getElementById('adminSetOwn').addEventListener('click', async () => {
       loadUser();
     }
   } catch (e) {
-    notify(`Ошибка: ${e.message || 'set_own'}`);
+    notify(`РћС€РёР±РєР°: ${e.message || 'set_own'}`);
   }
 });
 document.getElementById('adminSetRegular').addEventListener('click', async () => {
   const userId = document.getElementById('adminUserId').value.trim();
-  if (!userId) return notify('Выбери пользователя');
+  if (!userId) return notify('Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ');
   try {
     await adminFetch('/api/admin/user/tier', { method: 'POST', body: JSON.stringify({ user_id: userId, tier: 'regular' }) });
-    notify('Категория: Обычный');
+    notify('РљР°С‚РµРіРѕСЂРёСЏ: РћР±С‹С‡РЅС‹Р№');
     await loadAdminUsers();
     document.getElementById('adminUserId').value = userId;
     document.getElementById('adminUserId').dispatchEvent(new Event('change'));
@@ -1294,7 +1299,7 @@ document.getElementById('adminSetRegular').addEventListener('click', async () =>
       loadUser();
     }
   } catch (e) {
-    notify(`Ошибка: ${e.message || 'set_regular'}`);
+    notify(`РћС€РёР±РєР°: ${e.message || 'set_regular'}`);
   }
 });
 
@@ -1305,7 +1310,7 @@ async function loadAdminUsers(selectedId = '', silent = false) {
     const data = await adminFetch('/api/admin/users');
     adminUsersById = {};
     const keepId = String(selectedId || sel.value || '').trim();
-    sel.innerHTML = '<option value="">Выбери пользователя</option>';
+    sel.innerHTML = '<option value="">Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</option>';
     (data.items || []).forEach(u => {
       adminUsersById[u.id] = u;
       const opt = document.createElement('option');
@@ -1319,22 +1324,22 @@ async function loadAdminUsers(selectedId = '', silent = false) {
       else label = tgUser || baseLabel || `ID ${u.id}`;
       const withId = label.includes(`(${u.id})`) || label === `ID ${u.id}` ? label : `${label} (${u.id})`;
       const d = Number(u.days_left);
-      const subText = u.expiry_human ? ` до ${u.expiry_human}` : '';
-      const leftText = Number.isFinite(d) ? ` · ${d}д` : '';
-      const ratioText = ` · ${u.connected_devices || 0}/${u.device_limit || 0}`;
-      let tierTag = '[ОБЫЧНЫЙ]';
+      const subText = u.expiry_human ? ` РґРѕ ${u.expiry_human}` : '';
+      const leftText = Number.isFinite(d) ? ` В· ${d}Рґ` : '';
+      const ratioText = ` В· ${u.connected_devices || 0}/${u.device_limit || 0}`;
+      let tierTag = '[РћР‘Р«Р§РќР«Р™]';
       const tier = String(u.member_tier || 'regular').toLowerCase();
-      if (tier === 'own') tierTag = '[СВОЙ]';
+      if (tier === 'own') tierTag = '[РЎР’РћР™]';
       if (tier === 'vip') tierTag = '[VIP]';
       opt.textContent = `${withId} ${tierTag} [${u.status}]${subText}${leftText}${ratioText}`;
       sel.appendChild(opt);
     });
     if (keepId && adminUsersById[keepId]) sel.value = keepId;
-    document.getElementById('adminUserMeta').textContent = 'Выбери пользователя, чтобы увидеть детали подписки.';
+    document.getElementById('adminUserMeta').textContent = 'Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, С‡С‚РѕР±С‹ СѓРІРёРґРµС‚СЊ РґРµС‚Р°Р»Рё РїРѕРґРїРёСЃРєРё.';
     document.getElementById('adminOpenTg').disabled = true;
-    if (!silent) notify('Список пользователей обновлен');
+    if (!silent) notify('РЎРїРёСЃРѕРє РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ РѕР±РЅРѕРІР»РµРЅ');
   } catch (e) {
-    adminErr(e, 'Ошибка загрузки пользователей');
+    adminErr(e, 'РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№');
   }
 }
 
@@ -1376,23 +1381,23 @@ function setupFirstRunOnboarding(appLabel, forceShow = false) {
   const steps = [
     {
       selector: '#homeDevicesBtn',
-      title: 'Мои ключи',
-      text: 'Здесь ты получаешь доступ. Нажми «Мои ключи» -> «Добавить устройство» и забери свой ключ.'
+      title: 'РњРѕРё РєР»СЋС‡Рё',
+      text: 'Р—РґРµСЃСЊ С‚С‹ РїРѕР»СѓС‡Р°РµС€СЊ РґРѕСЃС‚СѓРї. РќР°Р¶РјРё В«РњРѕРё РєР»СЋС‡РёВ» -> В«Р”РѕР±Р°РІРёС‚СЊ СѓСЃС‚СЂРѕР№СЃС‚РІРѕВ» Рё Р·Р°Р±РµСЂРё СЃРІРѕР№ РєР»СЋС‡.'
     },
     {
       selector: '#buyBtn',
-      title: 'Поддержать проект',
-      text: 'Здесь выбирается тариф и подтверждается перевод. После подтверждения админом доступ продлевается.'
+      title: 'РџРѕРґРґРµСЂР¶Р°С‚СЊ РїСЂРѕРµРєС‚',
+      text: 'Р—РґРµСЃСЊ РІС‹Р±РёСЂР°РµС‚СЃСЏ С‚Р°СЂРёС„ Рё РїРѕРґС‚РІРµСЂР¶РґР°РµС‚СЃСЏ РїРµСЂРµРІРѕРґ. РџРѕСЃР»Рµ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ Р°РґРјРёРЅРѕРј РґРѕСЃС‚СѓРї РїСЂРѕРґР»РµРІР°РµС‚СЃСЏ.'
     },
     {
       selector: '#homeRefBtn',
-      title: 'Пригласить в клуб',
-      text: 'Тут твоя инвайт-ссылка. Приглашай людей и получай скидку после их первой оплаты.'
+      title: 'РџСЂРёРіР»Р°СЃРёС‚СЊ РІ РєР»СѓР±',
+      text: 'РўСѓС‚ С‚РІРѕСЏ РёРЅРІР°Р№С‚-СЃСЃС‹Р»РєР°. РџСЂРёРіР»Р°С€Р°Р№ Р»СЋРґРµР№ Рё РїРѕР»СѓС‡Р°Р№ СЃРєРёРґРєСѓ РїРѕСЃР»Рµ РёС… РїРµСЂРІРѕР№ РѕРїР»Р°С‚С‹.'
     },
     {
       selector: '#homeDevicesBtn',
-      title: 'Как подключить сервис',
-      text: '1) Скачай приложение V2Ray-клиент. 2) В «Мои ключи» создай устройство. 3) Скопируй ключ и вставь его в V2Ray.'
+      title: 'РљР°Рє РїРѕРґРєР»СЋС‡РёС‚СЊ СЃРµСЂРІРёСЃ',
+      text: '1) РЎРєР°С‡Р°Р№ РїСЂРёР»РѕР¶РµРЅРёРµ V2Ray-РєР»РёРµРЅС‚. 2) Р’ В«РњРѕРё РєР»СЋС‡РёВ» СЃРѕР·РґР°Р№ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ. 3) РЎРєРѕРїРёСЂСѓР№ РєР»СЋС‡ Рё РІСЃС‚Р°РІСЊ РµРіРѕ РІ V2Ray.'
     }
   ];
 
@@ -1447,7 +1452,7 @@ function setupFirstRunOnboarding(appLabel, forceShow = false) {
     const step = steps[idx];
     title.textContent = step.title;
     text.textContent = step.text;
-    nextBtn.textContent = idx === steps.length - 1 ? 'Готово' : 'Далее';
+    nextBtn.textContent = idx === steps.length - 1 ? 'Р“РѕС‚РѕРІРѕ' : 'Р”Р°Р»РµРµ';
 
     clearTarget();
     currentTarget = step.selector ? document.querySelector(step.selector) : null;
@@ -1529,19 +1534,19 @@ async function loadAdminSupportTickets() {
   try {
     const res = await adminFetch('/api/admin/support_tickets');
     adminSupportTickets = res.items || [];
-    sel.innerHTML = '<option value="">Выберите диалог</option>';
+    sel.innerHTML = '<option value="">Р’С‹Р±РµСЂРёС‚Рµ РґРёР°Р»РѕРі</option>';
     adminSupportTickets.forEach(t => {
       const opt = document.createElement('option');
       opt.value = t.user_id;
-      const unread = t.needs_reply ? ' [НОВОЕ]' : '';
+      const unread = t.needs_reply ? ' [РќРћР’РћР•]' : '';
       opt.textContent = `${t.name}${unread}`;
       sel.appendChild(opt);
     });
-    document.getElementById('adminSupportMessages').innerHTML = '<div class="text-center text-muted-gray text-xs mt-auto py-4">Выберите диалог из списка выше</div>';
+    document.getElementById('adminSupportMessages').innerHTML = '<div class="text-center text-muted-gray text-xs mt-auto py-4">Р’С‹Р±РµСЂРёС‚Рµ РґРёР°Р»РѕРі РёР· СЃРїРёСЃРєР° РІС‹С€Рµ</div>';
     document.getElementById('adminSupportInput').disabled = true;
     document.getElementById('adminSupportSendBtn').disabled = true;
   } catch (e) {
-    notify('Ошибка загрузки тикетов');
+    notify('РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё С‚РёРєРµС‚РѕРІ');
   }
 }
 
@@ -1556,7 +1561,7 @@ if (adminSupSel) adminSupSel.addEventListener('change', (e) => {
   const btn = document.getElementById('adminSupportSendBtn');
 
   if (!uid) {
-    list.innerHTML = '<div class="text-center text-muted-gray text-xs mt-auto py-4">Выберите диалог из списка выше</div>';
+    list.innerHTML = '<div class="text-center text-muted-gray text-xs mt-auto py-4">Р’С‹Р±РµСЂРёС‚Рµ РґРёР°Р»РѕРі РёР· СЃРїРёСЃРєР° РІС‹С€Рµ</div>';
     inp.disabled = true;
     btn.disabled = true;
     return;
@@ -1605,7 +1610,7 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
     sel.value = uid;
     sel.dispatchEvent(new Event('change'));
   } catch (e) {
-    notify('Ошибка отправки: ' + e.message);
+    notify('РћС€РёР±РєР° РѕС‚РїСЂР°РІРєРё: ' + e.message);
   } finally {
     inp.disabled = false;
     adminSupBtn.disabled = false;
@@ -1615,6 +1620,7 @@ if (adminSupBtn) adminSupBtn.addEventListener('click', async () => {
 document.querySelectorAll('.admin-tab-btn[data-tab="admin-tab-support"]').forEach(b => {
   b.addEventListener('click', loadAdminSupportTickets);
 });
+
 
 
 

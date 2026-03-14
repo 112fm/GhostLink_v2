@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 
 <head>
@@ -48,8 +48,8 @@
 <body class="flex flex-col p-6">
   <section id="screen-locked" class="screen">
     <div class="h-full flex flex-col items-center justify-center text-center">
-      <div class="text-2xl font-bold mb-2">Доступ закрыт</div>
-      <div class="text-muted-gray">Вход только по приглашению.</div>
+      <div class="text-2xl font-bold mb-2">Р”РѕСЃС‚СѓРї Р·Р°РєСЂС‹С‚</div>
+      <div class="text-muted-gray">Р’С…РѕРґ С‚РѕР»СЊРєРѕ РїРѕ РїСЂРёРіР»Р°С€РµРЅРёСЋ.</div>
     </div>
   </section>
   <header id="appHeader" class="pt-2 mb-6 flex items-center gap-3">
@@ -59,28 +59,28 @@
         GHOSTLINK
       </h1>
     </div>
-    <button id="helpBtn" class="ios-active w-9 h-9 rounded-full border border-primary text-primary font-bold text-lg leading-none" aria-label="Показать подсказки">?</button>
-    <button id="backBtn" class="hidden text-white/80">Назад</button>
+    <button id="helpBtn" class="ios-active w-9 h-9 rounded-full border border-primary text-primary font-bold text-lg leading-none" aria-label="РџРѕРєР°Р·Р°С‚СЊ РїРѕРґСЃРєР°Р·РєРё">?</button>
+    <button id="backBtn" class="hidden text-white/80">РќР°Р·Р°Рґ</button>
   </header>
 
   <main class="flex-1 overflow-y-auto">
     <section id="screen-home" class="screen active">
       <div class="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 mb-8 items-start">
-        <span class="text-white text-[28px] font-bold leading-none" id="balanceValue">0₽</span>
-        <span class="text-white text-lg font-bold leading-none text-right" id="expiryValue">нет подписки</span>
+        <span class="text-white text-[28px] font-bold leading-none" id="balanceValue">0в‚Ѕ</span>
+        <span class="text-white text-lg font-bold leading-none text-right" id="expiryValue">РЅРµС‚ РїРѕРґРїРёСЃРєРё</span>
         <div class="min-h-[16px] flex items-end">
-          <span class="text-muted-gray text-[20px] font-black uppercase tracking-wider">Баланс</span>
+          <span class="text-muted-gray text-[20px] font-black uppercase tracking-wider">Р‘Р°Р»Р°РЅСЃ</span>
         </div>
         <div class="min-h-[16px] flex items-end justify-end">
-          <span id="subStatus" class="text-[10px] font-black uppercase tracking-wider text-accent-red">ПОДПИСКА
-            НЕАКТИВНА</span>
+          <span id="subStatus" class="text-[10px] font-black uppercase tracking-wider text-accent-red">РџРћР”РџРРЎРљРђ
+            РќР•РђРљРўРР’РќРђ</span>
         </div>
       </div>
 
       <div class="flex flex-col gap-4">
         <button id="buyBtn"
           class="ios-active w-full bg-primary h-[60px] rounded-2xl flex items-center justify-between px-6">
-          <span class="text-black font-bold text-lg">Поддержать проект</span>
+          <span class="text-black font-bold text-lg">РџРѕРґРґРµСЂР¶Р°С‚СЊ РїСЂРѕРµРєС‚</span>
           <span class="material-symbols-outlined text-black">favorite</span>
         </button>
       </div>
@@ -89,59 +89,59 @@
         <button id="homeDevicesBtn"
           class="ios-active border border-primary h-[80px] rounded-2xl flex flex-col items-center justify-center gap-1">
           <span class="material-symbols-outlined text-primary">key</span>
-          <span class="text-primary text-sm font-bold">Мои ключи</span>
+          <span class="text-primary text-sm font-bold">РњРѕРё РєР»СЋС‡Рё</span>
         </button>
         <button id="homeRefBtn"
           class="ios-active border border-primary h-[80px] rounded-2xl flex flex-col items-center justify-center gap-1">
           <span class="material-symbols-outlined text-primary">group_add</span>
-          <span class="text-primary text-sm font-bold">Пригласить в клуб</span>
+          <span class="text-primary text-sm font-bold">РџСЂРёРіР»Р°СЃРёС‚СЊ РІ РєР»СѓР±</span>
         </button>
         <button id="homeMoreBtn"
           class="ios-active border border-primary h-[80px] rounded-2xl flex flex-col items-center justify-center gap-1 col-span-2">
           <span class="material-symbols-outlined text-primary">apps</span>
-          <span class="text-primary text-sm font-bold">Ещё</span>
+          <span class="text-primary text-sm font-bold">Р•С‰С‘</span>
         </button>
       </div>
       <button id="homeAdminBtn"
         class="hidden ios-active mt-4 w-full border border-primary h-[52px] rounded-2xl flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-primary">admin_panel_settings</span>
-        <span class="text-primary font-bold">Админка</span>
+        <span class="text-primary font-bold">РђРґРјРёРЅРєР°</span>
       </button>
     </section>
 
     <section id="screen-tariffs" class="screen">
-      <h2 class="text-2xl font-bold mb-4">Поддержка сервиса</h2>
-      <div class="text-muted-gray text-sm mb-3">Тарифный статус: <span id="tierBadge">обычный</span></div>
+      <h2 class="text-2xl font-bold mb-4">РџРѕРґРґРµСЂР¶РєР° СЃРµСЂРІРёСЃР°</h2>
+      <div class="text-muted-gray text-sm mb-3">РўР°СЂРёС„РЅС‹Р№ СЃС‚Р°С‚СѓСЃ: <span id="tierBadge">РѕР±С‹С‡РЅС‹Р№</span></div>
       <div class="border border-primary rounded-2xl p-4 mb-4">
         <div class="text-white text-lg font-bold">Solo Ghost</div>
-        <div class="text-muted-gray text-sm">до 2 устройств · минимальный платеж: <span id="soloMinPay">75</span> ₽
+        <div class="text-muted-gray text-sm">РґРѕ 2 СѓСЃС‚СЂРѕР№СЃС‚РІ В· РјРёРЅРёРјР°Р»СЊРЅС‹Р№ РїР»Р°С‚РµР¶: <span id="soloMinPay">75</span> в‚Ѕ
         </div>
         <div class="mt-3">
-          <button id="soloPay" class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full">1 месяц —
-            <span id="soloPrice">150</span> ₽</button>
+          <button id="soloPay" class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full">1 РјРµСЃСЏС† вЂ”
+            <span id="soloPrice">150</span> в‚Ѕ</button>
         </div>
       </div>
 
       <div class="border border-primary rounded-2xl p-4">
         <div class="text-white text-lg font-bold">Flex Squad</div>
-        <div class="text-muted-gray text-sm">Выбери количество устройств</div>
+        <div class="text-muted-gray text-sm">Р’С‹Р±РµСЂРё РєРѕР»РёС‡РµСЃС‚РІРѕ СѓСЃС‚СЂРѕР№СЃС‚РІ</div>
         <div class="mt-3">
           <input id="flexSlider" type="range" min="3" max="5" value="3" class="w-full">
           <div class="flex justify-between text-xs text-muted-gray mt-1">
             <span>3</span><span>4</span><span>5</span>
           </div>
         </div>
-        <div class="mt-3 text-white" id="flexPrice">3 устройства — 225 ₽</div>
-        <div class="text-muted-gray text-sm mt-1">Минимальный платеж: <span id="flexMinPay">112</span> ₽</div>
+        <div class="mt-3 text-white" id="flexPrice">3 СѓСЃС‚СЂРѕР№СЃС‚РІР° вЂ” 225 в‚Ѕ</div>
+        <div class="text-muted-gray text-sm mt-1">РњРёРЅРёРјР°Р»СЊРЅС‹Р№ РїР»Р°С‚РµР¶: <span id="flexMinPay">112</span> в‚Ѕ</div>
         <button id="flexPay"
-          class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full mt-3">Поддержать</button>
+          class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full mt-3">РџРѕРґРґРµСЂР¶Р°С‚СЊ</button>
       </div>
 
-      <div class="text-muted-gray text-sm mt-4" id="tariffHint">Оплата активирует/продлевает доступ на 30 дней.</div>
+      <div class="text-muted-gray text-sm mt-4" id="tariffHint">РћРїР»Р°С‚Р° Р°РєС‚РёРІРёСЂСѓРµС‚/РїСЂРѕРґР»РµРІР°РµС‚ РґРѕСЃС‚СѓРї РЅР° 30 РґРЅРµР№.</div>
     </section>
 
     <section id="screen-payment" class="screen">
-      <h2 class="text-2xl font-bold mb-4">Оплата СБП</h2>
+      <h2 class="text-2xl font-bold mb-4">РћРїР»Р°С‚Р° РЎР‘Рџ</h2>
       <div id="paymentPendingBox"
         class="hidden mb-4 p-4 border border-yellow-500 bg-yellow-900/30 rounded-2xl text-yellow-200">
         <div class="font-bold flex items-center gap-2">
@@ -151,19 +151,19 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
             </path>
           </svg>
-          Платеж проверяется
+          РџР»Р°С‚РµР¶ РїСЂРѕРІРµСЂСЏРµС‚СЃСЏ
         </div>
-        <p class="text-sm mt-2">Администратор проверяет ваш перевод. Вам выдан временный доступ на 7 дней, чтобы сервис продолжал работать.</p>
+        <p class="text-sm mt-2">РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ РїСЂРѕРІРµСЂСЏРµС‚ РІР°С€ РїРµСЂРµРІРѕРґ. Р’Р°Рј РІС‹РґР°РЅ РІСЂРµРјРµРЅРЅС‹Р№ РґРѕСЃС‚СѓРї РЅР° 7 РґРЅРµР№, С‡С‚РѕР±С‹ СЃРµСЂРІРёСЃ РїСЂРѕРґРѕР»Р¶Р°Р» СЂР°Р±РѕС‚Р°С‚СЊ.</p>
       </div>
 
       <div id="paymentFormBox">
-        <div class="text-muted-gray mb-4 text-sm">Переведите <strong id="paymentAmountDisplay" class="text-white text-lg">0 ₽</strong> по номеру телефона (СБП). Сервис продолжит работать сразу после подтверждения платежа.</div>
+        <div class="text-muted-gray mb-4 text-sm">РџРµСЂРµРІРµРґРёС‚Рµ <strong id="paymentAmountDisplay" class="text-white text-lg">0 в‚Ѕ</strong> РїРѕ РЅРѕРјРµСЂСѓ С‚РµР»РµС„РѕРЅР° (РЎР‘Рџ). РЎРµСЂРІРёСЃ РїСЂРѕРґРѕР»Р¶РёС‚ СЂР°Р±РѕС‚Р°С‚СЊ СЃСЂР°Р·Сѓ РїРѕСЃР»Рµ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ РїР»Р°С‚РµР¶Р°.</div>
 
         <div class="bg-card-dark rounded-2xl p-4 mb-4 flex justify-between items-center border border-primary/20">
           <div>
-            <div class="text-xs text-muted-gray mb-1">Номер телефона (<span id="paymentBankDisplay">...</span>)</div>
+            <div class="text-xs text-muted-gray mb-1">РќРѕРјРµСЂ С‚РµР»РµС„РѕРЅР° (<span id="paymentBankDisplay">...</span>)</div>
             <div class="text-xl font-bold font-mono tracking-wide" id="paymentPhoneDisplay">+7 000 000-00-00</div>
-            <div class="text-xs text-muted-gray mt-2">Получатель: <span class="text-white font-bold" id="paymentRecipientDisplay">—</span></div>
+            <div class="text-xs text-muted-gray mt-2">РџРѕР»СѓС‡Р°С‚РµР»СЊ: <span class="text-white font-bold" id="paymentRecipientDisplay">вЂ”</span></div>
           </div>
           <button id="copyPhoneBtn" class="bg-secondary p-3 rounded-xl text-white active:scale-95 transition-transform">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,124 +173,124 @@
         </div>
 
         <div class="grid grid-cols-4 gap-2 mb-6" id="bankLinksBox">
-          <a href="sberbank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#21a038] text-white flex items-center justify-center font-bold text-xs">С</div>Сбер</a>
-          <a href="tinkoffbank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#ffe600] text-black flex items-center justify-center font-bold text-xs">Т</div>Т-Банк</a>
-          <a href="alfabank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#ef3124] text-white flex items-center justify-center font-bold text-xs">А</div>Альфа</a>
+          <a href="sberbank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#21a038] text-white flex items-center justify-center font-bold text-xs">РЎ</div>РЎР±РµСЂ</a>
+          <a href="tinkoffbank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#ffe600] text-black flex items-center justify-center font-bold text-xs">Рў</div>Рў-Р‘Р°РЅРє</a>
+          <a href="alfabank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#ef3124] text-white flex items-center justify-center font-bold text-xs">Рђ</div>РђР»СЊС„Р°</a>
           <a href="ozon://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#005bff] text-white flex items-center justify-center font-bold text-xs">O</div>Ozon</a>
         </div>
 
-        <div class="text-sm font-bold mb-2">Подтверждение перевода</div>
-        <p class="text-xs text-muted-gray mb-3 pb-3 border-b border-primary/20">Введи имя и первую букву фамилии. Формат: <b>Имя Ф</b></p>
+        <div class="text-sm font-bold mb-2">РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїРµСЂРµРІРѕРґР°</div>
+        <p class="text-xs text-muted-gray mb-3 pb-3 border-b border-primary/20">Р’РІРµРґРё РёРјСЏ Рё РїРµСЂРІСѓСЋ Р±СѓРєРІСѓ С„Р°РјРёР»РёРё. Р¤РѕСЂРјР°С‚: <b>РРјСЏ Р¤</b></p>
 
-        <label class="text-muted-gray text-xs mb-1 block">Плательщик (Имя Ф)</label>
+        <label class="text-muted-gray text-xs mb-1 block">РџР»Р°С‚РµР»СЊС‰РёРє (РРјСЏ Р¤)</label>
         <div class="flex gap-2">
-          <input id="paymentSenderInput" type="text" class="w-full bg-card-dark text-white rounded-xl px-4 py-3 border border-primary/50 focus:border-primary outline-none text-center text-lg font-mono" placeholder="Иван П">
+          <input id="paymentSenderInput" type="text" class="w-full bg-card-dark text-white rounded-xl px-4 py-3 border border-primary/50 focus:border-primary outline-none text-center text-lg font-mono" placeholder="РРІР°РЅ Рџ">
         </div>
 
-        <button id="submitPaymentBtn" class="bg-primary text-black font-bold px-4 py-4 rounded-xl w-full mt-6 ios-active shadow-[0_0_15px_rgba(202,138,4,0.3)]">Я перевел деньги</button>
+        <button id="submitPaymentBtn" class="bg-primary text-black font-bold px-4 py-4 rounded-xl w-full mt-6 ios-active shadow-[0_0_15px_rgba(202,138,4,0.3)]">РЇ РїРµСЂРµРІРµР» РґРµРЅСЊРіРё</button>
       </div>
     </section>
     <section id="screen-more" class="screen">
-      <h2 class="text-2xl font-bold mb-3">Ещё</h2>
+      <h2 class="text-2xl font-bold mb-3">Р•С‰С‘</h2>
       <div class="flex flex-col gap-3">
         <button id="moreSupportBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Поддержка</button>
+          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">РџРѕРґРґРµСЂР¶РєР°</button>
         <button id="morePolicyBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Политика и конфиденциальность</button>
+          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">РџРѕР»РёС‚РёРєР° Рё РєРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚СЊ</button>
         <button id="moreCharterBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Устав клуба</button>
+          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">РЈСЃС‚Р°РІ РєР»СѓР±Р°</button>
         
       </div>
     </section>
 
     <section id="screen-profile" class="screen">
       <div class="mb-4">
-        <div class="text-2xl font-bold" id="profileName">Пользователь</div>
+        <div class="text-2xl font-bold" id="profileName">РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ</div>
         <div class="text-muted-gray" id="profileId">ID: 0</div>
       </div>
       <div class="mb-4 text-muted-gray">
-        Текущая скидка: <span id="discountValue">0 ₽</span>
+        РўРµРєСѓС‰Р°СЏ СЃРєРёРґРєР°: <span id="discountValue">0 в‚Ѕ</span>
       </div>
       <div class="mb-4 text-muted-gray">
-        Устройства: <span id="profileDevicesRatio">0/0</span>
+        РЈСЃС‚СЂРѕР№СЃС‚РІР°: <span id="profileDevicesRatio">0/0</span>
       </div>
       <div class="mb-4 text-muted-gray">
-        Цена в месяц: <span id="profileMonthlyPrice">—</span>
+        Р¦РµРЅР° РІ РјРµСЃСЏС†: <span id="profileMonthlyPrice">вЂ”</span>
       </div>
       <div class="flex flex-col gap-3">
         <button id="profilePayBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Поддержать
-          сервис</button>
+          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">РџРѕРґРґРµСЂР¶Р°С‚СЊ
+          СЃРµСЂРІРёСЃ</button>
         <button id="profileRefBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Пригласить в клуб и
-          скидки</button>
+          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">РџСЂРёРіР»Р°СЃРёС‚СЊ РІ РєР»СѓР± Рё
+          СЃРєРёРґРєРё</button>
         <button id="profileShareBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Поделиться
-          приложением</button>
+          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">РџРѕРґРµР»РёС‚СЊСЃСЏ
+          РїСЂРёР»РѕР¶РµРЅРёРµРј</button>
         <button id="profileSupportBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Связаться с
-          поддержкой</button>
+          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">РЎРІСЏР·Р°С‚СЊСЃСЏ СЃ
+          РїРѕРґРґРµСЂР¶РєРѕР№</button>
         <button id="profileRulesBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Политика и
-          правила</button>
+          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">РџРѕР»РёС‚РёРєР° Рё
+          РїСЂР°РІРёР»Р°</button>
         <button id="profileDevicesBtn"
-          class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">Управление устройствами</button>
+          class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl">РЈРїСЂР°РІР»РµРЅРёРµ СѓСЃС‚СЂРѕР№СЃС‚РІР°РјРё</button>
       </div>
     </section>
 
     <section id="screen-support" class="screen">
-      <h2 class="text-2xl font-bold mb-2">Поддержка</h2>
-      <div class="text-muted-gray mb-4">Откроется чат с ботом.</div>
+      <h2 class="text-2xl font-bold mb-2">РџРѕРґРґРµСЂР¶РєР°</h2>
+      <div class="text-muted-gray mb-4">РћС‚РєСЂРѕРµС‚СЃСЏ С‡Р°С‚ СЃ Р±РѕС‚РѕРј.</div>
       <a id="supportLink" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl inline-block" href="#"
-        target="_blank">Открыть чат</a>
+        target="_blank">РћС‚РєСЂС‹С‚СЊ С‡Р°С‚</a>
     </section>
 
     <section id="screen-rules" class="screen">
-      <h2 class="text-2xl font-bold mb-2">Политика и конфиденциальность</h2>
-      <div class="text-muted-gray text-sm leading-6">        <div class="text-white font-bold mb-1">1. СТАТУС ВЗАИМОДЕЙСТВИЯ</div>
-        GhostLink не является коммерческим поставщиком услуг связи. Это закрытая частная инфраструктура. Любой перевод средств является добровольным взносом на поддержание работоспособности и аренду общих сетевых мощностей. Участие в Клубе подразумевает полное согласие с текущими правилами без права на встречные претензии.
+      <h2 class="text-2xl font-bold mb-2">РџРѕР»РёС‚РёРєР° Рё РєРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚СЊ</h2>
+      <div class="text-muted-gray text-sm leading-6">        <div class="text-white font-bold mb-1">1. РЎРўРђРўРЈРЎ Р’Р—РђРРњРћР”Р•Р™РЎРўР’РРЇ</div>
+        GhostLink РЅРµ СЏРІР»СЏРµС‚СЃСЏ РєРѕРјРјРµСЂС‡РµСЃРєРёРј РїРѕСЃС‚Р°РІС‰РёРєРѕРј СѓСЃР»СѓРі СЃРІСЏР·Рё. Р­С‚Рѕ Р·Р°РєСЂС‹С‚Р°СЏ С‡Р°СЃС‚РЅР°СЏ РёРЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР°. Р›СЋР±РѕР№ РїРµСЂРµРІРѕРґ СЃСЂРµРґСЃС‚РІ СЏРІР»СЏРµС‚СЃСЏ РґРѕР±СЂРѕРІРѕР»СЊРЅС‹Рј РІР·РЅРѕСЃРѕРј РЅР° РїРѕРґРґРµСЂР¶Р°РЅРёРµ СЂР°Р±РѕС‚РѕСЃРїРѕСЃРѕР±РЅРѕСЃС‚Рё Рё Р°СЂРµРЅРґСѓ РѕР±С‰РёС… СЃРµС‚РµРІС‹С… РјРѕС‰РЅРѕСЃС‚РµР№. РЈС‡Р°СЃС‚РёРµ РІ РљР»СѓР±Рµ РїРѕРґСЂР°Р·СѓРјРµРІР°РµС‚ РїРѕР»РЅРѕРµ СЃРѕРіР»Р°СЃРёРµ СЃ С‚РµРєСѓС‰РёРјРё РїСЂР°РІРёР»Р°РјРё Р±РµР· РїСЂР°РІР° РЅР° РІСЃС‚СЂРµС‡РЅС‹Рµ РїСЂРµС‚РµРЅР·РёРё.
         <br><br>
-        <div class="text-white font-bold mb-1">2. ЗАЩИТА ДАННЫХ (ZERO LOGS)</div>
-        Мы придерживаемся политики полного отсутствия логов. Система не фиксирует, не хранит и не передает третьим лицам информацию о ваших маршрутах, посещенных ресурсах или передаваемом контенте. Единственные данные, которые мы видим — это ваш идентификатор в Telegram для привязки ключа.
+        <div class="text-white font-bold mb-1">2. Р—РђР©РРўРђ Р”РђРќРќР«РҐ (ZERO LOGS)</div>
+        РњС‹ РїСЂРёРґРµСЂР¶РёРІР°РµРјСЃСЏ РїРѕР»РёС‚РёРєРё РїРѕР»РЅРѕРіРѕ РѕС‚СЃСѓС‚СЃС‚РІРёСЏ Р»РѕРіРѕРІ. РЎРёСЃС‚РµРјР° РЅРµ С„РёРєСЃРёСЂСѓРµС‚, РЅРµ С…СЂР°РЅРёС‚ Рё РЅРµ РїРµСЂРµРґР°РµС‚ С‚СЂРµС‚СЊРёРј Р»РёС†Р°Рј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РІР°С€РёС… РјР°СЂС€СЂСѓС‚Р°С…, РїРѕСЃРµС‰РµРЅРЅС‹С… СЂРµСЃСѓСЂСЃР°С… РёР»Рё РїРµСЂРµРґР°РІР°РµРјРѕРј РєРѕРЅС‚РµРЅС‚Рµ. Р•РґРёРЅСЃС‚РІРµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ, РєРѕС‚РѕСЂС‹Рµ РјС‹ РІРёРґРёРј вЂ” СЌС‚Рѕ РІР°С€ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РІ Telegram РґР»СЏ РїСЂРёРІСЏР·РєРё РєР»СЋС‡Р°.
         <br><br>
-        <div class="text-white font-bold mb-1">3. ФИНАНСОВАЯ ОТВЕТСТВЕННОСТЬ</div>
-        Все взносы являются окончательными. Ввиду того, что средства немедленно распределяются на поддержание технической базы и оплату зарубежных ресурсов, возврат средств не предусмотрен ни при каких обстоятельствах. Ответственность за корректность перевода и соблюдение тишины при транзакции полностью лежит на Участнике. Администрация оставляет за собой право аннулировать доступ без объяснения причин в случае подозрения на злоупотребление ресурсами.
+        <div class="text-white font-bold mb-1">3. Р¤РРќРђРќРЎРћР’РђРЇ РћРўР’Р•РўРЎРўР’Р•РќРќРћРЎРўР¬</div>
+        Р’СЃРµ РІР·РЅРѕСЃС‹ СЏРІР»СЏСЋС‚СЃСЏ РѕРєРѕРЅС‡Р°С‚РµР»СЊРЅС‹РјРё. Р’РІРёРґСѓ С‚РѕРіРѕ, С‡С‚Рѕ СЃСЂРµРґСЃС‚РІР° РЅРµРјРµРґР»РµРЅРЅРѕ СЂР°СЃРїСЂРµРґРµР»СЏСЋС‚СЃСЏ РЅР° РїРѕРґРґРµСЂР¶Р°РЅРёРµ С‚РµС…РЅРёС‡РµСЃРєРѕР№ Р±Р°Р·С‹ Рё РѕРїР»Р°С‚Сѓ Р·Р°СЂСѓР±РµР¶РЅС‹С… СЂРµСЃСѓСЂСЃРѕРІ, РІРѕР·РІСЂР°С‚ СЃСЂРµРґСЃС‚РІ РЅРµ РїСЂРµРґСѓСЃРјРѕС‚СЂРµРЅ РЅРё РїСЂРё РєР°РєРёС… РѕР±СЃС‚РѕСЏС‚РµР»СЊСЃС‚РІР°С…. РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РєРѕСЂСЂРµРєС‚РЅРѕСЃС‚СЊ РїРµСЂРµРІРѕРґР° Рё СЃРѕР±Р»СЋРґРµРЅРёРµ С‚РёС€РёРЅС‹ РїСЂРё С‚СЂР°РЅР·Р°РєС†РёРё РїРѕР»РЅРѕСЃС‚СЊСЋ Р»РµР¶РёС‚ РЅР° РЈС‡Р°СЃС‚РЅРёРєРµ. РђРґРјРёРЅРёСЃС‚СЂР°С†РёСЏ РѕСЃС‚Р°РІР»СЏРµС‚ Р·Р° СЃРѕР±РѕР№ РїСЂР°РІРѕ Р°РЅРЅСѓР»РёСЂРѕРІР°С‚СЊ РґРѕСЃС‚СѓРї Р±РµР· РѕР±СЉСЏСЃРЅРµРЅРёСЏ РїСЂРёС‡РёРЅ РІ СЃР»СѓС‡Р°Рµ РїРѕРґРѕР·СЂРµРЅРёСЏ РЅР° Р·Р»РѕСѓРїРѕС‚СЂРµР±Р»РµРЅРёРµ СЂРµСЃСѓСЂСЃР°РјРё.
         <br><br>
-        <div class="text-white font-bold mb-1">4. ОТКАЗ ОТ ГАРАНТИЙ (DISCLAIMER)</div>
-        Доступ предоставляется по принципу «Как есть» (As Is). В условиях глобальной нестабильности сетей, действий регуляторов или магистральных провайдеров, Администрация не гарантирует бесперебойную работу или фиксированную скорость. Мы обязуемся принимать все технические меры для восстановления сигнала, но не несем ответственности за его временное отсутствие или блокировку узлов третьими лицами.
+        <div class="text-white font-bold mb-1">4. РћРўРљРђР— РћРў Р“РђР РђРќРўРР™ (DISCLAIMER)</div>
+        Р”РѕСЃС‚СѓРї РїСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚СЃСЏ РїРѕ РїСЂРёРЅС†РёРїСѓ В«РљР°Рє РµСЃС‚СЊВ» (As Is). Р’ СѓСЃР»РѕРІРёСЏС… РіР»РѕР±Р°Р»СЊРЅРѕР№ РЅРµСЃС‚Р°Р±РёР»СЊРЅРѕСЃС‚Рё СЃРµС‚РµР№, РґРµР№СЃС‚РІРёР№ СЂРµРіСѓР»СЏС‚РѕСЂРѕРІ РёР»Рё РјР°РіРёСЃС‚СЂР°Р»СЊРЅС‹С… РїСЂРѕРІР°Р№РґРµСЂРѕРІ, РђРґРјРёРЅРёСЃС‚СЂР°С†РёСЏ РЅРµ РіР°СЂР°РЅС‚РёСЂСѓРµС‚ Р±РµСЃРїРµСЂРµР±РѕР№РЅСѓСЋ СЂР°Р±РѕС‚Сѓ РёР»Рё С„РёРєСЃРёСЂРѕРІР°РЅРЅСѓСЋ СЃРєРѕСЂРѕСЃС‚СЊ. РњС‹ РѕР±СЏР·СѓРµРјСЃСЏ РїСЂРёРЅРёРјР°С‚СЊ РІСЃРµ С‚РµС…РЅРёС‡РµСЃРєРёРµ РјРµСЂС‹ РґР»СЏ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ СЃРёРіРЅР°Р»Р°, РЅРѕ РЅРµ РЅРµСЃРµРј РѕС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚Рё Р·Р° РµРіРѕ РІСЂРµРјРµРЅРЅРѕРµ РѕС‚СЃСѓС‚СЃС‚РІРёРµ РёР»Рё Р±Р»РѕРєРёСЂРѕРІРєСѓ СѓР·Р»РѕРІ С‚СЂРµС‚СЊРёРјРё Р»РёС†Р°РјРё.
         <br><br>
-        <div class="text-white font-bold mb-1">5. ПРАВИЛА ИСКЛЮЧЕНИЯ</div>
-        Нарушение Устава Клуба (попытки перепродажи доступа, использование одного ключа на нескольких устройствах одновременно, создание избыточного шума) влечет за собой немедленное прекращение доступа. В этом случае обязательства Клуба перед Участником считаются выполненными в полном объеме, взносы не возвращаются.
+        <div class="text-white font-bold mb-1">5. РџР РђР’РР›Рђ РРЎРљР›Р®Р§Р•РќРРЇ</div>
+        РќР°СЂСѓС€РµРЅРёРµ РЈСЃС‚Р°РІР° РљР»СѓР±Р° (РїРѕРїС‹С‚РєРё РїРµСЂРµРїСЂРѕРґР°Р¶Рё РґРѕСЃС‚СѓРїР°, РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РѕРґРЅРѕРіРѕ РєР»СЋС‡Р° РЅР° РЅРµСЃРєРѕР»СЊРєРёС… СѓСЃС‚СЂРѕР№СЃС‚РІР°С… РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ, СЃРѕР·РґР°РЅРёРµ РёР·Р±С‹С‚РѕС‡РЅРѕРіРѕ С€СѓРјР°) РІР»РµС‡РµС‚ Р·Р° СЃРѕР±РѕР№ РЅРµРјРµРґР»РµРЅРЅРѕРµ РїСЂРµРєСЂР°С‰РµРЅРёРµ РґРѕСЃС‚СѓРїР°. Р’ СЌС‚РѕРј СЃР»СѓС‡Р°Рµ РѕР±СЏР·Р°С‚РµР»СЊСЃС‚РІР° РљР»СѓР±Р° РїРµСЂРµРґ РЈС‡Р°СЃС‚РЅРёРєРѕРј СЃС‡РёС‚Р°СЋС‚СЃСЏ РІС‹РїРѕР»РЅРµРЅРЅС‹РјРё РІ РїРѕР»РЅРѕРј РѕР±СЉРµРјРµ, РІР·РЅРѕСЃС‹ РЅРµ РІРѕР·РІСЂР°С‰Р°СЋС‚СЃСЏ.
       </div>
     </section>
 
     <section id="screen-charter" class="screen">
-      <h2 class="text-2xl font-bold mb-2">Устав клуба</h2>
-      <div class="text-muted-gray text-sm leading-6">        <div class="text-white font-bold mb-1">1. ИНВАЙТ И ПОРУЧИТЕЛЬСТВО</div>
-        Вход только по приглашению и одобрению. Привел человека — отвечаешь за него головой. Мы не масс-маркет, места в эфире ограничены. Только свои, только проверенные.
+      <h2 class="text-2xl font-bold mb-2">РЈСЃС‚Р°РІ РєР»СѓР±Р°</h2>
+      <div class="text-muted-gray text-sm leading-6">        <div class="text-white font-bold mb-1">1. РРќР’РђР™Рў Р РџРћР РЈР§РРўР•Р›Р¬РЎРўР’Рћ</div>
+        Р’С…РѕРґ С‚РѕР»СЊРєРѕ РїРѕ РїСЂРёРіР»Р°С€РµРЅРёСЋ Рё РѕРґРѕР±СЂРµРЅРёСЋ. РџСЂРёРІРµР» С‡РµР»РѕРІРµРєР° вЂ” РѕС‚РІРµС‡Р°РµС€СЊ Р·Р° РЅРµРіРѕ РіРѕР»РѕРІРѕР№. РњС‹ РЅРµ РјР°СЃСЃ-РјР°СЂРєРµС‚, РјРµСЃС‚Р° РІ СЌС„РёСЂРµ РѕРіСЂР°РЅРёС‡РµРЅС‹. РўРѕР»СЊРєРѕ СЃРІРѕРё, С‚РѕР»СЊРєРѕ РїСЂРѕРІРµСЂРµРЅРЅС‹Рµ.
         <br><br>
-        <div class="text-white font-bold mb-1">2. ЗАКОН ТИШИНЫ</div>
-        Никаких упоминаний GhostLink в открытых чатах, поддержке банков или комментариях к платежам. Лишнее слово — это шум. Шум убивает сигнал. В банках — только пустые поля.
+        <div class="text-white font-bold mb-1">2. Р—РђРљРћРќ РўРРЁРРќР«</div>
+        РќРёРєР°РєРёС… СѓРїРѕРјРёРЅР°РЅРёР№ GhostLink РІ РѕС‚РєСЂС‹С‚С‹С… С‡Р°С‚Р°С…, РїРѕРґРґРµСЂР¶РєРµ Р±Р°РЅРєРѕРІ РёР»Рё РєРѕРјРјРµРЅС‚Р°СЂРёСЏС… Рє РїР»Р°С‚РµР¶Р°Рј. Р›РёС€РЅРµРµ СЃР»РѕРІРѕ вЂ” СЌС‚Рѕ С€СѓРј. РЁСѓРј СѓР±РёРІР°РµС‚ СЃРёРіРЅР°Р». Р’ Р±Р°РЅРєР°С… вЂ” С‚РѕР»СЊРєРѕ РїСѓСЃС‚С‹Рµ РїРѕР»СЏ.
         <br><br>
-        <div class="text-white font-bold mb-1">3. ГРАНИЦЫ КЛЮЧА (1 КЛЮЧ = 1 УСТРОЙСТВО)</div>
-        Твой доступ имеет жесткий предел. Один ключ предназначен строго для одного устройства. Если твой ключ начнет «фонить» на всю деревню, система решит, что ты продал секрет. В этом случае доступ будет аннулирован без выходного пособия.
+        <div class="text-white font-bold mb-1">3. Р“Р РђРќРР¦Р« РљР›Р®Р§Рђ (1 РљР›Р®Р§ = 1 РЈРЎРўР РћР™РЎРўР’Рћ)</div>
+        РўРІРѕР№ РґРѕСЃС‚СѓРї РёРјРµРµС‚ Р¶РµСЃС‚РєРёР№ РїСЂРµРґРµР». РћРґРёРЅ РєР»СЋС‡ РїСЂРµРґРЅР°Р·РЅР°С‡РµРЅ СЃС‚СЂРѕРіРѕ РґР»СЏ РѕРґРЅРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР°. Р•СЃР»Рё С‚РІРѕР№ РєР»СЋС‡ РЅР°С‡РЅРµС‚ В«С„РѕРЅРёС‚СЊВ» РЅР° РІСЃСЋ РґРµСЂРµРІРЅСЋ, СЃРёСЃС‚РµРјР° СЂРµС€РёС‚, С‡С‚Рѕ С‚С‹ РїСЂРѕРґР°Р» СЃРµРєСЂРµС‚. Р’ СЌС‚РѕРј СЃР»СѓС‡Р°Рµ РґРѕСЃС‚СѓРї Р±СѓРґРµС‚ Р°РЅРЅСѓР»РёСЂРѕРІР°РЅ Р±РµР· РІС‹С…РѕРґРЅРѕРіРѕ РїРѕСЃРѕР±РёСЏ.
         <br><br>
-        <div class="text-white font-bold mb-1">4. ВЗНОС, А НЕ ПОКУПКА</div>
-        Твой перевод — это не покупка в магазине. Это твоя доля в поддержании жизни узлов. Мы — сообщество, а не сервис. Твой взнос — это топливо для серверов. Ты не клиент, ты — участник.
+        <div class="text-white font-bold mb-1">4. Р’Р—РќРћРЎ, Рђ РќР• РџРћРљРЈРџРљРђ</div>
+        РўРІРѕР№ РїРµСЂРµРІРѕРґ вЂ” СЌС‚Рѕ РЅРµ РїРѕРєСѓРїРєР° РІ РјР°РіР°Р·РёРЅРµ. Р­С‚Рѕ С‚РІРѕСЏ РґРѕР»СЏ РІ РїРѕРґРґРµСЂР¶Р°РЅРёРё Р¶РёР·РЅРё СѓР·Р»РѕРІ. РњС‹ вЂ” СЃРѕРѕР±С‰РµСЃС‚РІРѕ, Р° РЅРµ СЃРµСЂРІРёСЃ. РўРІРѕР№ РІР·РЅРѕСЃ вЂ” СЌС‚Рѕ С‚РѕРїР»РёРІРѕ РґР»СЏ СЃРµСЂРІРµСЂРѕРІ. РўС‹ РЅРµ РєР»РёРµРЅС‚, С‚С‹ вЂ” СѓС‡Р°СЃС‚РЅРёРє.
         <br><br>
-        <div class="text-white font-bold mb-1">5. ПРАВО НА ТРАНСФОРМАЦИЮ</div>
-        Эфир меняется — мы адаптируемся. Стены растут, но мы всегда находим лазейки. Если старый путь закрыт, мы проложим новый. Участник клуба не паникует из-за помех — он ждет обновления частоты и идет дальше.
+        <div class="text-white font-bold mb-1">5. РџР РђР’Рћ РќРђ РўР РђРќРЎР¤РћР РњРђР¦РР®</div>
+        Р­С„РёСЂ РјРµРЅСЏРµС‚СЃСЏ вЂ” РјС‹ Р°РґР°РїС‚РёСЂСѓРµРјСЃСЏ. РЎС‚РµРЅС‹ СЂР°СЃС‚СѓС‚, РЅРѕ РјС‹ РІСЃРµРіРґР° РЅР°С…РѕРґРёРј Р»Р°Р·РµР№РєРё. Р•СЃР»Рё СЃС‚Р°СЂС‹Р№ РїСѓС‚СЊ Р·Р°РєСЂС‹С‚, РјС‹ РїСЂРѕР»РѕР¶РёРј РЅРѕРІС‹Р№. РЈС‡Р°СЃС‚РЅРёРє РєР»СѓР±Р° РЅРµ РїР°РЅРёРєСѓРµС‚ РёР·-Р·Р° РїРѕРјРµС… вЂ” РѕРЅ Р¶РґРµС‚ РѕР±РЅРѕРІР»РµРЅРёСЏ С‡Р°СЃС‚РѕС‚С‹ Рё РёРґРµС‚ РґР°Р»СЊС€Рµ.
       </div>
     </section>
     <section id="screen-devices" class="screen">
-      <h2 class="text-2xl font-bold mb-2">Устройства</h2>
-      <div class="text-muted-gray mb-1">Лимит устройств: <span id="deviceLimit">0</span></div>
-      <div class="text-muted-gray mb-3">Подключено: <span id="deviceCount">0</span></div>
-      <div class="hidden text-muted-gray text-xs mb-1">Ссылка подписки</div>
-      <div id="subscriptionLink" class="hidden mb-2 bg-card-dark rounded-xl border border-primary/40 p-3 break-all text-sm">—</div>
+      <h2 class="text-2xl font-bold mb-2">РЈСЃС‚СЂРѕР№СЃС‚РІР°</h2>
+      <div class="text-muted-gray mb-1">Р›РёРјРёС‚ СѓСЃС‚СЂРѕР№СЃС‚РІ: <span id="deviceLimit">0</span></div>
+      <div class="text-muted-gray mb-3">РџРѕРґРєР»СЋС‡РµРЅРѕ: <span id="deviceCount">0</span></div>
+      <div class="hidden text-muted-gray text-xs mb-1">РЎСЃС‹Р»РєР° РїРѕРґРїРёСЃРєРё</div>
+      <div id="subscriptionLink" class="hidden mb-2 bg-card-dark rounded-xl border border-primary/40 p-3 break-all text-sm">вЂ”</div>
       <button id="copySubscriptionBtn"
-        class="hidden ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl mb-3 w-full">Скопировать ссылку подписки</button>
-      <div id="deviceList" class="mb-3 text-muted-gray text-sm">Загрузка...</div>
+        class="hidden ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl mb-3 w-full">РЎРєРѕРїРёСЂРѕРІР°С‚СЊ СЃСЃС‹Р»РєСѓ РїРѕРґРїРёСЃРєРё</button>
+      <div id="deviceList" class="mb-3 text-muted-gray text-sm">Р—Р°РіСЂСѓР·РєР°...</div>
       <div class="grid grid-cols-2 gap-2 mb-3">
         <select id="deviceType" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2">
           <option value="iphone">iPhone</option>
@@ -299,46 +299,44 @@
           <option value="windows">Windows</option>
           <option value="linux">Linux</option>
           <option value="tv">TV</option>
-          <option value="other">Другое</option>
+          <option value="other">Р”СЂСѓРіРѕРµ</option>
         </select>
         <input id="deviceName" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2"
-          placeholder="Имя устройства (необязательно)" />
+          placeholder="РРјСЏ СѓСЃС‚СЂРѕР№СЃС‚РІР° (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)" />
       </div>
       <div class="flex flex-col gap-3">
         <button id="addDeviceBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Добавить
-          устройство</button>
-        <button id="rotateDeviceBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Обновить ключ</button>
-        <button id="resetDeviceBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Сбросить ключ</button>
-        <div class="text-muted-gray text-sm">Можно удалить конкретное устройство из списка или полностью сбросить ключ.
+          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Р”РѕР±Р°РІРёС‚СЊ
+          СѓСЃС‚СЂРѕР№СЃС‚РІРѕ</button>
+<button id="resetDeviceBtn"
+          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">РЎР±СЂРѕСЃРёС‚СЊ РєР»СЋС‡</button>
+        <div class="text-muted-gray text-sm">РњРѕР¶РЅРѕ СѓРґР°Р»РёС‚СЊ РєРѕРЅРєСЂРµС‚РЅРѕРµ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ РёР· СЃРїРёСЃРєР° РёР»Рё РїРѕР»РЅРѕСЃС‚СЊСЋ СЃР±СЂРѕСЃРёС‚СЊ РєР»СЋС‡.
         </div>
       </div>
     </section>
 
     <section id="screen-ref" class="screen">
-      <h2 class="text-2xl font-bold mb-2">Пригласить в закрытый клуб</h2>
-      <div class="text-muted-gray mb-3">Делись инвайтом, зови друзей и получай скидку на подписку.</div>
-      <div class="bg-card-dark rounded-2xl p-4 break-words" id="refLink">ссылка...</div>
-      <button id="copyRefBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl mt-4">Скопировать
-        ссылку</button>
+      <h2 class="text-2xl font-bold mb-2">РџСЂРёРіР»Р°СЃРёС‚СЊ РІ Р·Р°РєСЂС‹С‚С‹Р№ РєР»СѓР±</h2>
+      <div class="text-muted-gray mb-3">Р”РµР»РёСЃСЊ РёРЅРІР°Р№С‚РѕРј, Р·РѕРІРё РґСЂСѓР·РµР№ Рё РїРѕР»СѓС‡Р°Р№ СЃРєРёРґРєСѓ РЅР° РїРѕРґРїРёСЃРєСѓ.</div>
+      <div class="bg-card-dark rounded-2xl p-4 break-words" id="refLink">СЃСЃС‹Р»РєР°...</div>
+      <button id="copyRefBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-2xl mt-4">РЎРєРѕРїРёСЂРѕРІР°С‚СЊ
+        СЃСЃС‹Р»РєСѓ</button>
       <div class="text-muted-gray text-sm mt-3">
-        Бонус начисляется только после первой оплаты друга: 15% к твоей скидке.
+        Р‘РѕРЅСѓСЃ РЅР°С‡РёСЃР»СЏРµС‚СЃСЏ С‚РѕР»СЊРєРѕ РїРѕСЃР»Рµ РїРµСЂРІРѕР№ РѕРїР»Р°С‚С‹ РґСЂСѓРіР°: 15% Рє С‚РІРѕРµР№ СЃРєРёРґРєРµ.
       </div>
       <div class="mt-4" id="refList"></div>
     </section>
 
     <section id="screen-share" class="screen">
-      <h2 class="text-2xl font-bold mb-2">Поделиться приложением</h2>
-      <div class="text-muted-gray mb-3">Отправь ссылку или покажи QR-код.</div>
-      <div class="bg-card-dark rounded-2xl p-4 break-words text-sm" id="appShareLink">—</div>
+      <h2 class="text-2xl font-bold mb-2">РџРѕРґРµР»РёС‚СЊСЃСЏ РїСЂРёР»РѕР¶РµРЅРёРµРј</h2>
+      <div class="text-muted-gray mb-3">РћС‚РїСЂР°РІСЊ СЃСЃС‹Р»РєСѓ РёР»Рё РїРѕРєР°Р¶Рё QR-РєРѕРґ.</div>
+      <div class="bg-card-dark rounded-2xl p-4 break-words text-sm" id="appShareLink">вЂ”</div>
       <div class="mt-4 flex gap-2">
         <button id="copyAppLinkBtn"
-          class="ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl w-full">Скопировать
-          ссылку</button>
+          class="ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl w-full">РЎРєРѕРїРёСЂРѕРІР°С‚СЊ
+          СЃСЃС‹Р»РєСѓ</button>
         <button id="shareAppBtn"
-          class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full">Поделиться</button>
+          class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full">РџРѕРґРµР»РёС‚СЊСЃСЏ</button>
       </div>
       <div class="mt-4 flex justify-center">
         <img id="appQrImg" alt="QR" class="w-56 h-56 rounded-xl bg-white p-2" />
@@ -347,232 +345,232 @@
 
     <section id="screen-admin" class="screen h-full">
       <div class="flex flex-col h-full">
-        <h2 class="text-2xl font-bold mb-4">Админка</h2>
+        <h2 class="text-2xl font-bold mb-4">РђРґРјРёРЅРєР°</h2>
 
-        <!-- ТАБЫ (Навигация) -->
+        <!-- РўРђР‘Р« (РќР°РІРёРіР°С†РёСЏ) -->
         <div class="flex overflow-x-auto gap-2 pb-2 mb-4 no-scrollbar flex-shrink-0">
           <button
             class="admin-tab-btn ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap"
-            data-tab="admin-tab-users">Пользователи</button>
+            data-tab="admin-tab-users">РџРѕР»СЊР·РѕРІР°С‚РµР»Рё</button>
           <button
             class="admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap"
-            data-tab="admin-tab-clients">Клиенты</button>
+            data-tab="admin-tab-clients">РљР»РёРµРЅС‚С‹</button>
           <button
             class="admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap"
-            data-tab="admin-tab-access">Доступ</button>
+            data-tab="admin-tab-access">Р”РѕСЃС‚СѓРї</button>
           <button
             class="admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap"
-            data-tab="admin-tab-support">Поддержка</button>
+            data-tab="admin-tab-support">РџРѕРґРґРµСЂР¶РєР°</button>
           <button
             class="admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap"
-            data-tab="admin-tab-system">Система</button>
+            data-tab="admin-tab-system">РЎРёСЃС‚РµРјР°</button>
         </div>
 
-        <!-- СОДЕРЖИМОЕ ТАБОВ -->
+        <!-- РЎРћР”Р•Р Р–РРњРћР• РўРђР‘РћР’ -->
         <div class="flex-1 overflow-y-auto">
-          <!-- ТАБ Пользователи -->
+          <!-- РўРђР‘ РџРѕР»СЊР·РѕРІР°С‚РµР»Рё -->
           <div id="admin-tab-users" class="admin-tab-content block">
             <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
-              <div class="text-white font-bold mb-2">Пользователи</div>
+              <div class="text-white font-bold mb-2">РџРѕР»СЊР·РѕРІР°С‚РµР»Рё</div>
               <select id="adminUserId"
                 class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2">
-                <option value="">Выбери пользователя</option>
+                <option value="">Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</option>
               </select>
               <div id="adminUserMeta" class="mt-2 text-sm text-muted-gray leading-6">
-                Выбери пользователя, чтобы увидеть детали.
+                Р’С‹Р±РµСЂРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, С‡С‚РѕР±С‹ СѓРІРёРґРµС‚СЊ РґРµС‚Р°Р»Рё.
               </div>
               <button id="adminOpenTg"
                 class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full mt-2"
                 disabled>
-                Открыть профиль Telegram
+                РћС‚РєСЂС‹С‚СЊ РїСЂРѕС„РёР»СЊ Telegram
               </button>
 
               <div id="adminUserActions" class="hidden mt-3 flex-col gap-2">
                 <div class="grid grid-cols-2 gap-2">
                   <button id="adminApprovePaymentBtn"
-                    class="hidden ios-active bg-primary text-black font-bold px-3 py-3 rounded-xl w-full shadow-lg shadow-primary/20">✅ Одобрить</button>
+                    class="hidden ios-active bg-primary text-black font-bold px-3 py-3 rounded-xl w-full shadow-lg shadow-primary/20">вњ… РћРґРѕР±СЂРёС‚СЊ</button>
                   <button id="adminRejectPaymentBtn"
-                    class="hidden ios-active bg-accent-red text-white font-bold px-3 py-3 rounded-xl w-full shadow-lg shadow-accent-red/20">❌ Обман</button>
+                    class="hidden ios-active bg-accent-red text-white font-bold px-3 py-3 rounded-xl w-full shadow-lg shadow-accent-red/20">вќЊ РћР±РјР°РЅ</button>
                 </div>
 
-                <!-- Блок управления подпиской -->
+                <!-- Р‘Р»РѕРє СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕРґРїРёСЃРєРѕР№ -->
                 <button id="adminManageSubToggle"
                   class="ios-active bg-card-dark border border-primary/50 text-white font-bold px-3 py-2 rounded-xl w-full flex justify-between items-center">
-                  <span>Управление подпиской</span>
-                  <span class="text-primary text-lg">▾</span>
+                  <span>РЈРїСЂР°РІР»РµРЅРёРµ РїРѕРґРїРёСЃРєРѕР№</span>
+                  <span class="text-primary text-lg">в–ѕ</span>
                 </button>
 
                 <div id="adminSubMenu" class="hidden bg-black/30 rounded-xl p-3 border border-white/10 flex-col gap-2">
                   <input id="adminDays"
                     class="w-full rounded-xl bg-card-dark border border-primary/50 text-white px-3 py-2 text-sm"
-                    type="number" min="1" value="30" placeholder="Дней для продления" />
+                    type="number" min="1" value="30" placeholder="Р”РЅРµР№ РґР»СЏ РїСЂРѕРґР»РµРЅРёСЏ" />
                   <div class="grid grid-cols-2 gap-2 mt-2">
                     <button id="adminExtend"
-                      class="ios-active border border-primary/50 text-white px-2 py-2 rounded-lg text-sm bg-card-dark">Продлить
-                      (+30д)</button>
+                      class="ios-active border border-primary/50 text-white px-2 py-2 rounded-lg text-sm bg-card-dark">РџСЂРѕРґР»РёС‚СЊ
+                      (+30Рґ)</button>
                     <button id="adminTrial7"
                       class="ios-active border border-primary/50 text-white px-2 py-2 rounded-lg text-sm bg-card-dark">Trial
-                      7 дней</button>
+                      7 РґРЅРµР№</button>
                     <button id="adminUnlimited"
-                      class="ios-active border border-primary/50 text-white px-2 py-2 rounded-lg text-sm bg-card-dark">Без
-                      срока</button>
+                      class="ios-active border border-primary/50 text-white px-2 py-2 rounded-lg text-sm bg-card-dark">Р‘РµР·
+                      СЃСЂРѕРєР°</button>
                     <button id="adminResetSub"
-                      class="ios-active border border-accent-red/50 text-accent-red px-2 py-2 rounded-lg text-sm bg-card-dark">Сбросить
-                      статусы</button>
+                      class="ios-active border border-accent-red/50 text-accent-red px-2 py-2 rounded-lg text-sm bg-card-dark">РЎР±СЂРѕСЃРёС‚СЊ
+                      СЃС‚Р°С‚СѓСЃС‹</button>
                   </div>
-                  <div class="mt-3 text-white text-xs font-bold mb-1">Категория (Полы цен)</div>
+                  <div class="mt-3 text-white text-xs font-bold mb-1">РљР°С‚РµРіРѕСЂРёСЏ (РџРѕР»С‹ С†РµРЅ)</div>
                   <div class="grid grid-cols-2 gap-2">
                     <button id="adminSetOwn"
-                      class="ios-active border border-primary/50 text-primary px-2 py-2 rounded-lg text-sm bg-card-dark flex items-center justify-center gap-1">★
-                      СВОЙ</button>
+                      class="ios-active border border-primary/50 text-primary px-2 py-2 rounded-lg text-sm bg-card-dark flex items-center justify-center gap-1">в…
+                      РЎР’РћР™</button>
                     <button id="adminSetRegular"
-                      class="ios-active border border-primary/50 text-white px-2 py-2 rounded-lg text-sm bg-card-dark">Обычный</button>
+                      class="ios-active border border-primary/50 text-white px-2 py-2 rounded-lg text-sm bg-card-dark">РћР±С‹С‡РЅС‹Р№</button>
                   </div>
                 </div>
 
-                <!-- Блок опасных действий -->
+                <!-- Р‘Р»РѕРє РѕРїР°СЃРЅС‹С… РґРµР№СЃС‚РІРёР№ -->
                 <div class="mt-2 border-t border-accent-red/20 pt-3 flex flex-col gap-2">
                   <div class="grid grid-cols-2 gap-2">
                     <button id="adminBan"
-                      class="ios-active bg-card-dark border border-accent-red/50 text-accent-red font-bold px-3 py-2 rounded-xl w-full">Бан</button>
+                      class="ios-active bg-card-dark border border-accent-red/50 text-accent-red font-bold px-3 py-2 rounded-xl w-full">Р‘Р°РЅ</button>
                     <button id="adminUnban"
-                      class="ios-active bg-card-dark border border-primary/50 text-primary font-bold px-3 py-2 rounded-xl w-full">Разбан</button>
+                      class="ios-active bg-card-dark border border-primary/50 text-primary font-bold px-3 py-2 rounded-xl w-full">Р Р°Р·Р±Р°РЅ</button>
                   </div>
                   <button id="adminDelete"
-                    class="ios-active bg-accent-red/10 border border-accent-red text-accent-red font-bold px-3 py-2 rounded-xl w-full text-sm">Удалить
-                    навсегда</button>
+                    class="ios-active bg-accent-red/10 border border-accent-red text-accent-red font-bold px-3 py-2 rounded-xl w-full text-sm">РЈРґР°Р»РёС‚СЊ
+                    РЅР°РІСЃРµРіРґР°</button>
                 </div>
               </div>
 
               <button id="adminUsersRefresh"
-                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full mt-4">Обновить
-                список</button>
+                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full mt-4">РћР±РЅРѕРІРёС‚СЊ
+                СЃРїРёСЃРѕРє</button>
             </div>
             <button id="adminAddSlots"
-              class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full mt-3">+5 мест в
-              базе</button>
+              class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full mt-3">+5 РјРµСЃС‚ РІ
+              Р±Р°Р·Рµ</button>
           </div>
 
-          <!-- ТАБ Клиенты -->
+          <!-- РўРђР‘ РљР»РёРµРЅС‚С‹ -->
           <div id="admin-tab-clients" class="admin-tab-content hidden">
             <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
-              <div class="text-white font-bold mb-2">Прямое управление (X-UI)</div>
+              <div class="text-white font-bold mb-2">РџСЂСЏРјРѕРµ СѓРїСЂР°РІР»РµРЅРёРµ (X-UI)</div>
               <button id="adminClientsRefresh"
-                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Обновить
-                список устройств</button>
+                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">РћР±РЅРѕРІРёС‚СЊ
+                СЃРїРёСЃРѕРє СѓСЃС‚СЂРѕР№СЃС‚РІ</button>
               <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input id="adminClientEmail"
                   class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2 col-span-2"
-                  placeholder="Название/Email клиента" />
+                  placeholder="РќР°Р·РІР°РЅРёРµ/Email РєР»РёРµРЅС‚Р°" />
                 <input id="adminClientTgId" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2"
-                  placeholder="tg_id (опц.)" />
+                  placeholder="tg_id (РѕРїС†.)" />
                 <input id="adminClientLimit" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2"
                   type="number" min="1" max="50" value="3" />
               </div>
               <button id="adminClientCreate"
-                class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full mt-3">Добавить клиента
-                вручную</button>
-              <div id="adminClients" class="mt-3 text-sm text-muted-gray">Список пуст</div>
+                class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full mt-3">Р”РѕР±Р°РІРёС‚СЊ РєР»РёРµРЅС‚Р°
+                РІСЂСѓС‡РЅСѓСЋ</button>
+              <div id="adminClients" class="mt-3 text-sm text-muted-gray">РЎРїРёСЃРѕРє РїСѓСЃС‚</div>
             </div>
           </div>
 
-          <!-- ТАБ Доступ -->
+          <!-- РўРђР‘ Р”РѕСЃС‚СѓРї -->
           <div id="admin-tab-access" class="admin-tab-content hidden">
             <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
-              <div class="text-white font-bold mb-2">Оригинальная панель XUI</div>
+              <div class="text-white font-bold mb-2">РћСЂРёРіРёРЅР°Р»СЊРЅР°СЏ РїР°РЅРµР»СЊ XUI</div>
               <div class="text-muted-gray text-sm mb-3">
-                Доступ к панели через защищенный шлюз (без IP-настроек).
+                Р”РѕСЃС‚СѓРї Рє РїР°РЅРµР»Рё С‡РµСЂРµР· Р·Р°С‰РёС‰РµРЅРЅС‹Р№ С€Р»СЋР· (Р±РµР· IP-РЅР°СЃС‚СЂРѕРµРє).
               </div>
               <div id="adminPanelStatus" class="rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-sm mb-3 flex items-center justify-between gap-3">
-                <span class="text-muted-gray">Статус:</span> <span id="adminPanelStatusText" class="text-white font-semibold">закрыта</span>
-                <span class="text-muted-gray"> · </span><span id="adminPanelTimer" class="text-primary">--:--</span>
+                <span class="text-muted-gray">РЎС‚Р°С‚СѓСЃ:</span> <span id="adminPanelStatusText" class="text-white font-semibold">Р·Р°РєСЂС‹С‚Р°</span>
+                <span class="text-muted-gray"> В· </span><span id="adminPanelTimer" class="text-primary">--:--</span>
               </div>
               <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button id="adminOtpLogin"
-                  class="ios-active border border-primary bg-primary text-black font-bold px-4 py-3 rounded-xl w-full">Открыть
-                  панель</button>
+                  class="ios-active border border-primary bg-primary text-black font-bold px-4 py-3 rounded-xl w-full">РћС‚РєСЂС‹С‚СЊ
+                  РїР°РЅРµР»СЊ</button>
                 <button id="adminPanelLockBtn"
-                  class="ios-active border border-accent-red text-accent-red bg-black/30 font-bold px-4 py-3 rounded-xl w-full">Закрыть
-                  панель</button>
+                  class="ios-active border border-accent-red text-accent-red bg-black/30 font-bold px-4 py-3 rounded-xl w-full">Р—Р°РєСЂС‹С‚СЊ
+                  РїР°РЅРµР»СЊ</button>
               </div>
               <div id="adminProxyLink" class="mt-4 hidden rounded-xl border border-primary bg-black/30 p-2">
                 <a href="/panel/" target="_blank"
-                  class="block ios-active bg-primary text-black text-center font-bold px-3 py-3 rounded-xl w-full">Перейти
-                  в панель</a>
+                  class="block ios-active bg-primary text-black text-center font-bold px-3 py-3 rounded-xl w-full">РџРµСЂРµР№С‚Рё
+                  РІ РїР°РЅРµР»СЊ</a>
                 <div class="text-muted-gray text-xs mt-2 text-center">
-                  Сессия активна 15 минут. Порт наружу закрыт.
+                  РЎРµСЃСЃРёСЏ Р°РєС‚РёРІРЅР° 15 РјРёРЅСѓС‚. РџРѕСЂС‚ РЅР°СЂСѓР¶Сѓ Р·Р°РєСЂС‹С‚.
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- ТАБ Поддержка -->
+          <!-- РўРђР‘ РџРѕРґРґРµСЂР¶РєР° -->
           <div id="admin-tab-support" class="admin-tab-content hidden flex flex-col h-full">
             <div class="border border-primary rounded-2xl p-4 mb-4 flex-shrink-0">
-              <div class="text-white font-bold mb-2">Активные диалоги</div>
+              <div class="text-white font-bold mb-2">РђРєС‚РёРІРЅС‹Рµ РґРёР°Р»РѕРіРё</div>
               <select id="adminSupportUserId"
                 class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2">
-                <option value="">Нет активных тикетов</option>
+                <option value="">РќРµС‚ Р°РєС‚РёРІРЅС‹С… С‚РёРєРµС‚РѕРІ</option>
               </select>
               <button id="adminSupportRefresh"
-                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full mt-3">Обновить
-                список диалогов</button>
+                class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full mt-3">РћР±РЅРѕРІРёС‚СЊ
+                СЃРїРёСЃРѕРє РґРёР°Р»РѕРіРѕРІ</button>
             </div>
 
             <div class="border border-primary rounded-2xl p-4 flex flex-col flex-1 min-h-[300px]">
               <div id="adminSupportMessages"
                 class="flex-1 overflow-y-auto w-full flex flex-col-reverse gap-2 mb-3 max-h-64 no-scrollbar border-b border-white/10 pb-2">
-                <div class="text-center text-muted-gray text-xs mt-auto py-4">Выберите диалог из списка выше</div>
+                <div class="text-center text-muted-gray text-xs mt-auto py-4">Р’С‹Р±РµСЂРёС‚Рµ РґРёР°Р»РѕРі РёР· СЃРїРёСЃРєР° РІС‹С€Рµ</div>
               </div>
               <div class="flex gap-2 mt-auto">
                 <input id="adminSupportInput"
                   class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2 text-sm"
-                  placeholder="Ответ..." disabled />
+                  placeholder="РћС‚РІРµС‚..." disabled />
                 <button id="adminSupportSendBtn"
                   class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl whitespace-nowrap"
-                  disabled>Отправить</button>
+                  disabled>РћС‚РїСЂР°РІРёС‚СЊ</button>
               </div>
             </div>
           </div>
 
-          <!-- ТАБ Система -->
+          <!-- РўРђР‘ РЎРёСЃС‚РµРјР° -->
           <div id="admin-tab-system" class="admin-tab-content hidden">
             <div class="grid grid-cols-2 gap-3 mb-4">
               <div
                 class="bg-card-dark border border-primary/30 rounded-2xl p-4 flex flex-col justify-center items-center">
-                <div class="text-muted-gray text-xs mb-1">ОЗУ (свободно)</div>
+                <div class="text-muted-gray text-xs mb-1">РћР—РЈ (СЃРІРѕР±РѕРґРЅРѕ)</div>
                 <div class="text-white font-bold text-xl" id="dashMem">-- MB</div>
               </div>
               <div
                 class="bg-card-dark border border-primary/30 rounded-2xl p-4 flex flex-col justify-center items-center">
-                <div class="text-muted-gray text-xs mb-1">Онлайн X-UI</div>
+                <div class="text-muted-gray text-xs mb-1">РћРЅР»Р°Р№РЅ X-UI</div>
                 <div class="text-primary font-bold text-xl" id="dashOnline">--</div>
               </div>
               <div
                 class="bg-card-dark border border-primary/30 rounded-2xl p-4 flex flex-col justify-center items-center col-span-2">
-                <div class="text-muted-gray text-xs mb-1">Всего израсходовано трафика</div>
+                <div class="text-muted-gray text-xs mb-1">Р’СЃРµРіРѕ РёР·СЂР°СЃС…РѕРґРѕРІР°РЅРѕ С‚СЂР°С„РёРєР°</div>
                 <div class="text-white font-bold text-xl" id="dashTotal">-- GB</div>
               </div>
             </div>
 
             <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
-              <div class="text-white font-bold mb-2">Пользователи онлайн</div>
+              <div class="text-white font-bold mb-2">РџРѕР»СЊР·РѕРІР°С‚РµР»Рё РѕРЅР»Р°Р№РЅ</div>
               <div class="mt-2 text-sm text-muted-gray max-h-32 overflow-y-auto no-scrollbar" id="adminOnlineList">
-                Загрузка...
+                Р—Р°РіСЂСѓР·РєР°...
               </div>
             </div>
 
             <div class="flex flex-col gap-2">
               <button id="adminStats"
-                class="hidden ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Обновить</button>
+                class="hidden ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">РћР±РЅРѕРІРёС‚СЊ</button>
               <button id="adminRestart"
-                class="ios-active border border-accent-red text-accent-red font-bold px-3 py-3 rounded-xl w-full text-sm">Перезапустить
-                процесс Xray</button>
+                class="ios-active border border-accent-red text-accent-red font-bold px-3 py-3 rounded-xl w-full text-sm">РџРµСЂРµР·Р°РїСѓСЃС‚РёС‚СЊ
+                РїСЂРѕС†РµСЃСЃ Xray</button>
               <button id="adminPaymentSettings"
-                class="ios-active border border-primary text-primary font-bold px-3 py-3 rounded-xl w-full text-sm">Изменить реквизиты оплаты</button>
+                class="ios-active border border-primary text-primary font-bold px-3 py-3 rounded-xl w-full text-sm">РР·РјРµРЅРёС‚СЊ СЂРµРєРІРёР·РёС‚С‹ РѕРїР»Р°С‚С‹</button>
               <button id="adminBackup"
-                class="ios-active bg-primary text-black font-bold px-3 py-3 rounded-xl w-full text-sm">Скачать бекап
-                базы (.db)</button>
+                class="ios-active bg-primary text-black font-bold px-3 py-3 rounded-xl w-full text-sm">РЎРєР°С‡Р°С‚СЊ Р±РµРєР°Рї
+                Р±Р°Р·С‹ (.db)</button>
             </div>
           </div>
         </div>
@@ -585,11 +583,11 @@
   </script>
   <section id="onboardingOverlay" class="fixed inset-0 bg-black/80 z-50 hidden items-end sm:items-center justify-center p-4">
     <div class="w-full max-w-md rounded-2xl border border-primary/40 bg-card-dark p-5">
-      <div class="text-white text-xl font-bold mb-2" id="onboardingTitle">Добро пожаловать</div>
+      <div class="text-white text-xl font-bold mb-2" id="onboardingTitle">Р”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ</div>
       <div class="text-muted-gray text-sm leading-6 min-h-[110px]" id="onboardingText"></div>
       <div class="flex gap-2 mt-4">
-        <button id="onboardingSkip" class="ios-active border border-white/20 text-white/80 px-4 py-2 rounded-xl w-full">Пропустить</button>
-        <button id="onboardingNext" class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full">Далее</button>
+        <button id="onboardingSkip" class="ios-active border border-white/20 text-white/80 px-4 py-2 rounded-xl w-full">РџСЂРѕРїСѓСЃС‚РёС‚СЊ</button>
+        <button id="onboardingNext" class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full">Р”Р°Р»РµРµ</button>
       </div>
     </div>
   </section>
@@ -598,6 +596,8 @@
 </body>
 
 </html>
+
+
 
 
 
