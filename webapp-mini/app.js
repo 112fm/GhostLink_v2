@@ -551,7 +551,7 @@ document.getElementById('addDeviceBtn').addEventListener('click', async () => {
     else if (e && e.message === 'access_closed') notify('Доступ неактивен. Сначала активируй подписку в профиле.');
     else if (e && e.status === 401) notify('Сессия истекла. Зайди заново через Telegram.');
     else if (e && e.status === 403) notify('Операция запрещена для текущего статуса аккаунта.');
-    else notify('Не удалось добавить устройство');
+    else notify('Не удалось добавить устройство: ' + (e && e.message ? e.message : 'unknown_error'));
   }
 });
 
