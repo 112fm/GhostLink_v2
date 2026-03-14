@@ -548,7 +548,9 @@ document.getElementById('addDeviceBtn').addEventListener('click', async () => {
     loadDevices();
   } catch (e) {
     if (e && e.message === 'device_limit_reached') notify('Достигнут лимит устройств (максимум 5).');
-    else if (e && (e.status === 401 || e.status === 403)) notify('Сессия истекла. Зайди заново через Telegram.');
+    else if (e && e.message === 'access_closed') notify('Доступ неактивен. Сначала активируй подписку в профиле.');
+    else if (e && e.status === 401) notify('Сессия истекла. Зайди заново через Telegram.');
+    else if (e && e.status === 403) notify('Операция запрещена для текущего статуса аккаунта.');
     else notify('Не удалось добавить устройство');
   }
 });
