@@ -945,15 +945,21 @@ document.getElementById('adminAddSlots').addEventListener('click', async () => {
     notify('Ошибка');
   }
 });
+function adminErr(e, fallback = 'Ошибка') {
+  const msg = (e && e.message) ? e.message : fallback;
+  notify(`${fallback}: ${msg}`);
+}
+
 document.getElementById('adminBan').addEventListener('click', async () => {
   const userId = document.getElementById('adminUserId').value.trim();
   if (!userId) return notify('Укажи Telegram ID');
   try {
     await adminFetch('/api/admin/user/ban', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
     notify('Пользователь забанен');
-    loadAdminUsers();
+    await loadAdminUsers(userId, true);
+    document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    notify('Ошибка');
+    adminErr(e, 'Ошибка бана');
   }
 });
 document.getElementById('adminUnban').addEventListener('click', async () => {
@@ -962,9 +968,10 @@ document.getElementById('adminUnban').addEventListener('click', async () => {
   try {
     await adminFetch('/api/admin/user/unban', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
     notify('Пользователь разблокирован');
-    loadAdminUsers();
+    await loadAdminUsers(userId, true);
+    document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    notify('Ошибка');
+    adminErr(e, 'Ошибка разбана');
   }
 });
 document.getElementById('adminDelete').addEventListener('click', async () => {
@@ -974,9 +981,9 @@ document.getElementById('adminDelete').addEventListener('click', async () => {
   try {
     await adminFetch('/api/admin/user/delete', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
     notify('Пользователь удален');
-    loadAdminUsers();
+    await loadAdminUsers('', true);
   } catch (e) {
-    notify('Ошибка');
+    adminErr(e, 'Ошибка удаления');
   }
 });
 
@@ -986,9 +993,10 @@ document.getElementById('adminTrial7').addEventListener('click', async () => {
   try {
     await adminFetch('/api/admin/user/trial7', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
     notify('Выдан trial 7 дней');
-    loadAdminUsers();
+    await loadAdminUsers(userId, true);
+    document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    notify('Ошибка');
+    adminErr(e, 'Ошибка trial');
   }
 });
 document.getElementById('adminExtend').addEventListener('click', async () => {
@@ -999,9 +1007,10 @@ document.getElementById('adminExtend').addEventListener('click', async () => {
   try {
     await adminFetch('/api/admin/user/extend', { method: 'POST', body: JSON.stringify({ user_id: userId, days }) });
     notify(`Продлено на ${days} дн.`);
-    loadAdminUsers();
+    await loadAdminUsers(userId, true);
+    document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    notify('Ошибка');
+    adminErr(e, 'Ошибка продления');
   }
 });
 document.getElementById('adminUnlimited').addEventListener('click', async () => {
@@ -1010,9 +1019,10 @@ document.getElementById('adminUnlimited').addEventListener('click', async () => 
   try {
     await adminFetch('/api/admin/user/unlimited', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
     notify('Выдан доступ без срока');
-    loadAdminUsers();
+    await loadAdminUsers(userId, true);
+    document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    notify('Ошибка');
+    adminErr(e, 'Ошибка выдачи без срока');
   }
 });
 document.getElementById('adminResetSub').addEventListener('click', async () => {
@@ -1022,9 +1032,10 @@ document.getElementById('adminResetSub').addEventListener('click', async () => {
   try {
     await adminFetch('/api/admin/user/reset_subscription', { method: 'POST', body: JSON.stringify({ user_id: userId }) });
     notify('Подписка сброшена');
-    loadAdminUsers();
+    await loadAdminUsers(userId, true);
+    document.getElementById('adminUserId').dispatchEvent(new Event('change'));
   } catch (e) {
-    notify('Ошибка');
+    adminErr(e, 'Ошибка сброса подписки');
   }
 });
 document.getElementById('adminUsersRefresh').addEventListener('click', loadAdminUsers);
@@ -1270,12 +1281,13 @@ document.getElementById('adminSetRegular').addEventListener('click', async () =>
   }
 });
 
-async function loadAdminUsers() {
+async function loadAdminUsers(selectedId = '', silent = false) {
   const sel = document.getElementById('adminUserId');
   if (!sel) return;
   try {
     const data = await adminFetch('/api/admin/users');
     adminUsersById = {};
+    const keepId = String(selectedId || sel.value || '').trim();
     sel.innerHTML = '<option value="">Выбери пользователя</option>';
     (data.items || []).forEach(u => {
       adminUsersById[u.id] = u;
@@ -1300,11 +1312,12 @@ async function loadAdminUsers() {
       opt.textContent = `${withId} ${tierTag} [${u.status}]${subText}${leftText}${ratioText}`;
       sel.appendChild(opt);
     });
+    if (keepId && adminUsersById[keepId]) sel.value = keepId;
     document.getElementById('adminUserMeta').textContent = 'Выбери пользователя, чтобы увидеть детали подписки.';
     document.getElementById('adminOpenTg').disabled = true;
-    notify('Список пользователей обновлен');
+    if (!silent) notify('Список пользователей обновлен');
   } catch (e) {
-    notify('Ошибка загрузки пользователей');
+    adminErr(e, 'Ошибка загрузки пользователей');
   }
 }
 
