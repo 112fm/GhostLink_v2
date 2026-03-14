@@ -371,10 +371,10 @@
       <h2 class="text-2xl font-bold mb-2">Устройства</h2>
       <div class="text-muted-gray mb-1">Лимит устройств: <span id="deviceLimit">0</span></div>
       <div class="text-muted-gray mb-3">Подключено: <span id="deviceCount">0</span></div>
-      <div class="text-muted-gray text-xs mb-1">Ссылка подписки</div>
-      <div id="subscriptionLink" class="mb-2 bg-card-dark rounded-xl border border-primary/40 p-3 break-all text-sm">—</div>
+      <div class="hidden text-muted-gray text-xs mb-1">Ссылка подписки</div>
+      <div id="subscriptionLink" class="hidden mb-2 bg-card-dark rounded-xl border border-primary/40 p-3 break-all text-sm">—</div>
       <button id="copySubscriptionBtn"
-        class="ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl mb-3 w-full">Скопировать ссылку подписки</button>
+        class="hidden ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl mb-3 w-full">Скопировать ссылку подписки</button>
       <div id="deviceList" class="mb-3 text-muted-gray text-sm">Загрузка...</div>
       <div class="grid grid-cols-2 gap-2 mb-3">
         <select id="deviceType" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2">
@@ -393,6 +393,8 @@
         <button id="addDeviceBtn"
           class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Добавить
           устройство</button>
+        <button id="rotateDeviceBtn"
+          class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Обновить ключ</button>
         <button id="resetDeviceBtn"
           class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Сбросить ключ</button>
         <div class="text-muted-gray text-sm">Можно удалить конкретное устройство из списка или полностью сбросить ключ.
