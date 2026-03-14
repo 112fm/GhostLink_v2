@@ -675,6 +675,13 @@ function loadReferrals() {
 }
 
 let issuedKeyTimer = null;
+function shortPreview(value, head = 22, tail = 12) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  if (text.length <= head + tail + 3) return text;
+  return `${text.slice(0, head)}...${text.slice(-tail)}`;
+}
+
 function revealIssuedKey(key, ttlSec = 180) {
   const host = document.getElementById('deviceList');
   if (!host || !host.parentElement) return;
@@ -688,13 +695,14 @@ function revealIssuedKey(key, ttlSec = 180) {
   }
 
   const safeKey = String(key || '').trim();
+  const previewKey = shortPreview(safeKey, 24, 14);
   const safeTtl = Math.max(30, Number(ttlSec || 180));
   let left = safeTtl;
 
   box.innerHTML = `
     <div class="text-primary font-bold mb-2">Твой новый ключ (временно)</div>
     <div class="text-xs text-muted-gray mb-2">Сохрани ключ в V2Ray. Через время он снова скроется.</div>
-    <div class="w-full break-all bg-black/40 border border-primary rounded-xl px-3 py-2 text-white text-sm select-all" id="issuedKeyValue">${safeKey}</div>
+    <div class="w-full truncate bg-black/40 border border-primary rounded-xl px-3 py-2 text-white text-xs" id="issuedKeyValue" title="${safeKey.replace(/"/g, '&quot;')}">${previewKey}</div>
     <div class="flex items-center gap-2 mt-2">
       <button id="issuedKeyCopyBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm">Скопировать</button>
       <button id="issuedKeyHideBtn" class="ios-active border border-white/20 text-white font-bold px-3 py-2 rounded-xl text-sm">Скрыть</button>
@@ -802,8 +810,12 @@ function renderDeviceList(items) {
     subWrap.className = 'mt-2 rounded-xl border border-primary/30 p-2 bg-card-dark';
     const subUrl = item && item.uuid ? `${API_BASE}/sub/${encodeURIComponent(item.uuid)}` : '';
     const subText = document.createElement('div');
-    subText.className = 'text-xs break-all text-white/90 mb-2';
+    subText.className = 'text-xs text-white/90 mb-2 truncate';
     subText.textContent = subUrl || 'Ссылка недоступна';
+    if (subUrl) {
+      subText.textContent = shortPreview(subUrl, 34, 12);
+      subText.title = subUrl;
+    }
     const subBtn = document.createElement('button');
     subBtn.className = 'ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs w-full';
     subBtn.textContent = 'Скопировать ссылку этого устройства';
