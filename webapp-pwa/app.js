@@ -758,7 +758,7 @@ function renderDeviceList(items) {
   box.innerHTML = '';
   setLegacySubscriptionVisibility(false);
   if (!items || items.length === 0) {
-    box.textContent = '���������� �� �������.';
+    box.textContent = 'Устройства не найдены.';
     return;
   }
 
@@ -780,7 +780,7 @@ function renderDeviceList(items) {
 
     const meta = document.createElement('div');
     meta.className = 'text-muted-gray text-xs mt-1';
-    meta.textContent = `${item.online ? '������' : '������'} � ${formatBytes(item.total || 0)}`;
+    meta.textContent = `${item.online ? 'Онлайн' : 'Офлайн'} · ${formatBytes(item.total || 0)}`;
 
     info.appendChild(title);
     info.appendChild(meta);
@@ -788,60 +788,65 @@ function renderDeviceList(items) {
     container.appendChild(headerRow);
 
     const bodyRow = document.createElement('div');
-    bodyRow.className = 'mt-3 grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_160px] gap-2 items-stretch';
+    bodyRow.className = 'mt-3 grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_170px] gap-3 items-stretch';
 
     const subWrap = document.createElement('div');
-    subWrap.className = 'rounded-xl border border-primary/30 p-2 bg-card-dark min-w-0 flex flex-col';
+    subWrap.className = 'rounded-xl border border-primary/30 p-3 bg-card-dark min-w-0 flex flex-col';
+
+    const subLabel = document.createElement('div');
+    subLabel.className = 'text-[11px] text-muted-gray mb-1';
+    subLabel.textContent = 'Ссылка этого устройства';
 
     const subText = document.createElement('div');
     subText.className = 'text-xs text-white/90 truncate';
-    subText.textContent = subUrl ? shortPreview(subUrl, 28, 12) : '������ ����������';
+    subText.textContent = subUrl ? shortPreview(subUrl, 34, 14) : 'Ссылка недоступна';
     if (subUrl) subText.title = subUrl;
 
     const subBtn = document.createElement('button');
     subBtn.className = 'ios-active border border-primary text-primary font-bold px-3 h-[42px] rounded-xl text-xs mt-2 w-full';
-    subBtn.textContent = '����������� ������';
+    subBtn.textContent = 'Скопировать ссылку';
     subBtn.disabled = !subUrl;
     subBtn.addEventListener('click', async () => {
       if (!subUrl) return;
       try {
         await navigator.clipboard.writeText(subUrl);
-        notify('������ ���������� �����������');
+        notify('Ссылка скопирована');
       } catch (e) {
-        notify('�� ������� ����������� ������');
+        notify('Не удалось скопировать ссылку');
       }
     });
 
+    subWrap.appendChild(subLabel);
     subWrap.appendChild(subText);
     subWrap.appendChild(subBtn);
 
     const actions = document.createElement('div');
-    actions.className = 'flex flex-col gap-2';
+    actions.className = 'flex flex-col gap-2 self-start sm:self-stretch';
 
     const rotateBtn = document.createElement('button');
     rotateBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[42px] rounded-xl text-xs';
-    rotateBtn.textContent = '�������� ����';
+    rotateBtn.textContent = 'Обновить ключ';
     rotateBtn.addEventListener('click', async () => {
       try {
         const res = await apiFetch('/api/device/rotate', { method: 'POST', body: JSON.stringify({ uuid: item.uuid }) });
         const ready = await isSubscriptionUrlReady((res && res.subscription_url) || subUrl);
-        notify(ready ? '���� ��������, ������ ������' : '���� ��������, ������ ��� �� ������');
+        notify(ready ? 'Ключ обновлен, ссылка готова' : 'Ключ обновлен, ссылка еще не готова');
         loadDevices();
       } catch (e) {
-        notify('�� ������� �������� ���� ����������');
+        notify('Не удалось обновить ключ устройства');
       }
     });
 
     const delBtn = document.createElement('button');
     delBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[42px] rounded-xl text-xs';
-    delBtn.textContent = '�������';
+    delBtn.textContent = 'Удалить';
     delBtn.addEventListener('click', async () => {
       try {
         await apiFetch('/api/device/remove', { method: 'POST', body: JSON.stringify({ uuid: item.uuid }) });
-        notify('���������� �������');
+        notify('Устройство удалено');
         loadDevices();
       } catch (e) {
-        notify('�� ������� ������� ����������');
+        notify('Не удалось удалить устройство');
       }
     });
 
@@ -867,7 +872,7 @@ function loadDevices() {
 
       const addBtn = document.getElementById('addDeviceBtn');
       if (addBtn) {
-        addBtn.textContent = `�������� ���������� (${connected}/${limit})`;
+        addBtn.textContent = `Добавить устройство (${connected}/${limit})`;
         addBtn.disabled = !!limit && connected >= limit;
       }
 
@@ -875,7 +880,7 @@ function loadDevices() {
     })
     .catch(() => {
       const box = document.getElementById('deviceList');
-      box.textContent = '�� ������� ��������� ����������.';
+      box.textContent = 'Не удалось загрузить устройства.';
     });
 }
 
@@ -890,31 +895,31 @@ document.getElementById('addDeviceBtn').addEventListener('click', async () => {
     const ready = await isSubscriptionUrlReady(res && res.subscription_url);
 
     if (res && res.upgraded) {
-      notify(`����� ��������: ${res.upgraded.old_limit}>${res.upgraded.new_limit}. �������: ${res.upgraded.topup_min_pay} ?.`);
+      notify(`Лимит расширен: ${res.upgraded.old_limit} → ${res.upgraded.new_limit}. Доплата: ${res.upgraded.topup_min_pay} ₽.`);
     } else {
-      notify(ready ? `���������� ��������� (${res.devices_ratio || ''}). ������ ������.` : `���������� ��������� (${res.devices_ratio || ''}). ������ ��� �� ������.`);
+      notify(ready ? `Устройство добавлено (${res.devices_ratio || ''}). Ссылка готова.` : `Устройство добавлено (${res.devices_ratio || ''}). Ссылка еще не готова.`);
     }
 
     const nameInput = document.getElementById('deviceName');
     if (nameInput) nameInput.value = '';
     loadDevices();
   } catch (e) {
-    if (e && e.message === 'device_limit_reached') notify('��������� ����� ��������� (�������� 5).');
-    else if (e && e.message === 'access_closed') notify('������ ���������. ������� ��������� �������� � �������.');
-    else if (e && e.status === 401) notify('������ �������. ����� ������ ����� Telegram.');
-    else if (e && e.status === 403) notify('�������� ��������� ��� �������� ������� ��������.');
-    else notify('�� ������� �������� ����������: ' + (e && e.message ? e.message : 'unknown_error'));
+    if (e && e.message === 'device_limit_reached') notify('Достигнут лимит устройств (максимум 5).');
+    else if (e && e.message === 'access_closed') notify('Доступ неактивен. Сначала активируй подписку в профиле.');
+    else if (e && e.status === 401) notify('Сессия истекла. Войди заново через Telegram.');
+    else if (e && e.status === 403) notify('Доступ запрещен для этого действия.');
+    else notify('Не удалось добавить устройство: ' + (e && e.message ? e.message : 'unknown_error'));
   }
 });
 
 document.getElementById('resetDeviceBtn').addEventListener('click', async () => {
-  if (!window.confirm('�������� ���� ������������? ������ ����������� ���������� ��������.')) return;
+  if (!window.confirm('Сбросить все устройства? Старые ссылки перестанут работать.')) return;
   try {
     await apiFetch('/api/device/reset', { method: 'POST' });
-    notify('���� �������. ������ ���������� �� ������ ����.');
+    notify('Ключ сброшен. Добавь устройство заново.');
     loadDevices();
   } catch (e) {
-    notify('�� ������� �������� ����');
+    notify('Не удалось сбросить ключ');
   }
 });
 
