@@ -1225,7 +1225,8 @@ async function openPanelWithFreshSession(silent = false) {
       const proxyUrl = String((res.proxy_url || '').trim());
       const token = String((res.proxy_token || '').trim());
       const hrefBase = proxyUrl || (API_BASE + '/panel/');
-      const href = token ? (hrefBase + (hrefBase.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(token)) : hrefBase;
+      const hasTokenInUrl = /[?&]token=/.test(hrefBase);
+      const href = (!hasTokenInUrl && token) ? (hrefBase + (hrefBase.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(token)) : hrefBase;
       panelStatusSyncLostNotified = false;
       setPanelLinkHref(href);
       setPanelUiState(true, Number((res && res.ttl_sec) || 900));
