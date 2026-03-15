@@ -464,7 +464,7 @@ function renderDeviceList(items) {
     container.appendChild(headerRow);
 
     const bodyRow = document.createElement('div');
-    bodyRow.className = 'mt-3 grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_170px] gap-3 items-stretch';
+    bodyRow.className = 'mt-3 grid grid-cols-[minmax(0,1fr)_128px] gap-2 items-start';
 
     const subWrap = document.createElement('div');
     subWrap.className = 'rounded-xl border border-primary/30 p-3 bg-card-dark min-w-0 flex flex-col';
@@ -497,10 +497,10 @@ function renderDeviceList(items) {
     subWrap.appendChild(subBtn);
 
     const actions = document.createElement('div');
-    actions.className = 'flex flex-col gap-2 self-start sm:self-stretch';
+    actions.className = 'flex flex-col gap-2 self-stretch';
 
     const rotateBtn = document.createElement('button');
-    rotateBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[42px] rounded-xl text-xs';
+    rotateBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[38px] rounded-xl text-xs leading-none';
     rotateBtn.textContent = 'Обновить ключ';
     rotateBtn.addEventListener('click', async () => {
       try {
@@ -514,7 +514,7 @@ function renderDeviceList(items) {
     });
 
     const delBtn = document.createElement('button');
-    delBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[42px] rounded-xl text-xs';
+    delBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[38px] rounded-xl text-xs leading-none';
     delBtn.textContent = 'Удалить';
     delBtn.addEventListener('click', async () => {
       try {
