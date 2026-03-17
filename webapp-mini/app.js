@@ -33,6 +33,13 @@ const tg = window.Telegram ? Telegram.WebApp : null;
 if (tg) tg.ready();
 
 const API_BASE = "https://api.112prd.ru:2053";
+const API_TARIFFS = '/api/tariffs';
+const API_USER = '/api/user';
+const API_PAYMENT_SETTINGS = '/api/payment/settings';
+const API_ADMIN_PROXY_STATUS = '/api/admin/proxy_status';
+const API_ADMIN_PROXY_AUTH = '/api/admin/proxy_auth';
+const API_ADMIN_PROXY_CLOSE = '/api/admin/proxy_close';
+const DEFAULT_PAYMENT_SETTINGS = { phone: '+79857719139', bank: 'alfa', recipient: 'Арсений А' };
 const INIT_DATA = tg ? tg.initData : '';
 let PWA_TOKEN = '';
 const ADMIN_ID = 312826672;
@@ -123,7 +130,7 @@ function renderTariffs() {
 
 async function loadTariffs() {
   try {
-    const data = await apiFetch('/api/tariffs');
+    const data = await apiFetch(API_TARIFFS);
     const prices = data && data.prices ? data.prices : {};
     const next = {};
     for (let d = 1; d <= 5; d += 1) {
@@ -151,7 +158,7 @@ function formatSubLine(sub) {
 
 function loadUser() {
   if (!API_BASE || !INIT_DATA) return Promise.resolve(false);
-  return apiFetch('/api/user')
+  return apiFetch(API_USER)
     .then(data => {
       CURRENT_USER_ID = Number((data.user && data.user.id) || CURRENT_USER_ID || 0);
       document.getElementById('balanceValue').textContent = (data.balance || 0) + '₽';
@@ -204,6 +211,15 @@ function notify(text) {
   }, 1800);
 }
 
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(String(text || ''));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function confirmDanger(code, title) {
   const ok1 = window.confirm(`Опасное действие: ${title}.\nПродолжить?`);
   if (!ok1) return false;
@@ -238,7 +254,7 @@ bindClick('profileDevicesBtn', () => { pushScreen('screen-devices'); loadDevices
 
 document.getElementById('copyRefBtn').addEventListener('click', async () => {
   const text = document.getElementById('refLink').textContent;
-  try { await navigator.clipboard.writeText(text); } catch (e) { }
+  await copyToClipboard(text);
 });
 
 function renderShareBlock() {
@@ -258,22 +274,14 @@ function renderSubscriptionBlock() {
 }
 
 document.getElementById('copyAppLinkBtn').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(appShareUrl || '');
-    notify('Ссылка скопирована');
-  } catch (e) {
-    notify('Не удалось скопировать ссылку');
-  }
+  const ok = await copyToClipboard(appShareUrl || '');
+  notify(ok ? 'Ссылка скопирована' : 'Не удалось скопировать ссылку');
 });
 
 document.getElementById('copySubscriptionBtn').addEventListener('click', async () => {
-  try {
-    if (!subscriptionUrl) return notify('Ссылка подписки пока недоступна');
-    await navigator.clipboard.writeText(subscriptionUrl);
-    notify('Ссылка подписки скопирована');
-  } catch (e) {
-    notify('Не удалось скопировать ссылку подписки');
-  }
+  if (!subscriptionUrl) return notify('Ссылка подписки пока недоступна');
+  const ok = await copyToClipboard(subscriptionUrl);
+  notify(ok ? 'Ссылка подписки скопирована' : 'Не удалось скопировать ссылку подписки');
 });
 
 function setLegacySubscriptionVisibility(show) {
@@ -291,8 +299,8 @@ document.getElementById('shareAppBtn').addEventListener('click', async () => {
     if (navigator.share) {
       await navigator.share({ title: 'GhostLink', text: 'Личный кабинет GhostLink', url: appShareUrl });
     } else {
-      await navigator.clipboard.writeText(appShareUrl || '');
-      notify('Ссылка скопирована');
+      const ok = await copyToClipboard(appShareUrl || '');
+      if (ok) notify('Ссылка скопирована');
     }
   } catch (e) { }
 });
@@ -421,7 +429,7 @@ function revealIssuedKey(key, ttlSec = 180) {
   const copyBtn = document.getElementById('issuedKeyCopyBtn');
   if (copyBtn) {
     copyBtn.addEventListener('click', async () => {
-      const ok = await navigator.clipboard.writeText(safeKey).then(() => true).catch(() => false);
+      const ok = await copyToClipboard(safeKey);
       notify(ok ? 'Ключ скопирован' : 'Не удалось скопировать. Выдели ключ вручную.');
     });
   }
@@ -429,6 +437,23 @@ function revealIssuedKey(key, ttlSec = 180) {
   const hideBtn = document.getElementById('issuedKeyHideBtn');
   if (hideBtn) hideBtn.addEventListener('click', hide);
 }
+const DEVICE_SUB_COPY_BUTTON_CLASS = 'ios-active border border-primary text-primary font-bold px-3 h-[42px] rounded-xl text-xs mt-2 w-full';
+const DEVICE_ACTION_BUTTON_CLASS = 'ios-active border border-primary text-primary font-bold px-2 h-[38px] rounded-xl text-xs leading-none';
+const DEVICE_CARD_CLASS = 'mb-3 rounded-2xl border border-primary/30 bg-black/20 p-3';
+const DEVICE_INFO_CLASS = 'min-w-0';
+const DEVICE_TITLE_CLASS = 'text-white text-sm font-semibold truncate';
+const DEVICE_META_CLASS = 'text-muted-gray text-xs mt-1';
+const DEVICE_ROW_CLASS = 'grid grid-cols-[minmax(0,1fr)_128px] gap-2 items-start';
+const DEVICE_LEFT_COL_CLASS = 'min-w-0 flex flex-col';
+const DEVICE_SUB_WRAP_CLASS = 'rounded-xl border border-primary/30 p-3 bg-card-dark min-w-0 flex flex-col';
+const DEVICE_SUB_LABEL_CLASS = 'text-[11px] text-muted-gray mb-1';
+const DEVICE_SUB_TEXT_CLASS = 'text-xs text-white/90 truncate';
+const DEVICE_ACTIONS_CLASS = 'mt-3 flex flex-col gap-2 self-start w-full';
+const DEVICE_API_LIST = '/api/device/list';
+const DEVICE_API_ADD = '/api/device/add';
+const DEVICE_API_ROTATE = '/api/device/rotate';
+const DEVICE_API_REMOVE = '/api/device/remove';
+const DEVICE_API_RESET = '/api/device/reset';
 function renderDeviceList(items) {
   const box = document.getElementById('deviceList');
   box.innerHTML = '';
@@ -442,53 +467,49 @@ function renderDeviceList(items) {
     const subUrl = (item && item.subscription_url) ? String(item.subscription_url) : (item && item.uuid ? `${API_BASE}/sub/${encodeURIComponent(item.uuid)}` : '');
 
     const container = document.createElement('div');
-    container.className = 'mb-3 rounded-2xl border border-primary/30 bg-black/20 p-3';
+    container.className = DEVICE_CARD_CLASS;
 
     const info = document.createElement('div');
-    info.className = 'min-w-0';
+    info.className = DEVICE_INFO_CLASS;
 
     const title = document.createElement('div');
-    title.className = 'text-white text-sm font-semibold truncate';
+    title.className = DEVICE_TITLE_CLASS;
     title.textContent = item.email || item.uuid;
 
     const meta = document.createElement('div');
-    meta.className = 'text-muted-gray text-xs mt-1';
+    meta.className = DEVICE_META_CLASS;
     meta.textContent = `${item.online ? 'Онлайн' : 'Офлайн'} · ${formatBytes(item.total || 0)}`;
 
     info.appendChild(title);
     info.appendChild(meta);
 
     const row = document.createElement('div');
-    row.className = 'grid grid-cols-[minmax(0,1fr)_128px] gap-2 items-start';
+    row.className = DEVICE_ROW_CLASS;
 
     const leftCol = document.createElement('div');
-    leftCol.className = 'min-w-0 flex flex-col';
+    leftCol.className = DEVICE_LEFT_COL_CLASS;
     leftCol.appendChild(info);
 
     const subWrap = document.createElement('div');
-    subWrap.className = 'rounded-xl border border-primary/30 p-3 bg-card-dark min-w-0 flex flex-col';
+    subWrap.className = DEVICE_SUB_WRAP_CLASS;
 
     const subLabel = document.createElement('div');
-    subLabel.className = 'text-[11px] text-muted-gray mb-1';
+    subLabel.className = DEVICE_SUB_LABEL_CLASS;
     subLabel.textContent = 'Ссылка этого устройства';
 
     const subText = document.createElement('div');
-    subText.className = 'text-xs text-white/90 truncate';
+    subText.className = DEVICE_SUB_TEXT_CLASS;
     subText.textContent = subUrl ? shortPreview(subUrl, 34, 14) : 'Ссылка недоступна';
     if (subUrl) subText.title = subUrl;
 
     const subBtn = document.createElement('button');
-    subBtn.className = 'ios-active border border-primary text-primary font-bold px-3 h-[42px] rounded-xl text-xs mt-2 w-full';
+    subBtn.className = DEVICE_SUB_COPY_BUTTON_CLASS;
     subBtn.textContent = 'Скопировать ссылку';
     subBtn.disabled = !subUrl;
     subBtn.addEventListener('click', async () => {
       if (!subUrl) return;
-      try {
-        await navigator.clipboard.writeText(subUrl);
-        notify('Ссылка скопирована');
-      } catch (e) {
-        notify('Не удалось скопировать ссылку');
-      }
+      const ok = await copyToClipboard(subUrl);
+      notify(ok ? 'Ссылка скопирована' : 'Не удалось скопировать ссылку');
     });
 
     subWrap.appendChild(subLabel);
@@ -498,14 +519,14 @@ function renderDeviceList(items) {
     leftCol.appendChild(subWrap);
 
     const actions = document.createElement('div');
-    actions.className = 'mt-3 flex flex-col gap-2 self-start w-full';
+    actions.className = DEVICE_ACTIONS_CLASS;
 
     const rotateBtn = document.createElement('button');
-    rotateBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[38px] rounded-xl text-xs leading-none';
+    rotateBtn.className = DEVICE_ACTION_BUTTON_CLASS;
     rotateBtn.textContent = 'Обновить ключ';
     rotateBtn.addEventListener('click', async () => {
       try {
-        const res = await apiFetch('/api/device/rotate', { method: 'POST', body: JSON.stringify({ uuid: item.uuid }) });
+        const res = await apiFetch(DEVICE_API_ROTATE, { method: 'POST', body: JSON.stringify({ uuid: item.uuid }) });
         const ready = await isSubscriptionUrlReady((res && res.subscription_url) || subUrl);
         notify(ready ? 'Ключ обновлен, ссылка готова' : 'Ключ обновлен, ссылка еще не готова');
         loadDevices();
@@ -515,11 +536,11 @@ function renderDeviceList(items) {
     });
 
     const delBtn = document.createElement('button');
-    delBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[38px] rounded-xl text-xs leading-none';
+    delBtn.className = DEVICE_ACTION_BUTTON_CLASS;
     delBtn.textContent = 'Удалить';
     delBtn.addEventListener('click', async () => {
       try {
-        await apiFetch('/api/device/remove', { method: 'POST', body: JSON.stringify({ uuid: item.uuid }) });
+        await apiFetch(DEVICE_API_REMOVE, { method: 'POST', body: JSON.stringify({ uuid: item.uuid }) });
         notify('Устройство удалено');
         loadDevices();
       } catch (e) {
@@ -564,8 +585,16 @@ function setDeviceFormExpanded(expanded) {
   updateAddDeviceButton();
 }
 
+function notifyDeviceAddError(e) {
+  if (e && e.message === 'device_limit_reached') notify('Достигнут лимит устройств (максимум 5).');
+  else if (e && e.message === 'access_closed') notify('Доступ неактивен. Сначала активируй подписку в профиле.');
+  else if (e && e.status === 401) notify('Сессия истекла. Войди заново через Telegram.');
+  else if (e && e.status === 403) notify('Доступ запрещен для этого действия.');
+  else notify('Не удалось добавить устройство: ' + (e && e.message ? e.message : 'unknown_error'));
+}
+
 function loadDevices() {
-  apiFetch('/api/device/list')
+  apiFetch(DEVICE_API_LIST)
     .then((data) => {
       const limit = Number(data.device_limit || 0);
       const connected = Number(data.connected || 0);
@@ -594,7 +623,7 @@ document.getElementById('addDeviceBtn').addEventListener('click', async () => {
   try {
     const deviceType = (document.getElementById('deviceType') || {}).value || 'other';
     const deviceName = ((document.getElementById('deviceName') || {}).value || '').trim();
-    const res = await apiFetch('/api/device/add', {
+      const res = await apiFetch(DEVICE_API_ADD, {
       method: 'POST',
       body: JSON.stringify({ device_type: deviceType, device_name: deviceName })
     });
@@ -611,18 +640,14 @@ document.getElementById('addDeviceBtn').addEventListener('click', async () => {
     setDeviceFormExpanded(false);
     loadDevices();
   } catch (e) {
-    if (e && e.message === 'device_limit_reached') notify('Достигнут лимит устройств (максимум 5).');
-    else if (e && e.message === 'access_closed') notify('Доступ неактивен. Сначала активируй подписку в профиле.');
-    else if (e && e.status === 401) notify('Сессия истекла. Войди заново через Telegram.');
-    else if (e && e.status === 403) notify('Доступ запрещен для этого действия.');
-    else notify('Не удалось добавить устройство: ' + (e && e.message ? e.message : 'unknown_error'));
+    notifyDeviceAddError(e);
   }
 });
 
 document.getElementById('resetDeviceBtn').addEventListener('click', async () => {
   if (!window.confirm('Сбросить все устройства? Старые ссылки перестанут работать.')) return;
   try {
-    await apiFetch('/api/device/reset', { method: 'POST' });
+      await apiFetch(DEVICE_API_RESET, { method: 'POST' });
     notify('Ключ сброшен. Добавь устройство заново.');
     loadDevices();
   } catch (e) {
@@ -637,14 +662,14 @@ flexSlider.addEventListener('input', () => {
   renderTariffs();
 });
 
-let paymentSettings = { phone: '+79857719139', bank: 'alfa', recipient: 'Арсений А' };
+let paymentSettings = { ...DEFAULT_PAYMENT_SETTINGS };
 let currentPaymentLabel = '';
 
 async function loadPaymentSettings() {
   try {
-    paymentSettings = await apiFetch('/api/payment/settings');
+    paymentSettings = await apiFetch(API_PAYMENT_SETTINGS);
   } catch (e) {
-    paymentSettings = { phone: '+79857719139', bank: 'alfa', recipient: 'Арсений А' };
+    paymentSettings = { ...DEFAULT_PAYMENT_SETTINGS };
   }
 }
 
@@ -652,7 +677,7 @@ function openPaymentScreen(amount, label) {
   currentPaymentLabel = String(label || '').trim();
   document.getElementById('paymentAmountDisplay').textContent = `${amount} ₽`;
   loadPaymentSettings().then(() => {
-    document.getElementById('paymentPhoneDisplay').textContent = paymentSettings.phone || '+79857719139';
+    document.getElementById('paymentPhoneDisplay').textContent = paymentSettings.phone || DEFAULT_PAYMENT_SETTINGS.phone;
     const bankName = String(paymentSettings.bank || 'alfa').toLowerCase();
     let bankDisplay = 'Альфа-Банк';
     if (bankName.includes('sber')) bankDisplay = 'Сбербанк';
@@ -694,12 +719,14 @@ if (profilePayBtn) {
 }
 
 document.getElementById('copyPhoneBtn').addEventListener('click', async () => {
-  try {
-    const phone = document.getElementById('paymentPhoneDisplay').textContent;
-    await navigator.clipboard.writeText(phone);
-    notify('Номер телефона скопирован!');
-  } catch (e) { }
+  const phone = document.getElementById('paymentPhoneDisplay').textContent;
+  const ok = await copyToClipboard(phone);
+  if (ok) notify('Номер телефона скопирован!');
 });
+
+function notifyPaymentSubmitError(e) {
+  notify('Ошибка отправки: ' + (e && e.message ? e.message : 'payment_report'));
+}
 
 document.getElementById('submitPaymentBtn').addEventListener('click', async () => {
   const senderVal = document.getElementById('paymentSenderInput').value.trim();
@@ -717,7 +744,7 @@ document.getElementById('submitPaymentBtn').addEventListener('click', async () =
     loadUser();
     pushScreen('screen-home');
   } catch (e) {
-    notify('Ошибка отправки: ' + e.message);
+    notifyPaymentSubmitError(e);
   }
 });
 
@@ -765,12 +792,12 @@ const adminPaymentSettingsBtn = document.getElementById('adminPaymentSettings');
 if (adminPaymentSettingsBtn) {
   adminPaymentSettingsBtn.addEventListener('click', async () => {
     try {
-      const current = await adminFetch('/api/payment/settings');
+      const current = await adminFetch(API_PAYMENT_SETTINGS);
       const phone = (window.prompt('Номер для оплаты (СБП):', String(current.phone || '')) || '').trim();
       if (!phone) return notify('Номер не задан');
       const bank = (window.prompt('Банк (например: sber / alfa / tinkoff):', String(current.bank || '')) || '').trim();
       if (!bank) return notify('Банк не задан');
-      const recipient = (window.prompt('Получатель (например: Арсений А):', String(current.recipient || 'Арсений А')) || '').trim();
+      const recipient = (window.prompt('Получатель (например: Арсений А):', String(current.recipient || DEFAULT_PAYMENT_SETTINGS.recipient)) || '').trim();
       if (!recipient) return notify('Получатель не задан');
       await adminFetch('/api/admin/payment/settings', {
         method: 'POST',
@@ -898,7 +925,7 @@ function openPanelExternal(href) {
 
 async function refreshPanelProxyState(silent = true) {
   try {
-    const r = await adminFetch('/api/admin/proxy_status');
+    const r = await adminFetch(API_ADMIN_PROXY_STATUS);
     const isOpen = !!(r && r.open);
     const secondsLeft = Number((r && r.seconds_left) || 0);
     panelStatusSyncLostNotified = false;
@@ -925,7 +952,7 @@ async function openPanelWithFreshSession(silent = false) {
   if (panelActionInFlight) return false;
   setPanelActionBusy(true);
   try {
-    const res = await adminFetch('/api/admin/proxy_auth', { method: 'POST', body: JSON.stringify({}) });
+      const res = await adminFetch(API_ADMIN_PROXY_AUTH, { method: 'POST', body: JSON.stringify({}) });
     if (res && res.ok) {
       const proxyUrl = String((res.proxy_url || '').trim());
       const token = String((res.proxy_token || '').trim());
@@ -978,7 +1005,7 @@ if (adminPanelCloseBtn) {
     if (panelActionInFlight) return;
     setPanelActionBusy(true);
     try {
-      await adminFetch('/api/admin/proxy_close', { method: 'POST' });
+      await adminFetch(API_ADMIN_PROXY_CLOSE, { method: 'POST' });
       hidePanelLink();
       setPanelUiState(false, 0);
       notify('Панель закрыта');
@@ -1539,14 +1566,22 @@ if (helpBtn) {
 }
 
 // Admin Tabs Logic
+const ADMIN_TAB_CLASS_ACTIVE = 'admin-tab-btn ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap';
+const ADMIN_TAB_CLASS_INACTIVE = 'admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap';
+
+function setAdminTabButtonState(button, active) {
+  if (!button) return;
+  button.className = active ? ADMIN_TAB_CLASS_ACTIVE : ADMIN_TAB_CLASS_INACTIVE;
+}
+
 document.querySelectorAll('.admin-tab-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
     document.querySelectorAll('.admin-tab-btn').forEach(b => {
-      b.className = 'admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap';
+      setAdminTabButtonState(b, false);
     });
 
     const me = e.currentTarget;
-    me.className = 'admin-tab-btn ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap';
+    setAdminTabButtonState(me, true);
     const targetId = me.getAttribute('data-tab');
 
     document.querySelectorAll('.admin-tab-content').forEach(c => {
