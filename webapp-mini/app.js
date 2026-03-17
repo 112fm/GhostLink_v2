@@ -444,11 +444,8 @@ function renderDeviceList(items) {
     const container = document.createElement('div');
     container.className = 'mb-3 rounded-2xl border border-primary/30 bg-black/20 p-3';
 
-    const headerRow = document.createElement('div');
-    headerRow.className = 'flex items-start justify-between gap-3';
-
     const info = document.createElement('div');
-    info.className = 'min-w-0 flex-1';
+    info.className = 'min-w-0';
 
     const title = document.createElement('div');
     title.className = 'text-white text-sm font-semibold truncate';
@@ -460,11 +457,13 @@ function renderDeviceList(items) {
 
     info.appendChild(title);
     info.appendChild(meta);
-    headerRow.appendChild(info);
-    container.appendChild(headerRow);
 
-    const bodyRow = document.createElement('div');
-    bodyRow.className = 'mt-3 grid grid-cols-[minmax(0,1fr)_128px] gap-2 items-start';
+    const row = document.createElement('div');
+    row.className = 'grid grid-cols-[minmax(0,1fr)_128px] gap-2 items-start';
+
+    const leftCol = document.createElement('div');
+    leftCol.className = 'min-w-0 flex flex-col';
+    leftCol.appendChild(info);
 
     const subWrap = document.createElement('div');
     subWrap.className = 'rounded-xl border border-primary/30 p-3 bg-card-dark min-w-0 flex flex-col';
@@ -495,9 +494,11 @@ function renderDeviceList(items) {
     subWrap.appendChild(subLabel);
     subWrap.appendChild(subText);
     subWrap.appendChild(subBtn);
+    subWrap.classList.add('mt-3');
+    leftCol.appendChild(subWrap);
 
     const actions = document.createElement('div');
-    actions.className = 'flex flex-col gap-2 self-stretch';
+    actions.className = 'flex flex-col gap-2 self-start w-full';
 
     const rotateBtn = document.createElement('button');
     rotateBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[38px] rounded-xl text-xs leading-none';
@@ -529,12 +530,38 @@ function renderDeviceList(items) {
     actions.appendChild(rotateBtn);
     actions.appendChild(delBtn);
 
-    bodyRow.appendChild(subWrap);
-    bodyRow.appendChild(actions);
-    container.appendChild(bodyRow);
+    row.appendChild(leftCol);
+    row.appendChild(actions);
+    container.appendChild(row);
 
     box.appendChild(container);
   });
+}
+
+let deviceFormExpanded = false;
+let deviceConnectedCount = 0;
+let deviceLimitCount = 0;
+
+function updateAddDeviceButton() {
+  const addBtn = document.getElementById('addDeviceBtn');
+  if (!addBtn) return;
+  const ratio = `(${deviceConnectedCount}/${deviceLimitCount})`;
+  const limitReached = !!deviceLimitCount && deviceConnectedCount >= deviceLimitCount;
+  addBtn.disabled = limitReached;
+  if (limitReached) {
+    addBtn.textContent = `Лимит достигнут ${ratio}`;
+    return;
+  }
+  addBtn.textContent = deviceFormExpanded
+    ? `Подтвердить добавление ${ratio}`
+    : `Добавить устройство ${ratio}`;
+}
+
+function setDeviceFormExpanded(expanded) {
+  deviceFormExpanded = !!expanded;
+  const form = document.getElementById('deviceAddForm');
+  if (form) form.classList.toggle('hidden', !deviceFormExpanded);
+  updateAddDeviceButton();
 }
 
 function loadDevices() {
@@ -542,15 +569,14 @@ function loadDevices() {
     .then((data) => {
       const limit = Number(data.device_limit || 0);
       const connected = Number(data.connected || 0);
+      deviceLimitCount = limit;
+      deviceConnectedCount = connected;
       document.getElementById('deviceLimit').textContent = `${connected}/${limit}`;
       document.getElementById('deviceCount').textContent = connected;
       document.getElementById('profileDevicesRatio').textContent = data.devices_ratio || `${connected}/${limit}`;
 
-      const addBtn = document.getElementById('addDeviceBtn');
-      if (addBtn) {
-        addBtn.textContent = `Добавить устройство (${connected}/${limit})`;
-        addBtn.disabled = !!limit && connected >= limit;
-      }
+      if (!!limit && connected >= limit) setDeviceFormExpanded(false);
+      updateAddDeviceButton();
 
       renderDeviceList(data.items || []);
     })
@@ -561,6 +587,10 @@ function loadDevices() {
 }
 
 document.getElementById('addDeviceBtn').addEventListener('click', async () => {
+  if (!deviceFormExpanded) {
+    setDeviceFormExpanded(true);
+    return;
+  }
   try {
     const deviceType = (document.getElementById('deviceType') || {}).value || 'other';
     const deviceName = ((document.getElementById('deviceName') || {}).value || '').trim();
@@ -578,6 +608,7 @@ document.getElementById('addDeviceBtn').addEventListener('click', async () => {
 
     const nameInput = document.getElementById('deviceName');
     if (nameInput) nameInput.value = '';
+    setDeviceFormExpanded(false);
     loadDevices();
   } catch (e) {
     if (e && e.message === 'device_limit_reached') notify('Достигнут лимит устройств (максимум 5).');
@@ -598,6 +629,8 @@ document.getElementById('resetDeviceBtn').addEventListener('click', async () => 
     notify('Не удалось сбросить ключ');
   }
 });
+
+setDeviceFormExpanded(false);
 
 const flexSlider = document.getElementById('flexSlider');
 flexSlider.addEventListener('input', () => {
