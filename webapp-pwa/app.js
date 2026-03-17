@@ -767,12 +767,12 @@ const DEVICE_CARD_CLASS = 'mb-3 rounded-2xl border border-primary/30 bg-black/20
 const DEVICE_INFO_CLASS = 'min-w-0';
 const DEVICE_TITLE_CLASS = 'text-white text-sm font-semibold truncate';
 const DEVICE_META_CLASS = 'text-muted-gray text-xs mt-1';
-const DEVICE_ROW_CLASS = 'grid grid-cols-[minmax(0,1fr)_128px] gap-2 items-start';
+const DEVICE_ROW_CLASS = 'mt-3 grid grid-cols-[minmax(0,1fr)_128px] gap-2 items-start';
 const DEVICE_LEFT_COL_CLASS = 'min-w-0 flex flex-col';
 const DEVICE_SUB_WRAP_CLASS = 'rounded-xl border border-primary/30 p-3 bg-card-dark min-w-0 flex flex-col';
 const DEVICE_SUB_LABEL_CLASS = 'text-[11px] text-muted-gray mb-1';
 const DEVICE_SUB_TEXT_CLASS = 'text-xs text-white/90 truncate';
-const DEVICE_ACTIONS_CLASS = 'mt-3 flex flex-col gap-2 self-start w-full';
+const DEVICE_ACTIONS_CLASS = 'flex flex-col gap-2 self-start w-full';
 const DEVICE_API_LIST = '/api/device/list';
 const DEVICE_API_ADD = '/api/device/add';
 const DEVICE_API_ROTATE = '/api/device/rotate';
@@ -812,7 +812,6 @@ function renderDeviceList(items) {
 
     const leftCol = document.createElement('div');
     leftCol.className = DEVICE_LEFT_COL_CLASS;
-    leftCol.appendChild(info);
 
     const subWrap = document.createElement('div');
     subWrap.className = DEVICE_SUB_WRAP_CLASS;
@@ -839,7 +838,6 @@ function renderDeviceList(items) {
     subWrap.appendChild(subLabel);
     subWrap.appendChild(subText);
     subWrap.appendChild(subBtn);
-    subWrap.classList.add('mt-3');
     leftCol.appendChild(subWrap);
 
     const actions = document.createElement('div');
@@ -875,6 +873,7 @@ function renderDeviceList(items) {
     actions.appendChild(rotateBtn);
     actions.appendChild(delBtn);
 
+    container.appendChild(info);
     row.appendChild(leftCol);
     row.appendChild(actions);
     container.appendChild(row);
