@@ -727,9 +727,20 @@ function notifyPaymentSubmitError(e) {
   notify('Ошибка отправки: ' + (e && e.message ? e.message : 'payment_report'));
 }
 
+function normalizePaymentSenderName(raw) {
+  return String(raw || '')
+    .replace(/\u00A0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isValidPaymentSenderName(value) {
+  return /^(?:\p{L}{2,})\s+\p{L}$/u.test(value);
+}
+
 document.getElementById('submitPaymentBtn').addEventListener('click', async () => {
-  const senderVal = document.getElementById('paymentSenderInput').value.trim();
-  if (!/^[\\p{L}]{2,}\\s+[\\p{L}]$/u.test(senderVal)) return notify('Формат: Имя Ф (например Иван П)');
+  const senderVal = normalizePaymentSenderName(document.getElementById('paymentSenderInput').value);
+  if (!isValidPaymentSenderName(senderVal)) return notify('Формат: Имя Ф (например Иван П)');
 
   const amountText = document.getElementById('paymentAmountDisplay').textContent;
   const amount = parseInt(amountText.replace(/\D/g, ''), 10) || 150;
