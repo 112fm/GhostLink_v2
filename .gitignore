@@ -1,14 +1,13 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
+# Allow-list mode: ignore everything by default.
+*
 
-# Config and Secrets
-vapid_private.pem
+# Keep git metadata file itself tracked.
+!.gitignore
 
-# Server files
-ghost_final.py
-api_server.py
-
-# Bot folder
-bot/
+# Allow only frontend folders that must be in GitHub.
+!webapp-mini/
+!webapp-mini/**
+!webapp-pwa/
+!webapp-pwa/**
+!webapp-shared/
+!webapp-shared/**
