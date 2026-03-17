@@ -822,7 +822,7 @@ function renderDeviceList(items) {
     leftCol.appendChild(subWrap);
 
     const actions = document.createElement('div');
-    actions.className = 'flex flex-col gap-2 self-start w-full';
+    actions.className = 'mt-3 flex flex-col gap-2 self-start w-full';
 
     const rotateBtn = document.createElement('button');
     rotateBtn.className = 'ios-active border border-primary text-primary font-bold px-2 h-[38px] rounded-xl text-xs leading-none';
