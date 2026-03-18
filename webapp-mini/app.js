@@ -438,17 +438,17 @@ function revealIssuedKey(key, ttlSec = 180) {
   if (hideBtn) hideBtn.addEventListener('click', hide);
 }
 const DEVICE_SUB_COPY_BUTTON_CLASS = 'ios-active border border-primary text-primary font-bold px-3 h-[42px] rounded-xl text-xs mt-2 w-full';
-const DEVICE_ACTION_BUTTON_CLASS = 'ios-active border border-primary text-primary font-bold px-2 h-[38px] rounded-xl text-xs leading-none';
+const DEVICE_ACTION_BUTTON_CLASS = 'ios-active border border-primary text-primary font-bold px-2 rounded-xl text-xs leading-none min-h-[42px] flex-1';
 const DEVICE_CARD_CLASS = 'mb-3 rounded-2xl border border-primary/30 bg-black/20 p-3';
 const DEVICE_INFO_CLASS = 'min-w-0';
 const DEVICE_TITLE_CLASS = 'text-white text-sm font-semibold truncate';
 const DEVICE_META_CLASS = 'text-muted-gray text-xs mt-1';
-const DEVICE_ROW_CLASS = 'mt-3 grid grid-cols-[minmax(0,1fr)_128px] gap-2 items-start';
-const DEVICE_LEFT_COL_CLASS = 'min-w-0 flex flex-col';
-const DEVICE_SUB_WRAP_CLASS = 'rounded-xl border border-primary/30 p-3 bg-card-dark min-w-0 flex flex-col';
+const DEVICE_ROW_CLASS = 'mt-3 grid grid-cols-[minmax(0,1fr)_128px] gap-2 items-stretch';
+const DEVICE_LEFT_COL_CLASS = 'min-w-0 flex flex-col h-full';
+const DEVICE_SUB_WRAP_CLASS = 'rounded-xl border border-primary/30 p-3 bg-card-dark min-w-0 flex flex-col h-full';
 const DEVICE_SUB_LABEL_CLASS = 'text-[11px] text-muted-gray mb-1';
 const DEVICE_SUB_TEXT_CLASS = 'text-xs text-white/90 truncate';
-const DEVICE_ACTIONS_CLASS = 'flex flex-col gap-2 self-start w-full';
+const DEVICE_ACTIONS_CLASS = 'flex flex-col gap-2 w-full h-full';
 const DEVICE_API_LIST = '/api/device/list';
 const DEVICE_API_ADD = '/api/device/add';
 const DEVICE_API_ROTATE = '/api/device/rotate';
