@@ -1241,12 +1241,18 @@ async function loadAdminPendingPayments() {
 
       const info = document.createElement('div');
       info.className = 'text-white text-sm whitespace-pre-line';
-      info.textContent = [
+      const lines = [
         `${u.name} (ID: ${u.id})`,
-        `Сумма: ${u.payment_amount || 0} ₽ · Плательщик: ${u.payment_sender || '—'}`,
-        `Тариф: ${u.payment_label || '—'} · МСК: ${u.payment_time_msk || '—'}`,
-        `Реквизиты: ${u.payment_bank || '—'} · ${u.payment_phone || '—'} · ${u.payment_recipient || '—'}`
-      ].join('\n');
+        `Сумма: ${u.payment_amount || 0} ₽ · Плательщик: ${u.payment_sender || '—'}`
+      ];
+      if (u.payment_label || u.payment_time_msk) {
+        lines.push(`Тариф: ${u.payment_label || '—'} · МСК: ${u.payment_time_msk || '—'}`);
+      }
+      const reqParts = [u.payment_bank, u.payment_phone, u.payment_recipient].filter(Boolean);
+      if (reqParts.length) {
+        lines.push(`Реквизиты: ${reqParts.join(' · ')}`);
+      }
+      info.textContent = lines.join('\n');
 
       const btns = document.createElement('div');
       btns.className = 'flex gap-2 mt-2';
