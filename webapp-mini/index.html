@@ -354,6 +354,9 @@
             data-tab="admin-tab-users">Пользователи</button>
           <button
             class="admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap"
+            data-tab="admin-tab-payments">Платежи</button>
+          <button
+            class="admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap"
             data-tab="admin-tab-clients">Клиенты</button>
           <button
             class="admin-tab-btn ios-active bg-card-dark text-white border border-primary/50 font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap"
@@ -449,6 +452,18 @@
             <button id="adminAddSlots"
               class="ios-active bg-primary text-black font-bold px-3 py-2 rounded-xl w-full mt-3">+5 мест в
               базе</button>
+          </div>
+
+          <div id="admin-tab-payments" class="admin-tab-content hidden">
+            <div class="border border-primary rounded-2xl p-4 mb-4 bg-black/20">
+              <div class="text-white font-bold mb-2 flex justify-between items-center">
+                <span>Платежи на проверке</span>
+                <button id="adminPendingPaymentsRefresh" class="text-primary text-xs">Обновить</button>
+              </div>
+              <div id="adminPendingPaymentsList" class="space-y-2 mt-2 max-h-80 overflow-y-auto text-sm">
+                <div class="text-muted-gray">Нет платежей</div>
+              </div>
+            </div>
           </div>
 
           <!-- ТАБ Клиенты -->

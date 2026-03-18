@@ -1778,6 +1778,83 @@ async function loadAdminPending() {
 const pb = document.getElementById('adminPendingRefresh');
 if (pb) pb.addEventListener('click', loadAdminPending);
 
+async function loadAdminPendingPayments() {
+  const box = document.getElementById('adminPendingPaymentsList');
+  if (!box) return;
+  box.textContent = 'Загрузка...';
+  try {
+    const data = await adminFetch('/api/admin/payments/pending');
+    const items = data.items || [];
+    if (items.length === 0) {
+      box.textContent = 'Нет платежей';
+      return;
+    }
+    box.innerHTML = '';
+    items.forEach(u => {
+      const row = document.createElement('div');
+      row.className = 'py-2 border-b border-white/10';
+
+      const info = document.createElement('div');
+      info.className = 'text-white text-sm whitespace-pre-line';
+      info.textContent = [
+        `${u.name} (ID: ${u.id})`,
+        `Сумма: ${u.payment_amount || 0} ₽ · Плательщик: ${u.payment_sender || '—'}`,
+        `Тариф: ${u.payment_label || '—'} · МСК: ${u.payment_time_msk || '—'}`,
+        `Реквизиты: ${u.payment_bank || '—'} · ${u.payment_phone || '—'} · ${u.payment_recipient || '—'}`
+      ].join('\n');
+
+      const btns = document.createElement('div');
+      btns.className = 'flex gap-2 mt-2';
+
+      const ok = document.createElement('button');
+      ok.className = 'ios-active border border-primary text-primary font-bold px-2 py-1 rounded-lg text-xs';
+      ok.textContent = 'Подтвердить';
+      ok.onclick = async () => {
+        try {
+          await adminFetch('/api/admin/payment/approve', {
+            method: 'POST',
+            body: JSON.stringify({ user_id: u.id })
+          });
+          notify('Платеж подтвержден');
+          loadAdminPendingPayments();
+          loadAdminUsers(u.id, true);
+        } catch (e) {
+          notify('Ошибка: ' + e.message);
+        }
+      };
+
+      const no = document.createElement('button');
+      no.className = 'ios-active border border-accent-red text-accent-red font-bold px-2 py-1 rounded-lg text-xs';
+      no.textContent = 'Отклонить';
+      no.onclick = async () => {
+        if (!confirm('Отклонить платеж?')) return;
+        try {
+          await adminFetch('/api/admin/payment/reject', {
+            method: 'POST',
+            body: JSON.stringify({ user_id: u.id })
+          });
+          notify('Платеж отклонен');
+          loadAdminPendingPayments();
+          loadAdminUsers(u.id, true);
+        } catch (e) {
+          notify('Ошибка: ' + e.message);
+        }
+      };
+
+      btns.appendChild(ok);
+      btns.appendChild(no);
+      row.appendChild(info);
+      row.appendChild(btns);
+      box.appendChild(row);
+    });
+  } catch (e) {
+    box.textContent = 'Ошибка загрузки платежей';
+  }
+}
+
+const ppb = document.getElementById('adminPendingPaymentsRefresh');
+if (ppb) ppb.addEventListener('click', loadAdminPendingPayments);
+
 
 async function loadInbox() {
   const list = document.getElementById('inboxList');
@@ -2114,6 +2191,8 @@ document.querySelectorAll('.admin-tab-btn').forEach(btn => {
       t.classList.add('block');
       if (targetId === 'admin-tab-system' && typeof loadAdminStats === 'function') loadAdminStats();
       if (targetId === 'admin-tab-support' && typeof loadAdminSupportTickets === 'function') loadAdminSupportTickets();
+      if (targetId === 'admin-tab-overview' && typeof loadAdminPending === 'function') loadAdminPending();
+      if (targetId === 'admin-tab-payments' && typeof loadAdminPendingPayments === 'function') loadAdminPendingPayments();
     }
   });
 });
