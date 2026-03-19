@@ -1013,7 +1013,7 @@ function openPaymentScreen(amount, label) {
     const recipientEl = document.getElementById('paymentRecipientDisplay');
     if (recipientEl) recipientEl.textContent = paymentSettings.recipient || '—';
     const hintEl = document.getElementById('bankLinksHint');
-    if (hintEl) hintEl.textContent = `Кнопки банков появятся после копирования номера. Рекомендуемый банк: ${bankDisplay}.`;
+    if (hintEl) hintEl.textContent = 'Скопируйте номер, затем откройте приложение банка.';
   });
 
   const pendingBox = document.getElementById('paymentPendingBox');
@@ -1054,7 +1054,7 @@ document.getElementById('copyPhoneBtn').addEventListener('click', async () => {
     const bankLinks = document.getElementById('bankLinksBox');
     if (bankLinks) bankLinks.classList.remove('hidden');
     const hintEl = document.getElementById('bankLinksHint');
-    if (hintEl) hintEl.textContent = 'Номер скопирован. Теперь откройте приложение нужного банка.';
+    if (hintEl) hintEl.textContent = 'Номер скопирован. Откройте приложение банка.';
     notify('Номер телефона скопирован!');
   }
 });
