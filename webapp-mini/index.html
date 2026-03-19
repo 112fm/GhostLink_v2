@@ -157,7 +157,10 @@
       </div>
 
       <div id="paymentFormBox">
-        <div class="text-muted-gray mb-4 text-sm">Переведите <strong id="paymentAmountDisplay" class="text-white text-lg">0 ₽</strong> по номеру телефона (СБП). Сервис продолжит работать сразу после подтверждения платежа.</div>
+        <div class="text-muted-gray mb-3 text-sm">Переведите <strong id="paymentAmountDisplay" class="text-white text-lg">0 ₽</strong> по номеру телефона (СБП). Сервис продолжит работать сразу после подтверждения платежа.</div>
+        <div class="mb-4 rounded-xl border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-sm text-amber-200">
+          Важно: перевод делать только в <b id="paymentBankStrict">указанный банк</b>.
+        </div>
 
         <div class="bg-card-dark rounded-2xl p-4 mb-4 flex justify-between items-center border border-primary/20">
           <div>
@@ -172,7 +175,8 @@
           </button>
         </div>
 
-        <div class="grid grid-cols-4 gap-2 mb-6" id="bankLinksBox">
+        <div id="bankLinksHint" class="text-xs text-muted-gray mb-2">Сначала скопируйте номер телефона, затем откройте нужный банк:</div>
+        <div class="grid grid-cols-4 gap-2 mb-6 hidden" id="bankLinksBox">
           <a href="sberbank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#21a038] text-white flex items-center justify-center font-bold text-xs">С</div>Сбер</a>
           <a href="tinkoffbank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#ffe600] text-black flex items-center justify-center font-bold text-xs">Т</div>Т-Банк</a>
           <a href="alfabank://" class="flex flex-col items-center gap-1 bg-card-dark p-2 rounded-xl text-xs text-muted-gray active:bg-secondary transition-colors"><div class="w-8 h-8 rounded-full bg-[#ef3124] text-white flex items-center justify-center font-bold text-xs">А</div>Альфа</a>

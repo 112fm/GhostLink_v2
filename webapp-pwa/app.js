@@ -1008,8 +1008,12 @@ function openPaymentScreen(amount, label) {
     if (bankName.includes('tinkoff') || bankName.includes('t-bank')) bankDisplay = 'Т-Банк';
     if (bankName.includes('yandex')) bankDisplay = 'Яндекс Банк';
     document.getElementById('paymentBankDisplay').textContent = bankDisplay;
+    const strictEl = document.getElementById('paymentBankStrict');
+    if (strictEl) strictEl.textContent = bankDisplay;
     const recipientEl = document.getElementById('paymentRecipientDisplay');
     if (recipientEl) recipientEl.textContent = paymentSettings.recipient || '—';
+    const hintEl = document.getElementById('bankLinksHint');
+    if (hintEl) hintEl.textContent = `Кнопки банков появятся после копирования номера. Рекомендуемый банк: ${bankDisplay}.`;
   });
 
   const pendingBox = document.getElementById('paymentPendingBox');
@@ -1018,6 +1022,8 @@ function openPaymentScreen(amount, label) {
   if (formBox) formBox.classList.remove('hidden');
 
   document.getElementById('paymentSenderInput').value = '';
+  const bankLinks = document.getElementById('bankLinksBox');
+  if (bankLinks) bankLinks.classList.add('hidden');
   pushScreen('screen-payment');
 }
 
@@ -1044,7 +1050,13 @@ if (profilePayBtn) {
 document.getElementById('copyPhoneBtn').addEventListener('click', async () => {
   const phone = document.getElementById('paymentPhoneDisplay').textContent;
   const ok = await copyToClipboard(phone);
-  if (ok) notify('Номер телефона скопирован!');
+  if (ok) {
+    const bankLinks = document.getElementById('bankLinksBox');
+    if (bankLinks) bankLinks.classList.remove('hidden');
+    const hintEl = document.getElementById('bankLinksHint');
+    if (hintEl) hintEl.textContent = 'Номер скопирован. Теперь откройте приложение нужного банка.';
+    notify('Номер телефона скопирован!');
+  }
 });
 
 function notifyPaymentSubmitError(e) {
