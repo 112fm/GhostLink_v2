@@ -1367,6 +1367,24 @@ function formatBytes(val) {
   return gb.toFixed(2) + ' GB';
 }
 
+function adminClientOwnerLabel(item) {
+  const tgId = String(item.tg_id || '').trim();
+  if (!tgId) return 'не привязан';
+  const u = adminUsersById[tgId] || {};
+  const tgUser = String(u.tg_username || '').trim();
+  const displayName = String(u.display_name || u.name || '').trim();
+  if (tgUser) return `${tgUser} · ID ${tgId}`;
+  if (displayName) return `${displayName} · ID ${tgId}`;
+  return `ID ${tgId}`;
+}
+
+function shortClientId(uuid) {
+  const v = String(uuid || '').trim();
+  if (!v) return '—';
+  if (v.length <= 12) return v;
+  return `${v.slice(0, 6)}...${v.slice(-4)}`;
+}
+
 async function loadAdminClients() {
   const box = document.getElementById('adminClients');
   box.textContent = 'Загрузка...';
@@ -1384,10 +1402,14 @@ async function loadAdminClients() {
       left.className = 'flex flex-col';
       const name = document.createElement('div');
       name.className = 'text-white';
-      name.textContent = item.display_name || item.email || item.uuid;
+      name.textContent = item.email || item.display_name || item.uuid;
       const meta = document.createElement('div');
-      meta.className = 'text-muted-gray text-xs';
-      meta.textContent = `${item.online ? 'Онлайн' : 'Офлайн'} · ${formatBytes(item.total || 0)}`;
+      meta.className = 'text-muted-gray text-xs whitespace-pre-line';
+      meta.textContent = [
+        `${item.online ? 'Онлайн' : 'Офлайн'} · ${formatBytes(item.total || 0)}`,
+        `Владелец: ${adminClientOwnerLabel(item)}`,
+        `Ключ: ${shortClientId(item.uuid)}`
+      ].join('\n');
       left.appendChild(name);
       left.appendChild(meta);
 
