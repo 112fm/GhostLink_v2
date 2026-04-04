@@ -1063,6 +1063,31 @@ function notifyPaymentSubmitError(e) {
   notify('Ошибка отправки: ' + (e && e.message ? e.message : 'payment_report'));
 }
 
+function isTransientPaymentNetworkError(e) {
+  const msg = String((e && e.message) || '').toLowerCase();
+  return !e || !e.status || msg.includes('failed to fetch') || msg.includes('network') || msg.includes('load failed');
+}
+
+async function sendPaymentReportWithRetry(amount, senderVal) {
+  let lastErr = null;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      return await apiFetch('/api/payment/report', {
+        method: 'POST',
+        body: JSON.stringify({ amount: amount, sender_name: senderVal, payment_label: currentPaymentLabel })
+      });
+    } catch (e) {
+      lastErr = e;
+      if (attempt === 0 && isTransientPaymentNetworkError(e)) {
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw lastErr || new Error('payment_report_failed');
+}
+
 function normalizePaymentSenderName(raw) {
   return String(raw || '')
     .replace(/\u00A0/g, ' ')
@@ -1082,11 +1107,12 @@ document.getElementById('submitPaymentBtn').addEventListener('click', async () =
   const amount = parseInt(amountText.replace(/\D/g, ''), 10) || 150;
 
   try {
-    await apiFetch('/api/payment/report', {
-      method: 'POST',
-      body: JSON.stringify({ amount: amount, sender_name: senderVal, payment_label: currentPaymentLabel })
-    });
-    notify('Платеж отмечен. Доступ продлен на 7 дней, проверка идет у администратора.');
+    const res = await sendPaymentReportWithRetry(amount, senderVal);
+    if (res && res.already_pending) {
+      notify('Заявка уже отправлена. Ожидайте проверки администратора.');
+    } else {
+      notify('Платеж отмечен. Доступ продлен на 7 дней, проверка идет у администратора.');
+    }
     loadUser();
     pushScreen('screen-home');
   } catch (e) {
