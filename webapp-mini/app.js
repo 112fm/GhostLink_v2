@@ -464,7 +464,7 @@ function renderDeviceList(items) {
   }
 
   items.forEach((item) => {
-    const subUrl = (item && item.subscription_url) ? String(item.subscription_url) : (item && item.uuid ? `${API_BASE}/sub/${encodeURIComponent(item.uuid)}` : '');
+    const subUrl = (item && item.subscription_url) ? String(item.subscription_url) : '';
 
     const container = document.createElement('div');
     container.className = DEVICE_CARD_CLASS;
@@ -736,7 +736,15 @@ document.getElementById('copyPhoneBtn').addEventListener('click', async () => {
 });
 
 function notifyPaymentSubmitError(e) {
-  notify('Ошибка отправки: ' + (e && e.message ? e.message : 'payment_report'));
+  const code = String((e && e.message) || '').trim();
+  if (code === 'bad_sender_format') return notify('Формат плательщика: Имя Ф (например Иван П)');
+  if (code === 'bad_amount') return notify('Некорректная сумма платежа');
+  if (code === 'already_pending') return notify('Заявка уже отправлена. Ожидайте проверки администратора.');
+  if (code === 'access_closed') return notify('Доступ закрыт. Напишите в поддержку.');
+  if (e && e.status === 401) return notify('Сессия истекла. Войди заново через Telegram.');
+  if (e && e.status === 403) return notify('Нет доступа для отправки подтверждения.');
+  if (e && e.status === 404) return notify('Профиль не найден. Обнови /start в боте и попробуй снова.');
+  notify('Ошибка отправки: ' + (code || 'payment_report'));
 }
 
 function isTransientPaymentNetworkError(e) {
@@ -772,7 +780,7 @@ function normalizePaymentSenderName(raw) {
 }
 
 function isValidPaymentSenderName(value) {
-  return /^(?:\p{L}{2,})\s+\p{L}$/u.test(value);
+  return /^(?:\p{L}[\p{L}'’\-]{1,})(?:\s+\p{L}[\p{L}'’\-]{1,})*\s+\p{L}\.?$/u.test(value);
 }
 
 document.getElementById('submitPaymentBtn').addEventListener('click', async () => {

@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'ghostlink-pwa-v8';
+﻿const CACHE_NAME = 'ghostlink-pwa-v9';
 const STATIC_FILES = [
   './',
   './index.html',
@@ -24,7 +24,7 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // РќРµ РєСЌС€РёСЂСѓРµРј API/РґРёРЅР°РјРёРєСѓ/POST вЂ” С‡С‚РѕР±С‹ РЅРµ С…СЂР°РЅРёС‚СЊ С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅС‹Рµ РґР°РЅРЅС‹Рµ Р»РѕРєР°Р»СЊРЅРѕ.
+  // Не кэшируем API/динамику/POST, чтобы не хранить чувствительные данные локально.
   if (req.method !== 'GET' || url.pathname.startsWith('/api/')) {
     return;
   }
@@ -37,7 +37,7 @@ self.addEventListener('fetch', (event) => {
     req.destination === 'style' ||
     req.destination === 'manifest';
 
-  // Р”Р»СЏ HTML/JS/CSS: СЃРµС‚СЊ СЃРЅР°С‡Р°Р»Р°, С‡С‚РѕР±С‹ РѕР±РЅРѕРІР»РµРЅРёСЏ РїСЂРёР»РµС‚Р°Р»Рё Р±РµР· РїРµСЂРµСѓСЃС‚Р°РЅРѕРІРєРё PWA.
+  // Для HTML/JS/CSS: network-first, чтобы обновления прилетали без переустановки PWA.
   if (isSameOrigin && isCriticalAsset) {
     event.respondWith(
       fetch(req)
@@ -53,7 +53,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Р”Р»СЏ РѕСЃС‚Р°Р»СЊРЅС‹С… Р°СЃСЃРµС‚РѕРІ: cache-first.
+  // Для остальных ассетов: cache-first.
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
@@ -78,7 +78,7 @@ self.addEventListener('push', function (event) {
     try {
       const data = event.data.json();
       const options = {
-        body: data.body || 'РќРѕРІРѕРµ СѓРІРµРґРѕРјР»РµРЅРёРµ',
+        body: data.body || 'Новое уведомление',
         icon: 'ghost_ava.png',
         badge: 'ghost_ava.png',
         vibrate: [100, 50, 100],
@@ -112,4 +112,5 @@ self.addEventListener('notificationclick', function (event) {
     );
   }
 });
+
 
