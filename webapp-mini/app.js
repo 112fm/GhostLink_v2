@@ -703,22 +703,40 @@ function openPaymentScreen(amount, label) {
   pushScreen('screen-payment');
 }
 
+function getTariffMinPay(limit) {
+  const key = Number(limit || 0);
+  return Number((tariffMap[key] && tariffMap[key].min_pay) || 0);
+}
+
+function getPaymentForTargetDevices(targetDevices) {
+  const target = Number(targetDevices || 0);
+  const current = Number((CURRENT_USER_DATA && CURRENT_USER_DATA.device_limit) || 1);
+  const targetMinPay = getTariffMinPay(target);
+  const currentMinPay = getTariffMinPay(current);
+  if (target > current) {
+    return Math.max(0, targetMinPay - currentMinPay);
+  }
+  return targetMinPay;
+}
+
 document.getElementById('soloPay').addEventListener('click', () => {
-  const price = tariffMap[1] ? tariffMap[1].price : 150;
+  const price = getPaymentForTargetDevices(1) || 150;
   openPaymentScreen(price, 'Solo');
 });
 
 document.getElementById('flexPay').addEventListener('click', () => {
   const devices = Math.max(3, Math.min(5, parseInt(flexSlider.value || '3', 10)));
-  const price = tariffMap[devices] ? tariffMap[devices].price : 225;
-  openPaymentScreen(price, `Flex ${devices}`);
+  const current = Number((CURRENT_USER_DATA && CURRENT_USER_DATA.device_limit) || 1);
+  const price = getPaymentForTargetDevices(devices) || 225;
+  const label = devices > current ? `Доплата Flex ${devices}` : `Flex ${devices}`;
+  openPaymentScreen(price, label);
 });
 
 const profilePayBtn = document.getElementById('profilePayBtn');
 if (profilePayBtn) {
   profilePayBtn.addEventListener('click', () => {
     const limit = CURRENT_USER_DATA ? (CURRENT_USER_DATA.device_limit || 1) : 1;
-    let price = tariffMap[limit] ? tariffMap[limit].price : 150;
+    let price = getPaymentForTargetDevices(limit) || 150;
     openPaymentScreen(price, `Текущий тариф ${limit}`);
   });
 }

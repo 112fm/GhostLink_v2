@@ -1027,22 +1027,40 @@ function openPaymentScreen(amount, label) {
   pushScreen('screen-payment');
 }
 
+function getTariffMinPay(limit) {
+  const key = Number(limit || 0);
+  return Number((tariffMap[key] && tariffMap[key].min_pay) || 0);
+}
+
+function getPaymentForTargetDevices(targetDevices) {
+  const target = Number(targetDevices || 0);
+  const current = Number((CURRENT_USER_DATA && CURRENT_USER_DATA.device_limit) || 1);
+  const targetMinPay = getTariffMinPay(target);
+  const currentMinPay = getTariffMinPay(current);
+  if (target > current) {
+    return Math.max(0, targetMinPay - currentMinPay);
+  }
+  return targetMinPay;
+}
+
 document.getElementById('soloPay').addEventListener('click', () => {
-  const price = tariffMap[1] ? tariffMap[1].price : 150;
+  const price = getPaymentForTargetDevices(1) || 150;
   openPaymentScreen(price, 'Solo');
 });
 
 document.getElementById('flexPay').addEventListener('click', () => {
   const devices = Math.max(3, Math.min(5, parseInt(flexSlider.value || '3', 10)));
-  const price = tariffMap[devices] ? tariffMap[devices].price : 225;
-  openPaymentScreen(price, `Flex ${devices}`);
+  const current = Number((CURRENT_USER_DATA && CURRENT_USER_DATA.device_limit) || 1);
+  const price = getPaymentForTargetDevices(devices) || 225;
+  const label = devices > current ? `Доплата Flex ${devices}` : `Flex ${devices}`;
+  openPaymentScreen(price, label);
 });
 
 const profilePayBtn = document.getElementById('profilePayBtn');
 if (profilePayBtn) {
   profilePayBtn.addEventListener('click', () => {
     const limit = CURRENT_USER_DATA ? (CURRENT_USER_DATA.device_limit || 1) : 1;
-    let price = tariffMap[limit] ? tariffMap[limit].price : 150;
+    let price = getPaymentForTargetDevices(limit) || 150;
     openPaymentScreen(price, `Текущий тариф ${limit}`);
   });
 }
@@ -2200,14 +2218,32 @@ function setupFirstRunOnboarding(appLabel, forceShow = false) {
   render();
 }
 
-bootstrapPwaAuth().then((ok) => {
-  if (!ok) return;
-  loadUser().then((loaded) => {
-    if (loaded) setupFirstRunOnboarding('pwa');
+const PWA_TEMP_DISABLED = true;
+
+function showPwaDisabledScreen() {
+  document.body.innerHTML = `
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#141414;color:#fff;padding:24px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
+      <div style="max-width:520px;border:1px solid #8bff00;border-radius:16px;padding:20px;background:#1c1c1c;">
+        <h2 style="margin:0 0 12px 0;font-size:24px;">PWA временно отключен</h2>
+        <p style="margin:0 0 8px 0;opacity:.9;">Сейчас работает только Mini App в Telegram.</p>
+        <p style="margin:0;opacity:.75;">Открой бота и используй кнопку мини-приложения.</p>
+      </div>
+    </div>
+  `;
+}
+
+if (PWA_TEMP_DISABLED) {
+  showPwaDisabledScreen();
+} else {
+  bootstrapPwaAuth().then((ok) => {
+    if (!ok) return;
+    loadUser().then((loaded) => {
+      if (loaded) setupFirstRunOnboarding('pwa');
+    });
+    setTimeout(subscribePush, 2000);
+    loadTariffs();
   });
-  setTimeout(subscribePush, 2000);
-  loadTariffs();
-});
+}
 
 const pwaCodeBtn = document.getElementById('pwaCodeBtn');
 const pwaCodeInput = document.getElementById('pwaCodeInput');
