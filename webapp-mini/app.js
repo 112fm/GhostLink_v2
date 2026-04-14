@@ -1,4 +1,4 @@
-﻿const screens = Array.from(document.querySelectorAll('.screen'));
+const screens = Array.from(document.querySelectorAll('.screen'));
 const backBtn = document.getElementById('backBtn');
 const helpBtn = document.getElementById('helpBtn');
 const stack = ['screen-home'];
@@ -62,6 +62,7 @@ function extractUserId() {
 }
 const USER_ID = extractUserId();
 CURRENT_USER_ID = USER_ID;
+let CURRENT_USER_DATA = null;
 
 function apiFetch(path, options = {}) {
   if (!API_BASE) return Promise.reject(new Error('no_api'));
@@ -161,6 +162,7 @@ function loadUser() {
   return apiFetch(API_USER)
     .then(data => {
       CURRENT_USER_ID = Number((data.user && data.user.id) || CURRENT_USER_ID || 0);
+      CURRENT_USER_DATA = data;
       document.getElementById('balanceValue').textContent = (data.balance || 0) + '₽';
       document.getElementById('expiryValue').textContent = formatSubLine(data.subscription);
       setSubStatus(data.subscription.active);
