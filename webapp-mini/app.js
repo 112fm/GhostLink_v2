@@ -39,7 +39,6 @@ const API_PAYMENT_SETTINGS = '/api/payment/settings';
 const API_ADMIN_PROXY_STATUS = '/api/admin/proxy_status';
 const API_ADMIN_PROXY_AUTH = '/api/admin/proxy_auth';
 const API_ADMIN_PROXY_CLOSE = '/api/admin/proxy_close';
-const DEFAULT_PAYMENT_SETTINGS = { phone: '+79857719139', bank: 'alfa', recipient: 'Арсений А' };
 const INIT_DATA = tg ? tg.initData : '';
 let PWA_TOKEN = '';
 const ADMIN_ID = 312826672;
@@ -663,22 +662,42 @@ flexSlider.addEventListener('input', () => {
   renderTariffs();
 });
 
-let paymentSettings = { ...DEFAULT_PAYMENT_SETTINGS };
+let paymentSettings = {};
 let currentPaymentLabel = '';
 
 async function loadPaymentSettings() {
-  try {
-    paymentSettings = await apiFetch(API_PAYMENT_SETTINGS);
-  } catch (e) {
-    paymentSettings = { ...DEFAULT_PAYMENT_SETTINGS };
-  }
+  paymentSettings = await apiFetch(API_PAYMENT_SETTINGS);
 }
 
-function openPaymentScreen(amount, label) {
+async function openPaymentScreen(amount, label) {
   currentPaymentLabel = String(label || '').trim();
-  document.getElementById('paymentAmountDisplay').textContent = `${amount} ₽`;
-  loadPaymentSettings().then(() => {
-    document.getElementById('paymentPhoneDisplay').textContent = paymentSettings.phone || DEFAULT_PAYMENT_SETTINGS.phone;
+  const formBox = document.getElementById('paymentFormBox');
+  const pendingBox = document.getElementById('paymentPendingBox');
+  
+  if (pendingBox) pendingBox.classList.add('hidden');
+  if (formBox) {
+    formBox.classList.remove('hidden');
+    formBox.classList.add('opacity-50', 'pointer-events-none');
+  }
+  
+  document.getElementById('paymentAmountDisplay').textContent = 'Загрузка...';
+  document.getElementById('paymentSenderInput').value = '';
+  document.getElementById('paymentPhoneDisplay').textContent = '—';
+  document.getElementById('paymentBankDisplay').textContent = '—';
+  const strictEl = document.getElementById('paymentBankStrict');
+  if (strictEl) strictEl.textContent = '—';
+  const recipientEl = document.getElementById('paymentRecipientDisplay');
+  if (recipientEl) recipientEl.textContent = '—';
+  
+  const bankLinks = document.getElementById('bankLinksBox');
+  if (bankLinks) bankLinks.classList.add('hidden');
+  
+  pushScreen('screen-payment');
+  
+  try {
+    await loadPaymentSettings();
+    document.getElementById('paymentAmountDisplay').textContent = `${amount} ₽`;
+    document.getElementById('paymentPhoneDisplay').textContent = paymentSettings.phone || '—';
     const bankName = String(paymentSettings.bank || 'alfa').toLowerCase();
     let bankDisplay = 'Альфа-Банк';
     if (bankName.includes('sber')) bankDisplay = 'Сбербанк';
@@ -686,23 +705,17 @@ function openPaymentScreen(amount, label) {
     if (bankName.includes('tinkoff') || bankName.includes('t-bank')) bankDisplay = 'Т-Банк';
     if (bankName.includes('yandex')) bankDisplay = 'Яндекс Банк';
     document.getElementById('paymentBankDisplay').textContent = bankDisplay;
-    const strictEl = document.getElementById('paymentBankStrict');
     if (strictEl) strictEl.textContent = bankDisplay;
-    const recipientEl = document.getElementById('paymentRecipientDisplay');
     if (recipientEl) recipientEl.textContent = paymentSettings.recipient || '—';
     const hintEl = document.getElementById('bankLinksHint');
     if (hintEl) hintEl.textContent = 'Скопируйте номер, затем откройте приложение банка.';
-  });
-
-  const pendingBox = document.getElementById('paymentPendingBox');
-  const formBox = document.getElementById('paymentFormBox');
-  if (pendingBox) pendingBox.classList.add('hidden');
-  if (formBox) formBox.classList.remove('hidden');
-
-  document.getElementById('paymentSenderInput').value = '';
-  const bankLinks = document.getElementById('bankLinksBox');
-  if (bankLinks) bankLinks.classList.add('hidden');
-  pushScreen('screen-payment');
+    if (formBox) {
+      formBox.classList.remove('opacity-50', 'pointer-events-none');
+    }
+  } catch (e) {
+    alert('Ошибка сети. Не удалось загрузить реквизиты. Проверьте соединение.');
+    popScreen();
+  }
 }
 
 function getTariffMinPay(limit) {
@@ -718,7 +731,8 @@ function getPaymentForTargetDevices(targetDevices) {
   if (target > current) {
     return Math.max(0, targetMinPay - currentMinPay);
   }
-  return targetMinPay;
+  const tInfo = tariffMap[target] || {};
+  return Number(tInfo.price) || targetMinPay;
 }
 
 document.getElementById('soloPay').addEventListener('click', () => {
