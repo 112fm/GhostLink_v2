@@ -588,6 +588,7 @@ function setDeviceFormExpanded(expanded) {
 function notifyDeviceAddError(e) {
   if (e && e.message === 'device_limit_reached') notify('Достигнут лимит устройств (максимум 5).');
   else if (e && e.message === 'access_closed') notify('Доступ неактивен. Сначала активируй подписку в профиле.');
+  else if (e && typeof e.message === 'string' && e.message.startsWith('panel_add_failed:')) notify('Панель VPN временно недоступна. Повтори через 10-30 секунд.');
   else if (e && e.status === 401) notify('Сессия истекла. Войди заново через Telegram.');
   else if (e && e.status === 403) notify('Доступ запрещен для этого действия.');
   else notify('Не удалось добавить устройство: ' + (e && e.message ? e.message : 'unknown_error'));
@@ -664,13 +665,15 @@ flexSlider.addEventListener('input', () => {
 
 let paymentSettings = {};
 let currentPaymentLabel = '';
+let currentPaymentTargetLimit = null;
 
 async function loadPaymentSettings() {
   paymentSettings = await apiFetch(API_PAYMENT_SETTINGS);
 }
 
-async function openPaymentScreen(amount, label) {
+async function openPaymentScreen(amount, label, targetLimit = null) {
   currentPaymentLabel = String(label || '').trim();
+  currentPaymentTargetLimit = Number(targetLimit || 0) || null;
   const formBox = document.getElementById('paymentFormBox');
   const pendingBox = document.getElementById('paymentPendingBox');
   
@@ -737,7 +740,7 @@ function getPaymentForTargetDevices(targetDevices) {
 
 document.getElementById('soloPay').addEventListener('click', () => {
   const price = getPaymentForTargetDevices(1) || 150;
-  openPaymentScreen(price, 'Solo');
+  openPaymentScreen(price, 'Solo', 1);
 });
 
 document.getElementById('flexPay').addEventListener('click', () => {
@@ -745,7 +748,7 @@ document.getElementById('flexPay').addEventListener('click', () => {
   const current = Number((CURRENT_USER_DATA && CURRENT_USER_DATA.device_limit) || 1);
   const price = getPaymentForTargetDevices(devices) || 225;
   const label = devices > current ? `Доплата Flex ${devices}` : `Flex ${devices}`;
-  openPaymentScreen(price, label);
+  openPaymentScreen(price, label, devices);
 });
 
 const profilePayBtn = document.getElementById('profilePayBtn');
@@ -792,7 +795,7 @@ async function sendPaymentReportWithRetry(amount, senderVal) {
     try {
       return await apiFetch('/api/payment/report', {
         method: 'POST',
-        body: JSON.stringify({ amount: amount, sender_name: senderVal, payment_label: currentPaymentLabel })
+        body: JSON.stringify({ amount: amount, sender_name: senderVal, payment_label: currentPaymentLabel, target_device_limit: currentPaymentTargetLimit })
       });
     } catch (e) {
       lastErr = e;
