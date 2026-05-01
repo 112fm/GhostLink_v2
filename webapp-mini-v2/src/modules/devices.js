@@ -156,7 +156,6 @@ export function createDevicesModule() {
       const actions = document.createElement("div");
       actions.className = "flex gap-2 mt-3";
       actions.appendChild(createActionButton("Скопировать подписку", "copy", uuid));
-      actions.appendChild(createActionButton("Скопировать ключ", "copy_vless", uuid));
       actions.appendChild(createActionButton("Обновить ключ", "rotate", uuid));
       actions.appendChild(createActionButton("Удалить", "remove", uuid, true));
 
@@ -335,18 +334,6 @@ export function createDevicesModule() {
     }
   }
 
-  async function copyVlessKey(uuid = "") {
-    const target = String(uuid || "").trim();
-    const item = state.items.find((x) => String(x?.uuid || "").trim() === target) || null;
-    const value = String(item?.vless_key || "").trim();
-    const ok = await copyText(value);
-    if (ok) {
-      setStatus(refs.status, "Ключ устройства (vless) скопирован.");
-    } else {
-      setStatus(refs.status, "Ключ этого устройства пока недоступен.", true);
-    }
-  }
-
   refs.addBtn.addEventListener("click", addDevice);
   refs.resetBtn.addEventListener("click", resetKey);
   refs.updateBtn?.addEventListener("click", () => rotateKey(""));
@@ -371,10 +358,6 @@ export function createDevicesModule() {
     }
     if (action === "copy") {
       copySubscription(uuid);
-      return;
-    }
-    if (action === "copy_vless") {
-      copyVlessKey(uuid);
       return;
     }
     if (action === "remove") {
