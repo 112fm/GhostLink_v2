@@ -713,16 +713,17 @@ export function createAdminModule(options = {}) {
   async function copyAnyKey(slot) {
     const vless = String(slot?.vless_key || "").trim();
     const sub = String(slot?.subscription_url || "").trim();
-    const value = vless || sub;
+    const value = sub || vless;
     if (!value) {
       setStatus(refs.status, "У этого слота нет ключа для копирования.", true);
       return;
     }
     try {
       await navigator.clipboard.writeText(value);
-      setStatus(refs.status, `Ключ Key ${slot?.slot || "?"} скопирован.`);
+      const copiedType = sub ? "Подписка" : "Ключ";
+      setStatus(refs.status, `${copiedType} Key ${slot?.slot || "?"} скопирован${sub ? "а" : ""}.`);
     } catch (_) {
-      setStatus(refs.status, "Не удалось скопировать ключ.", true);
+      setStatus(refs.status, "Не удалось скопировать ссылку.", true);
     }
   }
 
@@ -893,7 +894,7 @@ export function createAdminModule(options = {}) {
         actions.className = "flex gap-2 mt-2";
         const copyBtn = document.createElement("button");
         copyBtn.className = "ios-active border border-primary text-primary rounded-lg px-2 py-1 text-xs font-semibold";
-        copyBtn.textContent = "Скопировать ключ";
+        copyBtn.textContent = "Скопировать подписку";
         copyBtn.addEventListener("click", () => copyAnyKey(slot));
         const delBtn = document.createElement("button");
         delBtn.className = "ios-active border border-accent-red text-accent-red rounded-lg px-2 py-1 text-xs font-semibold";
