@@ -131,9 +131,11 @@ async function renderBridgeQr(stubNode, link) {
   if (!stubNode) return;
   const value = String(link || "").trim();
   if (!value) {
+    stubNode.classList.add("px-3");
     stubNode.innerHTML = "QR появится после создания";
     return;
   }
+  stubNode.classList.remove("px-3");
 
   const hasQr = await ensureQrScript();
   if (!hasQr || !window.QRCode || typeof window.QRCode.toCanvas !== "function") {
@@ -146,7 +148,8 @@ async function renderBridgeQr(stubNode, link) {
     img.style.display = "block";
     img.style.margin = "0 auto";
     img.style.borderRadius = "10px";
-    img.src = `https://quickchart.io/qr?size=220&dark=B8FF00&light=111111&text=${encodeURIComponent(value)}`;
+    img.style.objectFit = "contain";
+    img.src = `https://quickchart.io/qr?size=220&dark=111111&light=FFFFFF&text=${encodeURIComponent(value)}`;
     img.onerror = () => {
       stubNode.innerHTML = "QR недоступен. Используй короткую ссылку.";
     };
@@ -157,6 +160,11 @@ async function renderBridgeQr(stubNode, link) {
 
   stubNode.innerHTML = "";
   const canvas = document.createElement("canvas");
+  canvas.style.width = "176px";
+  canvas.style.height = "176px";
+  canvas.style.display = "block";
+  canvas.style.margin = "0 auto";
+  canvas.style.borderRadius = "10px";
   window.QRCode.toCanvas(
     canvas,
     value,
@@ -164,8 +172,8 @@ async function renderBridgeQr(stubNode, link) {
       width: 176,
       margin: 1,
       color: {
-        dark: "#B8FF00",
-        light: "#111111",
+        dark: "#111111",
+        light: "#FFFFFF",
       },
     },
     (err) => {
