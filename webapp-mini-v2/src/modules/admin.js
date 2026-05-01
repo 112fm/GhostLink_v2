@@ -146,6 +146,7 @@ export function createAdminModule(options = {}) {
     roles: [],
     paymentHistory: [],
   };
+  let dashboardAutoTimer = null;
 
   const previewGrowthByPeriod = {
     "1m": { botStarts: 124, profilesCreated: 71, payments: 64 },
@@ -481,8 +482,11 @@ export function createAdminModule(options = {}) {
     });
   }
 
-  async function loadDashboard() {
-    setStatus(refs.status, "Обновляю дашборд...");
+  async function loadDashboard(options = {}) {
+    const silent = Boolean(options?.silent);
+    if (!silent) {
+      setStatus(refs.status, "Обновляю дашборд...");
+    }
     try {
       const [stats, usersData, clientsData, periodStats] = await Promise.all([
         apiFetch("/api/admin/stats"),
@@ -531,7 +535,9 @@ export function createAdminModule(options = {}) {
       if (refs.dashFirstPaid) refs.dashFirstPaid.textContent = String(payments);
       setGrowthFilterActive(state.growthPeriod);
 
-      setStatus(refs.status, "Дашборд обновлен.");
+      if (!silent) {
+        setStatus(refs.status, "Дашборд обновлен.");
+      }
     } catch (error) {
       if (previewMode) {
         const users = previewUsers;
@@ -556,11 +562,25 @@ export function createAdminModule(options = {}) {
         if (refs.dashProfilesCreated) refs.dashProfilesCreated.textContent = String(growth.profilesCreated);
         if (refs.dashFirstPaid) refs.dashFirstPaid.textContent = String(growth.payments);
         setGrowthFilterActive(state.growthPeriod);
-        setStatus(refs.status, "Локальный превью-режим админки: показаны демо-данные.");
+        if (!silent) {
+          setStatus(refs.status, "Локальный превью-режим админки: показаны демо-данные.");
+        }
         return;
       }
-      setStatus(refs.status, mapApiError(error), true);
+      if (!silent) {
+        setStatus(refs.status, mapApiError(error), true);
+      }
     }
+  }
+
+  function startDashboardAutoRefresh() {
+    if (dashboardAutoTimer) return;
+    dashboardAutoTimer = window.setInterval(async () => {
+      const adminScreenActive = refs.root?.classList.contains("active");
+      if (!adminScreenActive) return;
+      if (state.tab !== "dashboard") return;
+      await loadDashboard({ silent: true });
+    }, 15000);
   }
 
   function renderUsersSelect() {
@@ -1583,6 +1603,7 @@ export function createAdminModule(options = {}) {
   return {
     open: async () => {
       setTab("dashboard");
+      startDashboardAutoRefresh();
       await Promise.all([
         loadDashboard(),
         loadUsers(false),
