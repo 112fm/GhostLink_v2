@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js";
+﻿import { apiFetch } from "../api/client.js";
 
 const DIRECT_PLACEHOLDER = "t.me/GhostLinkBot?start=<token>";
 const BRIDGE_PLACEHOLDER = "https://ghostlink.tech/join/<token>";
@@ -137,7 +137,21 @@ async function renderBridgeQr(stubNode, link) {
 
   const hasQr = await ensureQrScript();
   if (!hasQr || !window.QRCode || typeof window.QRCode.toCanvas !== "function") {
-    stubNode.innerHTML = "QR недоступен. Используй короткую ссылку.";
+    const img = document.createElement("img");
+    img.alt = "Bridge QR";
+    img.width = 176;
+    img.height = 176;
+    img.style.width = "176px";
+    img.style.height = "176px";
+    img.style.display = "block";
+    img.style.margin = "0 auto";
+    img.style.borderRadius = "10px";
+    img.src = `https://quickchart.io/qr?size=220&dark=B8FF00&light=111111&text=${encodeURIComponent(value)}`;
+    img.onerror = () => {
+      stubNode.innerHTML = "QR недоступен. Используй короткую ссылку.";
+    };
+    stubNode.innerHTML = "";
+    stubNode.appendChild(img);
     return;
   }
 
@@ -518,3 +532,4 @@ export function createInviteModule() {
     setMode,
   };
 }
+
