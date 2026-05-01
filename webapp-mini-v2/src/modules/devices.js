@@ -99,15 +99,8 @@ export function createDevicesModule() {
   function renderTop() {
     if (refs.limit) refs.limit.textContent = String(state.deviceLimit || 0);
     if (refs.count) refs.count.textContent = String(state.connected || 0);
-
-    const subUrl = resolveSubscriptionUrl();
-    state.subscriptionUrl = subUrl;
-
-    if (refs.link) {
-      refs.link.textContent = subUrl || "—";
-      refs.link.classList.toggle("hidden", !subUrl);
-    }
-    if (refs.copyBtn) refs.copyBtn.classList.toggle("hidden", !subUrl);
+    if (refs.link) refs.link.classList.add("hidden");
+    if (refs.copyBtn) refs.copyBtn.classList.add("hidden");
   }
 
   function createActionButton(text, action, uuid, danger = false) {
@@ -162,6 +155,7 @@ export function createDevicesModule() {
 
       const actions = document.createElement("div");
       actions.className = "flex gap-2 mt-3";
+      actions.appendChild(createActionButton("Скопировать подписку", "copy", uuid));
       actions.appendChild(createActionButton("Обновить ключ", "rotate", uuid));
       actions.appendChild(createActionButton("Удалить", "remove", uuid, true));
 
@@ -328,20 +322,22 @@ export function createDevicesModule() {
     }
   }
 
-  async function copySubscription() {
-    const value = resolveSubscriptionUrl();
+  async function copySubscription(uuid = "") {
+    const target = String(uuid || "").trim();
+    const item = state.items.find((x) => String(x?.uuid || "").trim() === target) || null;
+    const value = String(item?.subscription_url || "").trim();
     const ok = await copyText(value);
     if (ok) {
-      setStatus(refs.status, "Ссылка подписки скопирована.");
+      setStatus(refs.status, "Подписка устройства скопирована.");
     } else {
-      setStatus(refs.status, "Ссылка подписки пока недоступна.", true);
+      setStatus(refs.status, "Подписка этого устройства пока недоступна.", true);
     }
   }
 
   refs.addBtn.addEventListener("click", addDevice);
   refs.resetBtn.addEventListener("click", resetKey);
   refs.updateBtn?.addEventListener("click", () => rotateKey(""));
-  refs.copyBtn?.addEventListener("click", copySubscription);
+  refs.copyBtn?.addEventListener("click", () => copySubscription(""));
 
   refs.name?.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
@@ -358,6 +354,10 @@ export function createDevicesModule() {
 
     if (action === "rotate") {
       rotateKey(uuid);
+      return;
+    }
+    if (action === "copy") {
+      copySubscription(uuid);
       return;
     }
     if (action === "remove") {
