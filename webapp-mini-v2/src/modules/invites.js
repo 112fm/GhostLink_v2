@@ -1,10 +1,11 @@
 ﻿import { apiFetch } from "../api/client.js";
 
 const DIRECT_PLACEHOLDER = "t.me/GhostLinkBot?start=<token>";
-const BRIDGE_PLACEHOLDER = "https://ghostlink.tech/join/<token>";
+const BRIDGE_PLACEHOLDER = "vless://<temporary-key>";
 const QR_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js";
 const BRIDGE_POLL_MS = 15000;
 const REFERRAL_CACHE_TTL_MS = 30000;
+const BRIDGE_V1_DISABLED = false;
 
 let qrScriptPromise = null;
 
@@ -21,6 +22,18 @@ function setMessage(node, text, isError = false) {
   node.classList.toggle("text-muted-gray", !isError);
 }
 
+function flashCopyButton(button, ok, okText = "Скопировано ✓", failText = "Ошибка копирования") {
+  if (!(button instanceof HTMLButtonElement)) return;
+  const original = button.dataset.originalText || button.textContent || "";
+  button.dataset.originalText = original;
+  button.textContent = ok ? okText : failText;
+  button.classList.add(ok ? "bg-primary" : "border-accent-red", ok ? "text-black" : "text-accent-red");
+  window.setTimeout(() => {
+    button.textContent = original;
+    button.classList.remove("bg-primary", "text-black", "border-accent-red", "text-accent-red");
+  }, 1400);
+}
+
 function mapApiError(error) {
   const status = Number(error?.status || 0);
   const detail = String(error?.message || error?.data?.detail || "").trim();
@@ -32,6 +45,7 @@ function mapApiError(error) {
   if (status === 410 && detail === "invite_expired") return "Ссылка моста истекла.";
   if (status === 410 && detail === "invite_revoked") return "Мост отозван.";
   if (status === 404 && detail === "invite_not_found") return "Мост не найден.";
+  if (status === 400 && detail === "bad_params") return "Некорректные параметры запроса.";
   return "Ошибка сети. Попробуй еще раз.";
 }
 
@@ -227,6 +241,8 @@ export function createInviteModule() {
     mode: "direct",
     directLink: "",
     bridgeInvite: null,
+    bridgeTempKey: "",
+    bridgeTempKeyExpiresInSec: 0,
     bridgeLoaded: false,
     bridgeLoading: false,
     bridgePollTimer: null,
@@ -313,6 +329,8 @@ export function createInviteModule() {
 
   function clearBridgeInvite() {
     state.bridgeInvite = null;
+    state.bridgeTempKey = "";
+    state.bridgeTempKeyExpiresInSec = 0;
     if (refs.bridgeLink) {
       refs.bridgeLink.textContent = BRIDGE_PLACEHOLDER;
       refs.bridgeLink.classList.remove("text-white");
@@ -322,19 +340,35 @@ export function createInviteModule() {
     renderBridgeQr(refs.bridgeQrStub, "");
   }
 
+  async function issueBridgeTempKey(inviteToken) {
+    const token = String(inviteToken || "").trim();
+    if (!token) return null;
+    const data = await apiFetch(`/bridge/i/${encodeURIComponent(token)}/temp-key`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    const key = String(data?.vless || data?.temp_key_vless || "").trim();
+    state.bridgeTempKey = key;
+    state.bridgeTempKeyExpiresInSec = Number(data?.expires_in_sec || 0);
+    return {
+      ...data,
+      vless: key,
+    };
+  }
+
   async function paintBridgeInvite(invite) {
     state.bridgeInvite = invite || null;
-    const link = String(invite?.bridge_link || "").trim();
+    const value = String(state.bridgeTempKey || "").trim();
     if (refs.bridgeLink) {
-      refs.bridgeLink.textContent = link || BRIDGE_PLACEHOLDER;
-      refs.bridgeLink.classList.toggle("text-white", !!link);
-      refs.bridgeLink.classList.toggle("text-muted-gray", !link);
+      refs.bridgeLink.textContent = value || BRIDGE_PLACEHOLDER;
+      refs.bridgeLink.classList.toggle("text-white", !!value);
+      refs.bridgeLink.classList.toggle("text-muted-gray", !value);
     }
 
     const referrals = await fetchReferralsCached(false);
     const hasPaidBonus = bridgeInviteHasPaidBonus(invite, referrals);
     paintBridgeTimeline(refs.bridgeTimeline, getBridgeStage(invite, hasPaidBonus));
-    await renderBridgeQr(refs.bridgeQrStub, link);
+    await renderBridgeQr(refs.bridgeQrStub, value);
     return { hasPaidBonus };
   }
 
@@ -353,10 +387,19 @@ export function createInviteModule() {
 
       if (!current) {
         clearBridgeInvite();
-        setMessage(refs.bridgeStatus, "У тебя пока нет активного моста.");
+        setMessage(refs.bridgeStatus, "У тебя пока нет активного моста. Нажми «Создать мост 2.0».");
       } else {
+        const token = String(current?.token || "").trim();
+        if (token) {
+          try {
+            await issueBridgeTempKey(token);
+          } catch (_) {
+            state.bridgeTempKey = "";
+            state.bridgeTempKeyExpiresInSec = 0;
+          }
+        }
         const extra = await paintBridgeInvite(current);
-        const expiresIn = Number(current?.expires_in_sec || 0);
+        const expiresIn = Number(state.bridgeTempKeyExpiresInSec || current?.expires_in_sec || 0);
         const sessionStatus = String(current?.bridge_session?.status || "");
         if (extra?.hasPaidBonus) {
           setMessage(refs.bridgeStatus, "Мост завершен. Приглашенный оплатил подписку, бонус зачислен.");
@@ -367,8 +410,10 @@ export function createInviteModule() {
           setMessage(refs.bridgeStatus, `Гость уже вошел в Telegram. Временный ключ отключится через ${formatExpiry(cleanupIn)}.`);
         } else if (sessionStatus === "cleaned" || sessionStatus === "expired") {
           setMessage(refs.bridgeStatus, "Мост завершен. Временный ключ отключен.");
+        } else if (!state.bridgeTempKey) {
+          setMessage(refs.bridgeStatus, "Мост найден, но временный ключ еще не выдан. Нажми «Обновить ключ».");
         } else {
-          setMessage(refs.bridgeStatus, `Мост готов. Ссылка активна еще ${formatExpiry(expiresIn)}.`);
+          setMessage(refs.bridgeStatus, `Временный ключ активен еще ${formatExpiry(expiresIn)}.`);
         }
       }
       state.bridgeLoaded = true;
@@ -381,7 +426,11 @@ export function createInviteModule() {
   }
 
   async function createBridgeInvite(forceNew = false) {
-    setMessage(refs.bridgeStatus, forceNew ? "Обновляю мост..." : "Создаю мост...");
+    if (BRIDGE_V1_DISABLED) {
+      setMessage(refs.bridgeStatus, "МОСТ 2.0 в подготовке. Временная выдача ключей скоро вернется.", true);
+      return;
+    }
+    setMessage(refs.bridgeStatus, forceNew ? "Обновляю мост и ключ..." : "Создаю мост 2.0...");
     try {
       const data = await apiFetch("/api/invite/create", {
         method: "POST",
@@ -389,15 +438,18 @@ export function createInviteModule() {
       });
       const invite = data?.invite || null;
       if (!invite) throw new Error("invite_not_created");
+      const token = String(invite?.token || "").trim();
+      if (!token) throw new Error("invite_not_created");
+      await issueBridgeTempKey(token);
       resetReferralCache();
       await paintBridgeInvite(invite);
-      const expiresIn = Number(invite?.expires_in_sec || 0);
+      const expiresIn = Number(state.bridgeTempKeyExpiresInSec || 0);
       const reused = !!data?.reused;
       setMessage(
         refs.bridgeStatus,
         reused
-          ? `У тебя уже есть активный мост. Срок: ${formatExpiry(expiresIn)}.`
-          : `Мост создан. Срок: ${formatExpiry(expiresIn)}.`,
+          ? `Мост 2.0 уже активен. Ключ обновлен, TTL: ${formatExpiry(expiresIn)}.`
+          : `Мост 2.0 создан. Ключ выдан, TTL: ${formatExpiry(expiresIn)}.`,
       );
       state.bridgeLoaded = true;
     } catch (error) {
@@ -406,6 +458,10 @@ export function createInviteModule() {
   }
 
   async function revokeBridgeInvite() {
+    if (BRIDGE_V1_DISABLED) {
+      setMessage(refs.bridgeStatus, "МОСТ 2.0 в подготовке. Отзыв временно недоступен.", true);
+      return;
+    }
     const token = String(state.bridgeInvite?.token || "").trim();
     if (!token) {
       setMessage(refs.bridgeStatus, "Нет активного моста для отзыва.", true);
@@ -472,9 +528,27 @@ export function createInviteModule() {
 
     if (isTrack) loadTrackingReport(false);
     if (isBridge) {
-      startBridgePolling();
-      loadBridgeInvite(false);
+      refs.bridgeCreateBtn?.setAttribute("disabled", "disabled");
+      refs.bridgeRefreshQrBtn?.setAttribute("disabled", "disabled");
+      refs.bridgeRevokeBtn?.setAttribute("disabled", "disabled");
+      refs.bridgeCopyBtn?.setAttribute("disabled", "disabled");
+      if (BRIDGE_V1_DISABLED) {
+        stopBridgePolling();
+        clearBridgeInvite();
+        setMessage(refs.bridgeStatus, "МОСТ 2.0 в подготовке. Используй прямое приглашение.", true);
+      } else {
+        refs.bridgeCreateBtn?.removeAttribute("disabled");
+        refs.bridgeRefreshQrBtn?.removeAttribute("disabled");
+        refs.bridgeRevokeBtn?.removeAttribute("disabled");
+        refs.bridgeCopyBtn?.removeAttribute("disabled");
+        startBridgePolling();
+        loadBridgeInvite(false);
+      }
     } else {
+      refs.bridgeCreateBtn?.removeAttribute("disabled");
+      refs.bridgeRefreshQrBtn?.removeAttribute("disabled");
+      refs.bridgeRevokeBtn?.removeAttribute("disabled");
+      refs.bridgeCopyBtn?.removeAttribute("disabled");
       stopBridgePolling();
     }
   }
@@ -486,6 +560,7 @@ export function createInviteModule() {
   refs.directCopyBtn?.addEventListener("click", async () => {
     if (!state.directLink) await loadDirectLink();
     const ok = await copyText(state.directLink);
+    flashCopyButton(refs.directCopyBtn, ok);
     setMessage(refs.directStatus, ok ? "Ссылка скопирована." : "Не удалось скопировать ссылку.", !ok);
   });
 
@@ -506,6 +581,7 @@ export function createInviteModule() {
         setMessage(refs.directStatus, "Ссылка отправлена.");
       } else {
         const ok = await copyText(link);
+        flashCopyButton(refs.directCopyBtn, ok);
         setMessage(refs.directStatus, ok ? "Ссылка скопирована." : "Не удалось скопировать ссылку.", !ok);
       }
     } catch (_) {
@@ -517,9 +593,14 @@ export function createInviteModule() {
   refs.bridgeRefreshQrBtn?.addEventListener("click", () => createBridgeInvite(true));
   refs.bridgeRevokeBtn?.addEventListener("click", revokeBridgeInvite);
   refs.bridgeCopyBtn?.addEventListener("click", async () => {
-    const link = String(state.bridgeInvite?.bridge_link || refs.bridgeLink?.textContent || "").trim();
-    const ok = await copyText(link === BRIDGE_PLACEHOLDER ? "" : link);
-    setMessage(refs.bridgeStatus, ok ? "Ссылка моста скопирована." : "Ссылка моста пока недоступна.", !ok);
+    if (BRIDGE_V1_DISABLED) {
+      setMessage(refs.bridgeStatus, "МОСТ 2.0 в подготовке. Временная ссылка недоступна.", true);
+      return;
+    }
+    const key = String(state.bridgeTempKey || refs.bridgeLink?.textContent || "").trim();
+    const ok = await copyText(key === BRIDGE_PLACEHOLDER ? "" : key);
+    flashCopyButton(refs.bridgeCopyBtn, ok);
+    setMessage(refs.bridgeStatus, ok ? "Временный ключ скопирован." : "Временный ключ пока недоступен.", !ok);
   });
 
   refs.trackingRefreshBtn?.addEventListener("click", () => loadTrackingReport(true));
