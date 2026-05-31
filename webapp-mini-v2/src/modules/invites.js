@@ -219,6 +219,7 @@ export function createInviteModule() {
     bridgeCopyBtn: document.getElementById("bridgeCopyBtn"),
     bridgeRefreshQrBtn: document.getElementById("bridgeRefreshQrBtn"),
     bridgeRevokeBtn: document.getElementById("bridgeRevokeBtn"),
+    bridgeOpenBotBtn: document.getElementById("bridgeOpenBotBtn"),
     bridgeStatus: document.getElementById("bridgeStatusText"),
     bridgeQrStub: document.getElementById("bridgeQrStub"),
     bridgeTimeline: document.getElementById("inviteTimeline"),
@@ -338,6 +339,10 @@ export function createInviteModule() {
     }
     paintBridgeTimeline(refs.bridgeTimeline, 0);
     renderBridgeQr(refs.bridgeQrStub, "");
+    if (refs.bridgeOpenBotBtn) {
+      refs.bridgeOpenBotBtn.classList.add("hidden");
+      refs.bridgeOpenBotBtn.removeAttribute("href");
+    }
   }
 
   async function issueBridgeTempKey(inviteToken) {
@@ -369,6 +374,18 @@ export function createInviteModule() {
     const hasPaidBonus = bridgeInviteHasPaidBonus(invite, referrals);
     paintBridgeTimeline(refs.bridgeTimeline, getBridgeStage(invite, hasPaidBonus));
     await renderBridgeQr(refs.bridgeQrStub, value);
+    const tgLink = String(invite?.telegram_start_link || invite?.direct_link || "").trim();
+    if (refs.bridgeOpenBotBtn) {
+      if (tgLink) {
+        refs.bridgeOpenBotBtn.setAttribute("href", tgLink);
+        refs.bridgeOpenBotBtn.setAttribute("target", "_blank");
+        refs.bridgeOpenBotBtn.setAttribute("rel", "noopener");
+        refs.bridgeOpenBotBtn.classList.remove("hidden");
+      } else {
+        refs.bridgeOpenBotBtn.classList.add("hidden");
+        refs.bridgeOpenBotBtn.removeAttribute("href");
+      }
+    }
     return { hasPaidBonus };
   }
 
@@ -413,7 +430,7 @@ export function createInviteModule() {
         } else if (!state.bridgeTempKey) {
           setMessage(refs.bridgeStatus, "Мост найден, но временный ключ еще не выдан. Нажми «Обновить ключ».");
         } else {
-          setMessage(refs.bridgeStatus, `Временный ключ активен еще ${formatExpiry(expiresIn)}.`);
+          setMessage(refs.bridgeStatus, `Временный ключ активен еще ${formatExpiry(expiresIn)}. После включения VPN нажми «Открыть Telegram-бота».`);
         }
       }
       state.bridgeLoaded = true;
@@ -449,7 +466,7 @@ export function createInviteModule() {
         refs.bridgeStatus,
         reused
           ? `Мост 2.0 уже активен. Ключ обновлен, TTL: ${formatExpiry(expiresIn)}.`
-          : `Мост 2.0 создан. Ключ выдан, TTL: ${formatExpiry(expiresIn)}.`,
+          : `Мост 2.0 создан. Ключ выдан, TTL: ${formatExpiry(expiresIn)}. Нажми «Открыть Telegram-бота» после включения VPN.`,
       );
       state.bridgeLoaded = true;
     } catch (error) {
@@ -621,4 +638,3 @@ export function createInviteModule() {
     setMode,
   };
 }
-

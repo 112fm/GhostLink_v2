@@ -637,6 +637,9 @@
             <button id="bridgeRefreshQrBtn" class="ios-active border border-primary text-primary font-bold px-2 py-2 rounded-xl text-xs">Обновить ключ</button>
             <button id="bridgeRevokeBtn" class="ios-active border border-accent-red text-accent-red font-bold px-2 py-2 rounded-xl text-xs">Отозвать</button>
           </div>
+          <a id="bridgeOpenBotBtn" class="hidden ios-active mt-3 border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm text-center block">
+            Открыть Telegram-бота
+          </a>
           <div id="bridgeStatusText" class="text-muted-gray text-xs mt-3">Нажми «Создать мост 2.0», чтобы выдать временный ключ и QR.</div>
         </div>
 
@@ -648,6 +651,21 @@
             <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">3. Перешел в Telegram</div>
             <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">4. Временный ключ отключен</div>
             <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">5. Профиль активирован, бонус зачислен</div>
+          </div>
+        </div>
+
+        <div class="border border-primary rounded-2xl p-4">
+          <div class="text-white font-bold mb-2">Приложения и шаги</div>
+          <div class="text-muted-gray text-xs space-y-1">
+            <div>1. Скопируй временный ключ или сканируй QR.</div>
+            <div>2. Импортируй в VPN-приложение и включи VPN.</div>
+            <div>3. Нажми «Открыть Telegram-бота», отправь <b>/start</b>.</div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
+            <a class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-center" href="https://apps.apple.com/us/app/karing/id6472431552" target="_blank" rel="noopener">Karing iOS</a>
+            <a class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-center" href="https://github.com/KaringX/karing/releases/latest" target="_blank" rel="noopener">Karing Android</a>
+            <a class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-center" href="https://github.com/KaringX/karing/releases/tag/v1.2.18.2102" target="_blank" rel="noopener">Karing Windows</a>
+            <a class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-center" href="https://apps.apple.com/us/app/karing/id6472431552" target="_blank" rel="noopener">Karing macOS</a>
           </div>
         </div>
       </div>
@@ -690,6 +708,5 @@
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>
-
 
 
