@@ -243,6 +243,7 @@ export function createInviteModule() {
     directLink: "",
     bridgeInvite: null,
     bridgeTempKey: "",
+    bridgeTempToken: "",
     bridgeTempKeyExpiresInSec: 0,
     bridgeLoaded: false,
     bridgeLoading: false,
@@ -331,6 +332,7 @@ export function createInviteModule() {
   function clearBridgeInvite() {
     state.bridgeInvite = null;
     state.bridgeTempKey = "";
+    state.bridgeTempToken = "";
     state.bridgeTempKeyExpiresInSec = 0;
     if (refs.bridgeLink) {
       refs.bridgeLink.textContent = BRIDGE_PLACEHOLDER;
@@ -354,6 +356,7 @@ export function createInviteModule() {
     });
     const key = String(data?.vless || data?.temp_key_vless || "").trim();
     state.bridgeTempKey = key;
+    state.bridgeTempToken = token;
     state.bridgeTempKeyExpiresInSec = Number(data?.expires_in_sec || 0);
     return {
       ...data,
@@ -407,11 +410,16 @@ export function createInviteModule() {
         setMessage(refs.bridgeStatus, "У тебя пока нет активного моста. Нажми «Создать мост 2.0».");
       } else {
         const token = String(current?.token || "").trim();
-        if (token) {
+        if (token && token !== state.bridgeTempToken) {
+          state.bridgeTempKey = "";
+          state.bridgeTempKeyExpiresInSec = 0;
+        }
+        if (token && !state.bridgeTempKey) {
           try {
             await issueBridgeTempKey(token);
           } catch (_) {
             state.bridgeTempKey = "";
+            state.bridgeTempToken = "";
             state.bridgeTempKeyExpiresInSec = 0;
           }
         }
