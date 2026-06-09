@@ -623,9 +623,18 @@
           <div id="bridgeInviteLink" class="bg-card-dark rounded-xl border border-primary/40 p-3 break-all text-sm text-muted-gray">
             vless://&lt;temporary-key&gt;
           </div>
-          <div class="mt-3 flex justify-center">
-            <div id="bridgeQrStub" class="w-44 h-44 rounded-xl border border-primary/40 bg-card-dark text-muted-gray text-xs flex items-center justify-center text-center px-3">
-              QR появится после создания
+          <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <div class="text-muted-gray text-xs mb-1 text-center">1. QR ключа</div>
+              <div id="bridgeQrStub" class="w-44 h-44 mx-auto rounded-xl border border-primary/40 bg-card-dark text-muted-gray text-xs flex items-center justify-center text-center px-3">
+                QR появится после создания
+              </div>
+            </div>
+            <div>
+              <div class="text-muted-gray text-xs mb-1 text-center">2. QR Telegram-бота</div>
+              <div id="bridgeBotQrStub" class="w-44 h-44 mx-auto rounded-xl border border-primary/40 bg-card-dark text-muted-gray text-xs flex items-center justify-center text-center px-3">
+                QR появится после создания
+              </div>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
@@ -708,5 +717,4 @@
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>
-
 
