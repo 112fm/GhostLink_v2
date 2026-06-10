@@ -221,7 +221,6 @@ export function createInviteModule() {
     bridgeCopyBtn: document.getElementById("bridgeCopyBtn"),
     bridgeRefreshQrBtn: document.getElementById("bridgeRefreshQrBtn"),
     bridgeRevokeBtn: document.getElementById("bridgeRevokeBtn"),
-    bridgeOpenBotBtn: document.getElementById("bridgeOpenBotBtn"),
     bridgeStatus: document.getElementById("bridgeStatusText"),
     bridgeQrStub: document.getElementById("bridgeQrStub"),
     bridgeBotQrStub: document.getElementById("bridgeBotQrStub"),
@@ -254,7 +253,6 @@ export function createInviteModule() {
     bridgeInvite: null,
     bridgeTempKey: "",
     bridgeTempToken: "",
-    bridgeBotLink: "",
     bridgeTempKeyExpiresInSec: 0,
     bridgeLoaded: false,
     bridgeLoading: false,
@@ -353,7 +351,6 @@ export function createInviteModule() {
     state.bridgeInvite = null;
     state.bridgeTempKey = "";
     state.bridgeTempToken = "";
-    state.bridgeBotLink = "";
     state.bridgeTempKeyExpiresInSec = 0;
     if (refs.bridgeLink) {
       refs.bridgeLink.textContent = BRIDGE_PLACEHOLDER;
@@ -363,10 +360,6 @@ export function createInviteModule() {
     paintBridgeTimeline(refs.bridgeTimeline, 0);
     renderBridgeQr(refs.bridgeQrStub, "");
     renderBridgeQr(refs.bridgeBotQrStub, "");
-    if (refs.bridgeOpenBotBtn) {
-      refs.bridgeOpenBotBtn.classList.add("hidden");
-      refs.bridgeOpenBotBtn.removeAttribute("href");
-    }
   }
 
   async function issueBridgeTempKey(inviteToken) {
@@ -400,19 +393,7 @@ export function createInviteModule() {
     paintBridgeTimeline(refs.bridgeTimeline, getBridgeStage(invite, hasPaidBonus));
     await renderBridgeQr(refs.bridgeQrStub, value);
     const tgLink = String(invite?.telegram_start_link || invite?.direct_link || "").trim();
-    state.bridgeBotLink = tgLink;
     await renderBridgeQr(refs.bridgeBotQrStub, tgLink);
-    if (refs.bridgeOpenBotBtn) {
-      if (tgLink) {
-        refs.bridgeOpenBotBtn.setAttribute("href", tgLink);
-        refs.bridgeOpenBotBtn.setAttribute("target", "_blank");
-        refs.bridgeOpenBotBtn.setAttribute("rel", "noopener");
-        refs.bridgeOpenBotBtn.classList.remove("hidden");
-      } else {
-        refs.bridgeOpenBotBtn.classList.add("hidden");
-        refs.bridgeOpenBotBtn.removeAttribute("href");
-      }
-    }
     return { hasPaidBonus };
   }
 
