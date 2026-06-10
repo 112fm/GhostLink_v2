@@ -615,7 +615,34 @@
       <div id="inviteBridgePane" class="hidden space-y-4">
         <div id="inviteBridgeCard" class="border border-primary rounded-2xl p-4">
           <div class="text-white font-bold mb-1">МОСТ 2.0</div>
-          <div class="text-muted-gray text-xs mb-3">Для тех, кто не может открыть Telegram. Выдаем подписку и QR, чтобы сначала включить VPN, а потом зайти в бота.</div>
+          <div class="text-muted-gray text-xs mb-3">Для человека, у которого Telegram не открывается без VPN. Сначала он ставит VPN-приложение, потом получает подписку моста.</div>
+
+          <div id="bridgeAppsIntro" class="rounded-xl border border-white/10 bg-card-dark p-3 mb-3">
+            <div class="text-white text-sm font-bold mb-1">1. Сначала пусть гость скачает приложение</div>
+            <div class="text-muted-gray text-xs mb-3">Выбери устройство гостя. Мы покажем подходящие приложения. Основной кандидат сейчас — INCY, его отдельно тестируем и настроим.</div>
+            <div id="bridgeAppChoiceBtns" class="grid grid-cols-2 gap-2">
+              <button id="bridgeAppsIosBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">iPhone / iPad</button>
+              <button id="bridgeAppsAndroidBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Android</button>
+            </div>
+            <div id="bridgeIosApps" class="hidden text-xs text-muted-gray space-y-2">
+              <div class="text-primary font-bold">iPhone / iPad</div>
+              <div><b class="text-white">INCY</b> — основной кандидат, тестируем как приложение по умолчанию.</div>
+              <div><b class="text-white">V2Ray / V2Box</b> — если доступно после смены региона Apple ID.</div>
+              <div><b class="text-white">Happ</b> — если доступно после смены региона Apple ID.</div>
+              <div><b class="text-white">Karing</b> — работает, но часто требует настройки по инструкции.</div>
+              <button id="bridgeAppsBackIosBtn" class="ios-active border border-white/20 text-white/80 font-bold px-3 py-2 rounded-xl text-xs">Выбрать другое устройство</button>
+            </div>
+            <div id="bridgeAndroidApps" class="hidden text-xs text-muted-gray space-y-2">
+              <div class="text-primary font-bold">Android</div>
+              <div><b class="text-white">INCY</b> — основной кандидат, тестируем как приложение по умолчанию.</div>
+              <div><b class="text-white">v2rayNG / V2Ray</b> — простой импорт VLESS/подписки.</div>
+              <div><b class="text-white">Happ</b> — запасной вариант.</div>
+              <div><b class="text-white">Karing</b> — работает, но часто требует настройки по инструкции.</div>
+              <button id="bridgeAppsBackAndroidBtn" class="ios-active border border-white/20 text-white/80 font-bold px-3 py-2 rounded-xl text-xs">Выбрать другое устройство</button>
+            </div>
+          </div>
+
+          <div class="text-white text-sm font-bold mb-2">2. Потом создай подписку моста</div>
           <button id="bridgeCreateBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-xl w-full mb-3">
             Создать мост 2.0
           </button>

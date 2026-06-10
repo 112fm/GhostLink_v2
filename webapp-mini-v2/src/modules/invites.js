@@ -226,6 +226,13 @@ export function createInviteModule() {
     bridgeQrStub: document.getElementById("bridgeQrStub"),
     bridgeBotQrStub: document.getElementById("bridgeBotQrStub"),
     bridgeTimeline: document.getElementById("inviteTimeline"),
+    bridgeAppChoiceBtns: document.getElementById("bridgeAppChoiceBtns"),
+    bridgeAppsIosBtn: document.getElementById("bridgeAppsIosBtn"),
+    bridgeAppsAndroidBtn: document.getElementById("bridgeAppsAndroidBtn"),
+    bridgeIosApps: document.getElementById("bridgeIosApps"),
+    bridgeAndroidApps: document.getElementById("bridgeAndroidApps"),
+    bridgeAppsBackIosBtn: document.getElementById("bridgeAppsBackIosBtn"),
+    bridgeAppsBackAndroidBtn: document.getElementById("bridgeAppsBackAndroidBtn"),
 
     trackingRefreshBtn: document.getElementById("trackingRefreshBtn"),
     trackingTotal: document.getElementById("trackingTotalCount"),
@@ -275,6 +282,15 @@ export function createInviteModule() {
       if (state.mode !== "bridge") return;
       loadBridgeInvite(true);
     }, BRIDGE_POLL_MS);
+  }
+
+  function showBridgeApps(target) {
+    const value = String(target || "").toLowerCase();
+    const showIos = value === "ios";
+    const showAndroid = value === "android";
+    refs.bridgeAppChoiceBtns?.classList.toggle("hidden", showIos || showAndroid);
+    refs.bridgeIosApps?.classList.toggle("hidden", !showIos);
+    refs.bridgeAndroidApps?.classList.toggle("hidden", !showAndroid);
   }
 
   async function fetchReferralsCached(force = false) {
@@ -629,6 +645,10 @@ export function createInviteModule() {
   refs.bridgeCreateBtn?.addEventListener("click", () => createBridgeInvite(false));
   refs.bridgeRefreshQrBtn?.addEventListener("click", () => createBridgeInvite(true));
   refs.bridgeRevokeBtn?.addEventListener("click", revokeBridgeInvite);
+  refs.bridgeAppsIosBtn?.addEventListener("click", () => showBridgeApps("ios"));
+  refs.bridgeAppsAndroidBtn?.addEventListener("click", () => showBridgeApps("android"));
+  refs.bridgeAppsBackIosBtn?.addEventListener("click", () => showBridgeApps(""));
+  refs.bridgeAppsBackAndroidBtn?.addEventListener("click", () => showBridgeApps(""));
   refs.bridgeCopyBtn?.addEventListener("click", async () => {
     if (BRIDGE_V1_DISABLED) {
       setMessage(refs.bridgeStatus, "МОСТ 2.0 в подготовке. Временная ссылка недоступна.", true);
