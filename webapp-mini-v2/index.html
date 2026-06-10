@@ -615,17 +615,17 @@
       <div id="inviteBridgePane" class="hidden space-y-4">
         <div id="inviteBridgeCard" class="border border-primary rounded-2xl p-4">
           <div class="text-white font-bold mb-1">МОСТ 2.0</div>
-          <div class="text-muted-gray text-xs mb-3">Для тех, кто не может открыть Telegram. Выдача временного ключа и QR без перехода по ссылкам.</div>
+          <div class="text-muted-gray text-xs mb-3">Для тех, кто не может открыть Telegram. Выдаем подписку и QR, чтобы сначала включить VPN, а потом зайти в бота.</div>
           <button id="bridgeCreateBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-xl w-full mb-3">
             Создать мост 2.0
           </button>
-          <div class="text-muted-gray text-xs mb-1">Временный ключ VLESS</div>
+          <div class="text-muted-gray text-xs mb-1">Подписка моста</div>
           <div id="bridgeInviteLink" class="bg-card-dark rounded-xl border border-primary/40 p-3 break-all text-sm text-muted-gray">
-            vless://&lt;temporary-key&gt;
+            https://api.112prd.ru/s/&lt;bridge-subscription&gt;
           </div>
           <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <div class="text-muted-gray text-xs mb-1 text-center">1. QR ключа</div>
+              <div class="text-muted-gray text-xs mb-1 text-center">1. QR подписки</div>
               <div id="bridgeQrStub" class="w-44 h-44 mx-auto rounded-xl border border-primary/40 bg-card-dark text-muted-gray text-xs flex items-center justify-center text-center px-3">
                 QR появится после создания
               </div>
@@ -638,27 +638,27 @@
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
-            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">Ключ: 500 МБ / 3 часа</div>
-            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">Ссылка: 12 часов</div>
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">До входа в бота: ограниченный срок</div>
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">После входа: закрепляется за гостем</div>
           </div>
           <div class="grid grid-cols-3 gap-2 mt-3">
-            <button id="bridgeCopyBtn" class="ios-active border border-primary text-primary font-bold px-2 py-2 rounded-xl text-xs">Скопировать ключ</button>
-            <button id="bridgeRefreshQrBtn" class="ios-active border border-primary text-primary font-bold px-2 py-2 rounded-xl text-xs">Обновить ключ</button>
+            <button id="bridgeCopyBtn" class="ios-active border border-primary text-primary font-bold px-2 py-2 rounded-xl text-xs">Скопировать подписку</button>
+            <button id="bridgeRefreshQrBtn" class="ios-active border border-primary text-primary font-bold px-2 py-2 rounded-xl text-xs">Обновить подписку</button>
             <button id="bridgeRevokeBtn" class="ios-active border border-accent-red text-accent-red font-bold px-2 py-2 rounded-xl text-xs">Отозвать</button>
           </div>
           <a id="bridgeOpenBotBtn" class="hidden ios-active mt-3 border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm text-center block">
             Открыть Telegram-бота
           </a>
-          <div id="bridgeStatusText" class="text-muted-gray text-xs mt-3">Нажми «Создать мост 2.0», чтобы выдать временный ключ и QR.</div>
+          <div id="bridgeStatusText" class="text-muted-gray text-xs mt-3">Нажми «Создать мост 2.0», чтобы выдать подписку и QR.</div>
         </div>
 
         <div class="border border-primary rounded-2xl p-4">
           <div class="text-white font-bold mb-2">Что происходит сейчас</div>
           <div id="inviteTimeline" class="space-y-2 text-sm">
             <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">1. Мост создан</div>
-            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">2. Гость получил временный ключ</div>
-            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">3. Перешел в Telegram</div>
-            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">4. Временный ключ отключен</div>
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">2. Гость получил подписку</div>
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">3. Включил VPN и вошел в Telegram</div>
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">4. Подписка закреплена за гостем</div>
             <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">5. Профиль активирован, бонус зачислен</div>
           </div>
         </div>
@@ -666,7 +666,7 @@
         <div class="border border-primary rounded-2xl p-4">
           <div class="text-white font-bold mb-2">Приложения и шаги</div>
           <div class="text-muted-gray text-xs space-y-1">
-            <div>1. Скопируй временный ключ или сканируй QR.</div>
+            <div>1. Скопируй подписку моста или сканируй QR.</div>
             <div>2. Импортируй в VPN-приложение и включи VPN.</div>
             <div>3. Нажми «Открыть Telegram-бота», отправь <b>/start</b>.</div>
           </div>
@@ -717,4 +717,3 @@
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>
-

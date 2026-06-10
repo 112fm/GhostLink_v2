@@ -1,7 +1,7 @@
 ﻿import { apiFetch } from "../api/client.js";
 
 const DIRECT_PLACEHOLDER = "t.me/GhostLinkBot?start=<token>";
-const BRIDGE_PLACEHOLDER = "vless://<temporary-key>";
+const BRIDGE_PLACEHOLDER = "https://api.112prd.ru/s/<bridge-subscription>";
 const QR_SCRIPT_SRC = "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js";
 const BRIDGE_POLL_MS = 15000;
 const REFERRAL_CACHE_TTL_MS = 30000;
@@ -97,6 +97,8 @@ function getBridgeStage(invite, hasPaidBonus = false) {
   const status = String(invite?.status || "");
   const sessionStatus = String(invite?.bridge_session?.status || "");
   if (hasPaidBonus) return 5;
+  if (sessionStatus === "claimed") return 4;
+  if (sessionStatus === "pending_claim") return 2;
   if (sessionStatus === "pending_cleanup") return 3;
   if (sessionStatus === "cleaned" || sessionStatus === "expired") return 4;
   if (sessionStatus === "issued") return 2;
@@ -358,7 +360,7 @@ export function createInviteModule() {
       method: "POST",
       body: JSON.stringify({}),
     });
-    const key = String(data?.vless || data?.temp_key_vless || "").trim();
+    const key = String(data?.subscription_url || data?.bridge_subscription_url || data?.vless || data?.temp_key_vless || "").trim();
     state.bridgeTempKey = key;
     state.bridgeTempToken = token;
     state.bridgeTempKeyExpiresInSec = Number(data?.expires_in_sec || 0);
@@ -434,17 +436,21 @@ export function createInviteModule() {
         const sessionStatus = String(current?.bridge_session?.status || "");
         if (extra?.hasPaidBonus) {
           setMessage(refs.bridgeStatus, "Мост завершен. Приглашенный оплатил подписку, бонус зачислен.");
+        } else if (sessionStatus === "claimed") {
+          setMessage(refs.bridgeStatus, "Гость вошел в Telegram. Подписка моста закреплена за его аккаунтом и ждет решения администратора.");
+        } else if (sessionStatus === "pending_claim") {
+          setMessage(refs.bridgeStatus, `Подписка моста работает еще ${formatExpiry(expiresIn)} без Telegram. После включения VPN гость сканирует QR Telegram-бота.`);
         } else if (sessionStatus === "pending_cleanup") {
           const cleanupAfterTs = Number(current?.bridge_session?.cleanup_after_ts || 0);
           const nowTs = Math.floor(Date.now() / 1000);
           const cleanupIn = cleanupAfterTs > nowTs ? cleanupAfterTs - nowTs : 0;
-          setMessage(refs.bridgeStatus, `Гость уже вошел в Telegram. Временный ключ отключится через ${formatExpiry(cleanupIn)}.`);
+          setMessage(refs.bridgeStatus, `Старый мост: гость вошел в Telegram, временный ключ отключится через ${formatExpiry(cleanupIn)}.`);
         } else if (sessionStatus === "cleaned" || sessionStatus === "expired") {
-          setMessage(refs.bridgeStatus, "Мост завершен. Временный ключ отключен.");
+          setMessage(refs.bridgeStatus, "Мост завершен или срок ожидания истек. Создай новый мост при необходимости.");
         } else if (!state.bridgeTempKey) {
-          setMessage(refs.bridgeStatus, "Мост найден, но временный ключ еще не выдан. Нажми «Обновить ключ».");
+          setMessage(refs.bridgeStatus, "Мост найден, но подписка еще не выдана. Нажми «Обновить подписку».");
         } else {
-          setMessage(refs.bridgeStatus, `Временный ключ активен еще ${formatExpiry(expiresIn)}. После включения VPN нажми «Открыть Telegram-бота».`);
+          setMessage(refs.bridgeStatus, `Подписка моста активна еще ${formatExpiry(expiresIn)} без Telegram. После включения VPN открой Telegram-бота.`);
         }
       }
       state.bridgeLoaded = true;
@@ -461,7 +467,7 @@ export function createInviteModule() {
       setMessage(refs.bridgeStatus, "МОСТ 2.0 в подготовке. Временная выдача ключей скоро вернется.", true);
       return;
     }
-    setMessage(refs.bridgeStatus, forceNew ? "Обновляю мост и ключ..." : "Создаю мост 2.0...");
+    setMessage(refs.bridgeStatus, forceNew ? "Обновляю мост и подписку..." : "Создаю мост 2.0...");
     try {
       const data = await apiFetch("/api/invite/create", {
         method: "POST",
@@ -479,8 +485,8 @@ export function createInviteModule() {
       setMessage(
         refs.bridgeStatus,
         reused
-          ? `Мост 2.0 уже активен. Ключ обновлен, TTL: ${formatExpiry(expiresIn)}.`
-          : `Мост 2.0 создан. Ключ выдан, TTL: ${formatExpiry(expiresIn)}. Нажми «Открыть Telegram-бота» после включения VPN.`,
+          ? `Мост 2.0 уже активен. Подписка обновлена, срок ожидания: ${formatExpiry(expiresIn)}.`
+          : `Мост 2.0 создан. Подписка выдана, срок ожидания входа в бота: ${formatExpiry(expiresIn)}.`,
       );
       state.bridgeLoaded = true;
     } catch (error) {
@@ -631,7 +637,7 @@ export function createInviteModule() {
     const key = String(state.bridgeTempKey || refs.bridgeLink?.textContent || "").trim();
     const ok = await copyText(key === BRIDGE_PLACEHOLDER ? "" : key);
     flashCopyButton(refs.bridgeCopyBtn, ok);
-    setMessage(refs.bridgeStatus, ok ? "Временный ключ скопирован." : "Временный ключ пока недоступен.", !ok);
+    setMessage(refs.bridgeStatus, ok ? "Подписка моста скопирована." : "Подписка моста пока недоступна.", !ok);
   });
 
   refs.trackingRefreshBtn?.addEventListener("click", () => loadTrackingReport(true));
