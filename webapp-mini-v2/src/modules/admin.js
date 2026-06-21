@@ -145,6 +145,7 @@ export function createAdminModule(options = {}) {
     },
     roles: [],
     paymentHistory: [],
+    loadedTabs: {},
   };
   let dashboardAutoTimer = null;
 
@@ -488,34 +489,21 @@ export function createAdminModule(options = {}) {
       setStatus(refs.status, "Обновляю дашборд...");
     }
     try {
-      const [stats, usersData, clientsData, periodStats] = await Promise.all([
-        apiFetch("/api/admin/stats"),
-        apiFetch("/api/admin/users"),
-        apiFetch("/api/admin/clients"),
-        apiFetch(`/api/admin/stats?period=${encodeURIComponent(state.growthPeriod)}`),
-      ]);
-
-      const users = Array.isArray(usersData?.items) ? usersData.items : [];
-      const clients = Array.isArray(clientsData?.items) ? clientsData.items : [];
-      const growthSource = periodStats && typeof periodStats === "object" ? periodStats : stats;
+      const stats = await apiFetch(`/api/admin/stats?period=${encodeURIComponent(state.growthPeriod)}`);
+      const growthSource = stats && typeof stats === "object" ? stats : {};
       const online = Array.isArray(stats?.online) ? stats.online.length : pickNum(stats, ["online_count"], 0);
-      const totalClients = clients.length;
+      const totalClients = pickNum(stats, ["total_clients", "clients_total", "devices_total"], online);
       const offline = Math.max(0, totalClients - online);
       const activePct = totalClients > 0 ? Math.round((online / totalClients) * 100) : 0;
       const traffic = Number(stats?.traffic_up || 0) + Number(stats?.traffic_down || 0);
       const totalMemMb = pickNum(stats, ["total_mem_mb", "mem_total_mb"], 0);
       const freeMemMb = pickNum(stats, ["free_mem_mb", "mem_free_mb"], 0);
       const usedMemMb = Math.max(0, totalMemMb - freeMemMb);
-      const expiringSoon = users.filter((u) => {
-        const days = asNum(u?.days_left, 99999);
-        return days > 0 && days <= 3;
-      }).length;
-      const blacklisted = users.filter((u) => {
-        const st = String(u?.status || "").toLowerCase();
-        return st.includes("ban") || st.includes("block");
-      }).length;
-      const botStarts = pickNum(growthSource, ["bot_starts", "starts", "users_started", "started_bot"], users.length);
-      const profilesCreated = pickNum(growthSource, ["profiles_created", "users_created", "profiles", "users_total"], users.length);
+      const expiringSoon = pickNum(stats, ["expiring_soon", "expiring_soon_count"], 0);
+      const blacklisted = pickNum(stats, ["blacklisted", "blacklisted_count", "banned_count"], 0);
+      const usersTotal = pickNum(stats, ["total", "users_total"], 0);
+      const botStarts = pickNum(growthSource, ["bot_starts", "starts", "users_started", "started_bot"], usersTotal);
+      const profilesCreated = pickNum(growthSource, ["profiles_created", "users_created", "profiles", "users_total"], usersTotal);
       const payments = pickNum(
         growthSource,
         ["payments_total", "total_payments", "payments", "paid_count", "payment_count", "first_paid", "paid_first", "first_payments"],
@@ -1468,7 +1456,11 @@ export function createAdminModule(options = {}) {
   }
 
   refs.tabButtons.forEach((btn) => {
-    btn.addEventListener("click", () => setTab(String(btn.dataset.adminTab || "dashboard")));
+    btn.addEventListener("click", async () => {
+      const tab = String(btn.dataset.adminTab || "dashboard");
+      setTab(tab);
+      await loadTabData(tab);
+    });
   });
 
   refs.dashRefreshBtn?.addEventListener("click", loadDashboard);
@@ -1482,6 +1474,7 @@ export function createAdminModule(options = {}) {
   refs.dashExpiringCard?.addEventListener("click", async () => {
     setTab("users");
     await loadUsers(true);
+    state.loadedTabs.users = true;
     setStatus(refs.status, "Открыл вкладку пользователей. Проверь тех, у кого осталось 3 дня и меньше.");
   });
 
@@ -1601,20 +1594,37 @@ export function createAdminModule(options = {}) {
   refs.sysRestartBtn?.addEventListener("click", restartSystem);
   refs.sysBackupBtn?.addEventListener("click", downloadBackup);
 
+  async function loadTabData(tab) {
+    const name = String(tab || "dashboard");
+    if (name === "dashboard") {
+      if (!state.loadedTabs.dashboard) {
+        await loadDashboard();
+        state.loadedTabs.dashboard = true;
+      }
+      return;
+    }
+    if (state.loadedTabs[name]) return;
+    if (name === "users") {
+      await loadUsers(false);
+    } else if (name === "devices") {
+      await loadClients();
+    } else if (name === "payment") {
+      await Promise.all([loadPaymentSettings(), loadPaymentHistory()]);
+    } else if (name === "panel") {
+      await refreshPanelStatus();
+    } else if (name === "system") {
+      await loadRoles();
+    }
+    state.loadedTabs[name] = true;
+  }
+
   return {
     open: async () => {
       setTab("dashboard");
       startDashboardAutoRefresh();
-      await Promise.all([
-        loadDashboard(),
-        loadUsers(false),
-        loadClients(),
-        loadPaymentSettings(),
-        loadPaymentHistory(),
-        loadRoles(),
-        refreshPanelStatus(),
-      ]);
+      state.loadedTabs = {};
+      await loadDashboard();
+      state.loadedTabs.dashboard = true;
     },
   };
 }
-
