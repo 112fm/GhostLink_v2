@@ -506,7 +506,7 @@ export function createAdminModule(options = {}) {
       const profilesCreated = pickNum(growthSource, ["profiles_created", "users_created", "profiles", "users_total"], usersTotal);
       const payments = pickNum(
         growthSource,
-        ["payments_total", "total_payments", "payments", "paid_count", "payment_count", "first_paid", "paid_first", "first_payments"],
+        ["payment_count", "paid_count", "payments", "first_paid", "paid_first", "first_payments"],
         0,
       );
 
