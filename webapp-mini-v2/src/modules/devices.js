@@ -1,4 +1,4 @@
-﻿import { apiFetch } from "../api/client.js";
+﻿import { apiFetch } from "../api/client.js?v=20260706-admin-auth-fix-2";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;
