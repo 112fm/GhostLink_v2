@@ -125,11 +125,6 @@ export function createAdminModule(options = {}) {
     partnerPresetsList: document.getElementById("adminPartnerPresetsList"),
     partnerUsersList: document.getElementById("adminPartnerUsersList"),
 
-    panelStatus: document.getElementById("adminPanelStatus"),
-    panelOpenBtn: document.getElementById("adminPanelOpenBtn"),
-    panelCloseBtn: document.getElementById("adminPanelCloseBtn"),
-    panelRefreshBtn: document.getElementById("adminPanelRefreshBtn"),
-
     roleTgIdInput: document.getElementById("adminRoleTgIdInput"),
     roleSelect: document.getElementById("adminRoleSelect"),
     roleSetBtn: document.getElementById("adminRoleSetBtn"),
@@ -153,7 +148,6 @@ export function createAdminModule(options = {}) {
     clients: [],
     clientsQuery: "",
     userSlots: [],
-    panelOpenPreview: false,
     paymentPreview: {
       phone: "+7 (900) 000-00-00",
       bank: "Т-Банк",
@@ -1631,77 +1625,6 @@ export function createAdminModule(options = {}) {
     }
   }
 
-  async function refreshPanelStatus() {
-    setStatus(refs.status, "Проверяю доступ к панели...");
-    if (previewMode) {
-      if (refs.panelStatus) {
-        refs.panelStatus.textContent = state.panelOpenPreview
-          ? "Панель открыта (PREVIEW)"
-          : "Панель закрыта (PREVIEW)";
-      }
-      setStatus(refs.status, "Локальный превью-режим: статус панели обновлен.");
-      return;
-    }
-
-    try {
-      const data = await apiFetch("/api/admin/proxy_status");
-      const open = Boolean(data?.open);
-      const sec = Number(data?.seconds_left || 0);
-      if (refs.panelStatus) {
-        refs.panelStatus.textContent = open
-          ? `Панель открыта (${sec} сек осталось)`
-          : "Панель закрыта";
-      }
-      setStatus(refs.status, "Статус панели обновлен.");
-    } catch (error) {
-      setStatus(refs.status, mapApiError(error), true);
-    }
-  }
-
-  async function openPanel() {
-    if (previewMode) {
-      state.panelOpenPreview = true;
-      await refreshPanelStatus();
-      setStatus(refs.status, "PREVIEW: панель открыта.");
-      return;
-    }
-
-    setStatus(refs.status, "Открываю панель...");
-    try {
-      const data = await apiFetch("/api/admin/proxy_auth", {
-        method: "POST",
-        body: JSON.stringify({}),
-      });
-      const url = String(data?.proxy_url || "").trim();
-      if (url) openExternalLink(url);
-      await refreshPanelStatus();
-      setStatus(refs.status, "Панель открыта.");
-    } catch (error) {
-      setStatus(refs.status, mapApiError(error), true);
-    }
-  }
-
-  async function closePanel() {
-    if (previewMode) {
-      state.panelOpenPreview = false;
-      await refreshPanelStatus();
-      setStatus(refs.status, "PREVIEW: панель закрыта.");
-      return;
-    }
-
-    setStatus(refs.status, "Закрываю панель...");
-    try {
-      await apiFetch("/api/admin/proxy_close", {
-        method: "POST",
-        body: JSON.stringify({}),
-      });
-      await refreshPanelStatus();
-      setStatus(refs.status, "Панель закрыта.");
-    } catch (error) {
-      setStatus(refs.status, mapApiError(error), true);
-    }
-  }
-
   async function restartSystem() {
     const yes = window.confirm("Перезапустить Xray?");
     if (!yes) return;
@@ -1906,18 +1829,6 @@ export function createAdminModule(options = {}) {
     }
   });
 
-  refs.panelRefreshBtn?.addEventListener("click", async () => {
-    const icon = refs.panelRefreshBtn.querySelector(".material-symbols-outlined");
-    icon?.classList.add("is-spinning");
-    try {
-      await refreshPanelStatus();
-    } finally {
-      icon?.classList.remove("is-spinning");
-    }
-  });
-  refs.panelOpenBtn?.addEventListener("click", openPanel);
-  refs.panelCloseBtn?.addEventListener("click", closePanel);
-
   refs.roleSetBtn?.addEventListener("click", setRole);
   refs.roleRefreshBtn?.addEventListener("click", async () => {
     const icon = refs.roleRefreshBtn.querySelector(".material-symbols-outlined");
@@ -1950,8 +1861,6 @@ export function createAdminModule(options = {}) {
       await Promise.all([loadPaymentSettings(), loadPaymentHistory()]);
     } else if (name === "partner") {
       await loadPartnerAnalytics();
-    } else if (name === "panel") {
-      await refreshPanelStatus();
     } else if (name === "system") {
       await loadRoles();
     }

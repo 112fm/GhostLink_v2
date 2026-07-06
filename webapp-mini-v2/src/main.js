@@ -141,7 +141,7 @@ function createHomeModule(auth) {
       }
       applySubStatus(refs.subStatus, false);
       if (refs.currentTariffLabel) {
-        refs.currentTariffLabel.textContent = "Текущий тариф: недоступно (ошибка сети)";
+        refs.currentTariffLabel.textContent = "Текущий тариф: недоступно (открой Mini App внутри Telegram)";
       }
     }
   }
@@ -369,6 +369,15 @@ const onboarding = createOnboarding();
 helpBtn?.addEventListener("click", () => onboarding.open());
 
 async function bootstrap() {
+  if (!auth.tg || !auth.initData) {
+    const lockedReason = document.getElementById("lockedReasonText");
+    if (lockedReason) {
+      lockedReason.textContent = "Открой Mini App внутри Telegram, а не в обычном браузере. На Mac без Telegram initData API не сможет авторизовать тебя.";
+    }
+    router.show("screen-locked");
+    return;
+  }
+
   const versionState = await checkAppVersion();
   if (versionState.outdated) {
     const reloaded = window.sessionStorage.getItem(VERSION_RELOAD_KEY) === "1";

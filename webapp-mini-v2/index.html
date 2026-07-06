@@ -46,6 +46,7 @@
     <div class="h-full flex flex-col items-center justify-center text-center">
       <div class="text-2xl font-bold mb-2">Доступ закрыт</div>
       <div class="text-muted-gray">Вход только по приглашению.</div>
+      <div id="lockedReasonText" class="text-muted-gray mt-3 text-sm max-w-sm"></div>
     </div>
   </section>
 
@@ -252,7 +253,6 @@
           <button data-admin-tab="devices" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Устройства</button>
           <button data-admin-tab="payment" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Реквизиты</button>
           <button data-admin-tab="partner" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Партнеры</button>
-          <button data-admin-tab="panel" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Панель</button>
           <button data-admin-tab="system" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Система</button>
         </div>
       </div>
@@ -564,27 +564,6 @@
           <div id="adminPartnerUsersList" class="space-y-2 text-xs text-muted-gray">
             <div class="rounded-xl border border-white/10 bg-black/30 px-3 py-2">Данные пока не загружены.</div>
           </div>
-        </div>
-      </div>
-
-      <div data-admin-pane="panel" class="hidden space-y-3">
-        <div class="admin-panel-card">
-          <div class="admin-panel-head">
-            <div class="admin-panel-title-wrap">
-              <span class="material-symbols-outlined text-primary">shield</span>
-              <div class="admin-panel-title">Доступ к панели</div>
-            </div>
-            <button id="adminPanelRefreshBtn" class="ios-active admin-panel-refresh" title="Проверить статус">
-              <span class="material-symbols-outlined text-base">refresh</span>
-            </button>
-          </div>
-          <div id="adminPanelStatus" class="admin-panel-status">Проверка...</div>
-          <div class="text-xs text-muted-gray mt-2">Открывай доступ только на время работы. После действий закрывай панель.</div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <button id="adminPanelOpenBtn" class="ios-active admin-panel-open-btn">Открыть панель</button>
-          <button id="adminPanelCloseBtn" class="ios-active admin-panel-close-btn">Закрыть панель</button>
         </div>
       </div>
 
