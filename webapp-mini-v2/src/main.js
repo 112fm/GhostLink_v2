@@ -1,5 +1,5 @@
 ﻿import { createScreenRouter } from "./ui/screens.js";
-import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260706-session-auth-fix";
+import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js";
 import { bootstrapAuthContext } from "./modules/auth.js";
 import { createInviteModule } from "./modules/invites.js";
 import { createPaymentsModule } from "./modules/payments.js";
