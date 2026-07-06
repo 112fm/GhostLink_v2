@@ -514,9 +514,14 @@
         <div class="admin-partner-card">
           <div class="flex items-center justify-between gap-2 mb-2">
             <div class="text-white text-sm font-semibold">Партнерская ссылка</div>
-            <button id="adminPartnerRefreshBtn" class="ios-active border border-primary text-primary rounded-lg px-2 py-1.5 leading-none" title="Обновить статистику">
-              <span class="material-symbols-outlined text-base">refresh</span>
-            </button>
+            <div class="flex items-center gap-2">
+              <button id="adminPartnerSaveBtn" class="ios-active border border-white/20 text-white rounded-lg px-2 py-1.5 leading-none" title="Сохранить в пресеты">
+                <span class="material-symbols-outlined text-base">bookmark_add</span>
+              </button>
+              <button id="adminPartnerRefreshBtn" class="ios-active border border-primary text-primary rounded-lg px-2 py-1.5 leading-none" title="Обновить статистику">
+                <span class="material-symbols-outlined text-base">refresh</span>
+              </button>
+            </div>
           </div>
           <div class="text-xs text-muted-gray mb-3">Создай или получи текущую ссылку для доверенного партнера. Первые 20 человек проходят автоматически, дальше - ручное решение.</div>
 
@@ -532,6 +537,11 @@
             </label>
           </div>
 
+          <div class="text-xs text-muted-gray mt-3 mb-2">Сохраненные партнеры</div>
+          <div id="adminPartnerPresetsList" class="flex flex-wrap gap-2">
+            <div class="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-muted-gray">Пока нет сохраненных партнеров.</div>
+          </div>
+
           <div class="grid grid-cols-2 gap-2 mt-3">
             <button id="adminPartnerCreateBtn" class="ios-active admin-pay-save-btn">Получить ссылку</button>
             <button id="adminPartnerRotateBtn" class="ios-active border border-white/20 text-white rounded-xl px-3 py-2 font-semibold">Перевыпустить</button>
@@ -544,6 +554,8 @@
           <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
             <div class="admin-partner-stat">Всего: <span id="adminPartnerTotal">0</span></div>
             <div class="admin-partner-stat">Оплатили: <span id="adminPartnerPaid">0</span></div>
+            <div class="admin-partner-stat">Ключ: <span id="adminPartnerKeyIssued">0</span></div>
+            <div class="admin-partner-stat">Трафик: <span id="adminPartnerTrafficStarted">0</span></div>
             <div class="admin-partner-stat">Авто: <span id="adminPartnerAuto">0</span></div>
             <div class="admin-partner-stat">Ручные: <span id="adminPartnerManual">0</span></div>
           </div>

@@ -965,6 +965,17 @@ button,
   font-weight: 700;
 }
 
+.admin-partner-preset {
+  border: 1px solid rgba(184, 255, 0, 0.22);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px 12px;
+  line-height: 1.2;
+}
+
 .admin-partner-user-item {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
@@ -1009,10 +1020,48 @@ button,
   background: rgba(184, 255, 0, 0.08);
 }
 
+.admin-partner-user-badge.key {
+  border: 1px solid rgba(109, 201, 255, 0.48);
+  color: #6dc9ff;
+  background: rgba(109, 201, 255, 0.08);
+}
+
+.admin-partner-user-badge.traffic {
+  border: 1px solid rgba(255, 205, 86, 0.5);
+  color: #ffcd56;
+  background: rgba(255, 205, 86, 0.08);
+}
+
 .admin-partner-user-badge.pending {
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.76);
   background: rgba(255, 255, 255, 0.06);
+}
+
+.admin-partner-user-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.admin-partner-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.admin-partner-chip.on {
+  border-color: rgba(184, 255, 0, 0.42);
+  color: #b8ff00;
+  background: rgba(184, 255, 0, 0.06);
+}
+
+.admin-partner-chip.off {
+  color: rgba(255, 255, 255, 0.56);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .admin-role-item {
