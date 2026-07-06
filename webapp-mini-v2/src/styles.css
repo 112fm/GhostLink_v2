@@ -934,6 +934,87 @@ button,
   font-size: 11px;
 }
 
+.admin-partner-card {
+  border: 1px solid rgba(184, 255, 0, 0.24);
+  border-radius: 14px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(17, 17, 17, 0.96), rgba(13, 13, 13, 0.94));
+}
+
+.admin-partner-link {
+  border: 1px solid rgba(184, 255, 0, 0.2);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.28);
+  padding: 10px 12px;
+  color: rgba(255, 255, 255, 0.88);
+  word-break: break-all;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.admin-partner-stat {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  padding: 10px 12px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.admin-partner-stat span {
+  color: #fff;
+  font-weight: 700;
+}
+
+.admin-partner-user-item {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.24);
+  padding: 10px 12px;
+}
+
+.admin-partner-user-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-partner-user-name {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.admin-partner-user-meta {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+.admin-partner-user-badge {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-partner-user-badge.paid {
+  border: 1px solid rgba(184, 255, 0, 0.5);
+  color: #b8ff00;
+  background: rgba(184, 255, 0, 0.08);
+}
+
+.admin-partner-user-badge.pending {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.76);
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .admin-role-item {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 11px;

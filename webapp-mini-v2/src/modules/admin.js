@@ -108,6 +108,18 @@ export function createAdminModule(options = {}) {
     paySaveBtn: document.getElementById("adminPaySaveBtn"),
     payHistoryRefreshBtn: document.getElementById("adminPayHistoryRefreshBtn"),
     payHistoryList: document.getElementById("adminPayHistoryList"),
+    partnerTgIdInput: document.getElementById("adminPartnerTgId"),
+    partnerCodeInput: document.getElementById("adminPartnerCode"),
+    partnerCreateBtn: document.getElementById("adminPartnerCreateBtn"),
+    partnerRotateBtn: document.getElementById("adminPartnerRotateBtn"),
+    partnerRefreshBtn: document.getElementById("adminPartnerRefreshBtn"),
+    partnerLink: document.getElementById("adminPartnerLink"),
+    partnerCopyBtn: document.getElementById("adminPartnerCopyBtn"),
+    partnerTotal: document.getElementById("adminPartnerTotal"),
+    partnerPaid: document.getElementById("adminPartnerPaid"),
+    partnerAuto: document.getElementById("adminPartnerAuto"),
+    partnerManual: document.getElementById("adminPartnerManual"),
+    partnerUsersList: document.getElementById("adminPartnerUsersList"),
 
     panelStatus: document.getElementById("adminPanelStatus"),
     panelOpenBtn: document.getElementById("adminPanelOpenBtn"),
@@ -145,6 +157,8 @@ export function createAdminModule(options = {}) {
     },
     roles: [],
     paymentHistory: [],
+    partnerInvite: null,
+    partnerAnalytics: { items: [], total: 0, paid: 0, auto_accepted: 0, manual_moderation: 0 },
     loadedTabs: {},
   };
   let dashboardAutoTimer = null;
@@ -276,6 +290,27 @@ export function createAdminModule(options = {}) {
     },
   ];
 
+  const previewPartnerInvite = {
+    invite: {
+      partner_tg_id: "747212726",
+      partner_code: "kkkk8kkkkk",
+      telegram_start_link: "https://t.me/GhostLinkBot?start=PreviewPartnerToken1",
+      auto_accept_limit: 20,
+      trial_days: 10,
+    },
+    analytics: {
+      total: 7,
+      paid: 3,
+      auto_accepted: 7,
+      manual_moderation: 0,
+      items: [
+        { tg_id: "9001", telegram_id: "9001", username: "@neo", name: "Neo", status: "active", is_paid: true, auto_accepted: true },
+        { tg_id: "9002", telegram_id: "9002", username: "@trinity", name: "Trinity", status: "trial", is_paid: false, auto_accepted: true },
+        { tg_id: "9003", telegram_id: "9003", username: "", name: "ID 9003", status: "pending", is_paid: false, auto_accepted: true },
+      ],
+    },
+  };
+
   function asNum(value, fallback = 0) {
     const num = Number(value);
     return Number.isFinite(num) ? num : fallback;
@@ -340,6 +375,72 @@ export function createAdminModule(options = {}) {
     const d = new Date(ts);
     if (Number.isNaN(d.getTime())) return ts;
     return d.toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short" });
+  }
+
+  function partnerIdentity() {
+    const tgId = String(refs.partnerTgIdInput?.value || "").replace(/\D/g, "").trim();
+    const rawCode = String(refs.partnerCodeInput?.value || "").trim();
+    const partnerCode = rawCode || tgId;
+    return { tgId, partnerCode };
+  }
+
+  function renderPartnerUsers() {
+    if (!refs.partnerUsersList) return;
+    refs.partnerUsersList.innerHTML = "";
+    const items = Array.isArray(state.partnerAnalytics?.items) ? state.partnerAnalytics.items : [];
+    if (!items.length) {
+      const empty = document.createElement("div");
+      empty.className = "rounded-xl border border-white/10 bg-black/30 px-3 py-2";
+      empty.textContent = "Пока никого нет.";
+      refs.partnerUsersList.appendChild(empty);
+      return;
+    }
+
+    items.forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "admin-partner-user-item";
+
+      const head = document.createElement("div");
+      head.className = "admin-partner-user-head";
+
+      const left = document.createElement("div");
+      const name = document.createElement("div");
+      name.className = "admin-partner-user-name";
+      name.textContent = String(item?.name || item?.username || `ID ${String(item?.tg_id || item?.telegram_id || "—")}`);
+
+      const meta = document.createElement("div");
+      meta.className = "admin-partner-user-meta";
+      const tgId = String(item?.tg_id || item?.telegram_id || "—").trim();
+      const username = String(item?.username || "—").trim() || "—";
+      const status = String(item?.status || "—").trim() || "—";
+      meta.textContent = `TG ID: ${tgId} · username: ${username} · статус: ${status}`;
+
+      left.appendChild(name);
+      left.appendChild(meta);
+
+      const badge = document.createElement("span");
+      const paid = Boolean(item?.is_paid);
+      badge.className = `admin-partner-user-badge ${paid ? "paid" : "pending"}`;
+      badge.textContent = paid ? "Оплатил" : "Без оплаты";
+
+      head.appendChild(left);
+      head.appendChild(badge);
+      row.appendChild(head);
+      refs.partnerUsersList.appendChild(row);
+    });
+  }
+
+  function renderPartnerState() {
+    const invite = state.partnerInvite || {};
+    const analytics = state.partnerAnalytics || {};
+    if (refs.partnerLink) {
+      refs.partnerLink.textContent = String(invite?.telegram_start_link || "").trim() || "Ссылка еще не создана.";
+    }
+    if (refs.partnerTotal) refs.partnerTotal.textContent = String(Number(analytics?.total || 0));
+    if (refs.partnerPaid) refs.partnerPaid.textContent = String(Number(analytics?.paid || 0));
+    if (refs.partnerAuto) refs.partnerAuto.textContent = String(Number(analytics?.auto_accepted || 0));
+    if (refs.partnerManual) refs.partnerManual.textContent = String(Number(analytics?.manual_moderation || 0));
+    renderPartnerUsers();
   }
 
   function renderRoles() {
@@ -438,6 +539,104 @@ export function createAdminModule(options = {}) {
       `;
       refs.payHistoryList.appendChild(row);
     });
+  }
+
+  async function loadPartnerAnalytics() {
+    const { tgId, partnerCode } = partnerIdentity();
+    if (!tgId) {
+      state.partnerInvite = null;
+      state.partnerAnalytics = { items: [], total: 0, paid: 0, auto_accepted: 0, manual_moderation: 0 };
+      renderPartnerState();
+      setStatus(refs.status, "Укажи TG ID партнера, чтобы загрузить статистику.");
+      return;
+    }
+
+    if (previewMode) {
+      if (refs.partnerTgIdInput && !refs.partnerTgIdInput.value) refs.partnerTgIdInput.value = previewPartnerInvite.invite.partner_tg_id;
+      if (refs.partnerCodeInput && !refs.partnerCodeInput.value) refs.partnerCodeInput.value = previewPartnerInvite.invite.partner_code;
+      state.partnerInvite = { ...previewPartnerInvite.invite };
+      state.partnerAnalytics = {
+        ...previewPartnerInvite.analytics,
+        items: previewPartnerInvite.analytics.items.map((item) => ({ ...item })),
+      };
+      renderPartnerState();
+      setStatus(refs.status, "Локальный превью-режим: партнерская статистика загружена.");
+      return;
+    }
+
+    setStatus(refs.status, "Загружаю партнерскую статистику...");
+    try {
+      const data = await apiFetch(
+        `/api/admin/partner-invite/analytics?partner_tg_id=${encodeURIComponent(tgId)}&partner_code=${encodeURIComponent(partnerCode)}`,
+      );
+      state.partnerAnalytics = data || { items: [], total: 0, paid: 0, auto_accepted: 0, manual_moderation: 0 };
+      renderPartnerState();
+      setStatus(refs.status, "Партнерская статистика обновлена.");
+    } catch (error) {
+      state.partnerAnalytics = { items: [], total: 0, paid: 0, auto_accepted: 0, manual_moderation: 0 };
+      renderPartnerState();
+      setStatus(refs.status, mapApiError(error), true);
+    }
+  }
+
+  async function createOrRotatePartnerInvite(forceNew = false) {
+    const { tgId, partnerCode } = partnerIdentity();
+    if (!tgId) {
+      setStatus(refs.status, "Укажи TG ID партнера.", true);
+      return;
+    }
+
+    if (previewMode) {
+      state.partnerInvite = {
+        ...previewPartnerInvite.invite,
+        partner_tg_id: tgId,
+        partner_code: partnerCode,
+      };
+      state.partnerAnalytics = {
+        ...previewPartnerInvite.analytics,
+        items: previewPartnerInvite.analytics.items.map((item) => ({ ...item })),
+      };
+      renderPartnerState();
+      setStatus(refs.status, forceNew ? "PREVIEW: партнерская ссылка перевыпущена." : "PREVIEW: партнерская ссылка загружена.");
+      return;
+    }
+
+    setStatus(refs.status, forceNew ? "Перевыпускаю партнерскую ссылку..." : "Получаю партнерскую ссылку...");
+    try {
+      const data = await apiFetch("/api/admin/partner-invite/create", {
+        method: "POST",
+        body: JSON.stringify({
+          partner_tg_id: tgId,
+          partner_code: partnerCode,
+          force_new: forceNew,
+        }),
+      });
+      state.partnerInvite = data?.invite || null;
+      state.partnerAnalytics = data?.analytics || { items: [], total: 0, paid: 0, auto_accepted: 0, manual_moderation: 0 };
+      renderPartnerState();
+
+      if (data?.initial_reward?.applied) {
+        setStatus(refs.status, "Партнерская ссылка готова. Стартовый бонус партнеру применен.");
+      } else {
+        setStatus(refs.status, forceNew ? "Партнерская ссылка перевыпущена." : "Партнерская ссылка готова.");
+      }
+    } catch (error) {
+      setStatus(refs.status, mapApiError(error), true);
+    }
+  }
+
+  async function copyPartnerLink() {
+    const value = String(state.partnerInvite?.telegram_start_link || "").trim();
+    if (!value) {
+      setStatus(refs.status, "Ссылка еще не создана.", true);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(value);
+      setStatus(refs.status, "Партнерская ссылка скопирована.");
+    } catch (_) {
+      setStatus(refs.status, "Не удалось скопировать ссылку.", true);
+    }
   }
 
   function selectedUser() {
@@ -1567,6 +1766,25 @@ export function createAdminModule(options = {}) {
   });
   refs.payBankInput?.addEventListener("input", updatePayPreview);
   refs.payRecipientInput?.addEventListener("input", updatePayPreview);
+  refs.partnerCreateBtn?.addEventListener("click", async () => createOrRotatePartnerInvite(false));
+  refs.partnerRotateBtn?.addEventListener("click", async () => createOrRotatePartnerInvite(true));
+  refs.partnerCopyBtn?.addEventListener("click", copyPartnerLink);
+  refs.partnerRefreshBtn?.addEventListener("click", async () => {
+    const icon = refs.partnerRefreshBtn.querySelector(".material-symbols-outlined");
+    icon?.classList.add("is-spinning");
+    try {
+      await loadPartnerAnalytics();
+    } finally {
+      icon?.classList.remove("is-spinning");
+    }
+  });
+  refs.partnerTgIdInput?.addEventListener("input", () => {
+    const digits = String(refs.partnerTgIdInput.value || "").replace(/\D/g, "");
+    refs.partnerTgIdInput.value = digits;
+    if (!String(refs.partnerCodeInput?.value || "").trim() && digits && refs.partnerCodeInput) {
+      refs.partnerCodeInput.value = digits;
+    }
+  });
 
   refs.panelRefreshBtn?.addEventListener("click", async () => {
     const icon = refs.panelRefreshBtn.querySelector(".material-symbols-outlined");
@@ -1610,6 +1828,8 @@ export function createAdminModule(options = {}) {
       await loadClients();
     } else if (name === "payment") {
       await Promise.all([loadPaymentSettings(), loadPaymentHistory()]);
+    } else if (name === "partner") {
+      await loadPartnerAnalytics();
     } else if (name === "panel") {
       await refreshPanelStatus();
     } else if (name === "system") {
