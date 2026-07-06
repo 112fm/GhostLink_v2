@@ -1,5 +1,5 @@
 ﻿import { createScreenRouter } from "./ui/screens.js";
-import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260706-admin-auth-fix-2";
+import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260706-admin-auth-fix-3";
 import { bootstrapAuthContext } from "./modules/auth.js";
 import { createInviteModule } from "./modules/invites.js";
 import { createPaymentsModule } from "./modules/payments.js";
@@ -187,7 +187,7 @@ const admin = createAdminModule({
 });
 
 configureApiClient({
-  telegramInitData: "",
+  telegramInitData: auth.initData,
 });
 
 const router = createScreenRouter({
