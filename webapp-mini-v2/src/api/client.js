@@ -20,11 +20,23 @@ export function setPwaToken(token) {
   pwaToken = typeof token === "string" ? token : "";
 }
 
-function buildHeaders(extraHeaders = {}) {
+function shouldSendJsonContentType(method, options = {}) {
+  const verb = String(method || "GET").toUpperCase();
+  if (verb === "GET" || verb === "HEAD") {
+    return false;
+  }
+  return Boolean(options.body);
+}
+
+function buildHeaders(extraHeaders = {}, options = {}) {
   const headers = {
-    "Content-Type": "application/json",
+    Accept: "application/json",
     ...extraHeaders,
   };
+
+  if (shouldSendJsonContentType(options.method, options)) {
+    headers["Content-Type"] = "application/json";
+  }
 
   if (telegramInitData) {
     headers["X-Telegram-InitData"] = telegramInitData;
@@ -51,10 +63,14 @@ export async function apiFetch(path, options = {}) {
     throw new Error("no_api_base");
   }
 
+  const method = String(options.method || "GET").toUpperCase();
+  const credentials = pwaToken ? "include" : "omit";
   const response = await fetch(`${apiBase}${path}`, {
     ...options,
-    credentials: "include",
-    headers: buildHeaders(options.headers || {}),
+    method,
+    cache: "no-store",
+    credentials,
+    headers: buildHeaders(options.headers || {}, { ...options, method }),
   });
 
   const data = await response.json().catch(() => ({}));
