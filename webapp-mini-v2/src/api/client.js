@@ -20,6 +20,14 @@ export function setPwaToken(token) {
   pwaToken = typeof token === "string" ? token : "";
 }
 
+function buildApiUrl(path) {
+  const url = new URL(`${apiBase}${path}`);
+  if (pwaToken && !url.searchParams.has("pwa_token")) {
+    url.searchParams.set("pwa_token", pwaToken);
+  }
+  return url.toString();
+}
+
 function shouldSendJsonContentType(method, options = {}) {
   const verb = String(method || "GET").toUpperCase();
   if (verb === "GET" || verb === "HEAD") {
@@ -40,9 +48,6 @@ function buildHeaders(extraHeaders = {}, options = {}) {
 
   if (telegramInitData) {
     headers["X-Telegram-InitData"] = telegramInitData;
-  }
-  if (pwaToken) {
-    headers["X-PWA-Token"] = pwaToken;
   }
   return headers;
 }
@@ -65,7 +70,7 @@ export async function apiFetch(path, options = {}) {
 
   const method = String(options.method || "GET").toUpperCase();
   const credentials = pwaToken ? "include" : "omit";
-  const response = await fetch(`${apiBase}${path}`, {
+  const response = await fetch(buildApiUrl(path), {
     ...options,
     method,
     cache: "no-store",
@@ -83,4 +88,32 @@ export async function apiFetch(path, options = {}) {
 
 export function getApiBase() {
   return apiBase;
+}
+
+export async function establishMiniAppSession(initData) {
+  const value = String(initData || "").trim();
+  if (!apiBase || !value) {
+    return null;
+  }
+
+  const response = await fetch(`${apiBase}/api/miniapp/session`, {
+    method: "POST",
+    cache: "no-store",
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+    },
+    body: new URLSearchParams({ init_data: value }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw normalizeApiError(response, data);
+  }
+
+  if (data?.session_token) {
+    setPwaToken(data.session_token);
+  }
+
+  return data;
 }

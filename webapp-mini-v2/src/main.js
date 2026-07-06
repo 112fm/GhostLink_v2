@@ -1,5 +1,5 @@
 ﻿import { createScreenRouter } from "./ui/screens.js";
-import { apiFetch, configureApiClient } from "./api/client.js";
+import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js";
 import { bootstrapAuthContext } from "./modules/auth.js";
 import { createInviteModule } from "./modules/invites.js";
 import { createPaymentsModule } from "./modules/payments.js";
@@ -187,7 +187,7 @@ const admin = createAdminModule({
 });
 
 configureApiClient({
-  telegramInitData: auth.initData,
+  telegramInitData: "",
 });
 
 const router = createScreenRouter({
@@ -401,6 +401,15 @@ async function bootstrap() {
     }
     router.show("screen-locked");
     return;
+  }
+
+  try {
+    await establishMiniAppSession(auth.initData);
+  } catch (error) {
+    const lockedReason = document.getElementById("lockedReasonText");
+    if (lockedReason && Number(error?.status || 0) === 401) {
+      lockedReason.textContent = "Не удалось подтвердить Telegram-сессию. Закрой и заново открой Mini App.";
+    }
   }
 
   const versionState = await checkAppVersion();
