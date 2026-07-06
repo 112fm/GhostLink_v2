@@ -1,0 +1,767 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+  <meta name="referrer" content="no-referrer" />
+  <title>GhostLink Mini v2</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    if (typeof tailwind === "undefined") {
+      const fallback = document.createElement("script");
+      fallback.src = "https://unpkg.com/tailwindcss-cdn@3.4.3/tailwindcss.js";
+      document.head.appendChild(fallback);
+    }
+  </script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: "#B8FF00",
+            "bg-dark": "#1E1E1E",
+            "muted-gray": "#555555",
+            "card-dark": "#111111",
+            "accent-red": "#FF3B30",
+          },
+          fontFamily: {
+            sans: ["Onest", "sans-serif"],
+          },
+          borderRadius: {
+            "2xl": "1rem",
+          },
+        },
+      },
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+
+<body class="flex flex-col p-6">
+  <section id="screen-locked" class="screen">
+    <div class="h-full flex flex-col items-center justify-center text-center">
+      <div class="text-2xl font-bold mb-2">Доступ закрыт</div>
+      <div class="text-muted-gray">Вход только по приглашению.</div>
+      <div id="lockedReasonText" class="text-muted-gray mt-3 text-sm max-w-sm"></div>
+    </div>
+  </section>
+
+  <section id="screen-update" class="screen">
+    <div class="h-full flex flex-col items-center justify-center text-center px-4">
+      <div class="text-2xl font-bold mb-2">Обнови mini app</div>
+      <div id="updateMessageText" class="text-muted-gray mb-4">
+        Доступна новая версия. Закрой и заново открой приложение из Telegram.
+      </div>
+      <button id="updateReloadBtn" class="ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl">
+        Обновить сейчас
+      </button>
+    </div>
+  </section>
+
+  <header id="appHeader" class="pt-2 mb-6 flex items-center gap-3">
+    <img src="./ghost_ava.png" alt="GhostLink" class="w-10 h-10 rounded-full object-cover" />
+    <div class="flex-1">
+      <h1 class="text-3xl font-black tracking-tight text-white uppercase">GHOSTLINK</h1>
+    </div>
+    <button id="helpBtn" class="ios-active w-9 h-9 rounded-full border border-primary text-primary font-bold text-lg leading-none" aria-label="Показать подсказки">?</button>
+    <button id="backBtn" class="hidden text-white/80">Назад</button>
+  </header>
+
+  <main class="flex-1 overflow-y-auto overflow-x-hidden">
+    <section id="screen-home" class="screen active">
+      <div id="homeStatusBlock" class="mt-3 mb-8 flex flex-col items-start gap-1">
+        <span class="text-white text-[26px] font-bold leading-none" id="expiryValue">Нет подписки</span>
+        <span id="subStatus" class="text-[12px] font-semibold uppercase tracking-wider text-accent-red">Подписка неактивна</span>
+        <span id="currentTariffLabel" class="text-muted-gray text-sm mt-2">Текущий тариф: —</span>
+        <span id="clubBadgeLabel" class="hidden mt-1 text-[12px] font-semibold text-primary border border-primary rounded-lg px-2 py-1">Ваш тариф: Клубный 💎</span>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <button id="buyBtn" class="ios-active w-full bg-primary h-[60px] rounded-2xl flex items-center justify-between px-6">
+          <span class="text-black font-bold text-lg">Поддержать проект</span>
+          <span class="material-symbols-outlined text-black">favorite</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mt-4">
+        <button id="homeDevicesBtn" class="ios-active border border-primary h-[80px] rounded-2xl flex flex-col items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-primary">key</span>
+          <span class="text-primary text-sm font-bold">Мои ключи</span>
+        </button>
+        <button id="homeRefBtn" class="ios-active border border-primary h-[80px] rounded-2xl flex flex-col items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-primary">group_add</span>
+          <span class="text-primary text-sm font-bold">Пригласить в клуб</span>
+        </button>
+      </div>
+
+      <button id="homeAdminBtn" class="hidden ios-active mt-4 w-full border border-primary h-[52px] rounded-2xl flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-primary">admin_panel_settings</span>
+        <span class="text-primary font-bold">Админка</span>
+      </button>
+    </section>
+
+    <section id="screen-tariffs" class="screen">
+      <h2 class="text-2xl font-bold mb-4">Поддержка сервиса</h2>
+      <div id="tierBadgeRow" class="hidden text-primary text-sm mb-3">Ваш тариф: <span id="tierBadge">Клубный 💎</span></div>
+      <div class="mb-4">
+        <div class="text-muted-gray text-xs mb-2">Срок оплаты</div>
+        <div class="grid grid-cols-3 gap-2 p-2 rounded-2xl border border-primary/30 bg-card-dark/70">
+          <button id="period1Btn" class="ios-active period-toggle-btn period-tier-starter period-toggle-active px-3 py-2 rounded-xl text-xs">
+            <span class="period-toggle-main">1 мес</span>
+            <span class="period-toggle-sub">старт</span>
+          </button>
+          <button id="period2Btn" class="ios-active period-toggle-btn period-tier-save px-3 py-2 rounded-xl text-xs">
+            <span class="period-toggle-main">2 мес</span>
+            <span class="period-toggle-sub">выгодно</span>
+          </button>
+          <button id="period3Btn" class="ios-active period-toggle-btn period-tier-best px-3 py-2 rounded-xl text-xs">
+            <span class="period-tier-badge">топ</span>
+            <span class="period-toggle-main">3 мес</span>
+            <span class="period-toggle-sub">лучший</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="border border-primary rounded-2xl p-4 mb-4">
+        <div class="text-white text-lg font-bold">Solo Ghost</div>
+        <div class="text-white/70 text-sm">до 2 устройств</div>
+        <div class="mt-3">
+          <button id="soloPay" class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full">
+            <span id="soloPrice">150</span> ₽
+          </button>
+        </div>
+      </div>
+
+      <div class="border border-primary rounded-2xl p-4">
+        <div class="text-white text-lg font-bold">Flex Squad</div>
+        <div class="text-muted-gray text-sm">Выбери количество устройств</div>
+        <div class="mt-3">
+          <input id="flexSlider" type="range" min="3" max="5" value="3" class="w-full" />
+          <div class="flex justify-between text-xs text-white/65 mt-1">
+            <span>3</span><span>4</span><span>5</span>
+          </div>
+        </div>
+        <div class="mt-3 text-white" id="flexPrice">3 устройства — 225 ₽</div>
+        <button id="flexPay" class="ios-active bg-primary text-black font-bold px-4 py-2 rounded-xl w-full mt-3">Поддержать</button>
+      </div>
+
+      <div class="mt-4">
+        <div class="text-white text-sm font-semibold mb-1">Данные плательщика</div>
+        <div class="text-muted-gray text-xs">
+          После выбора тарифа откроется экран оплаты с реквизитами и подтверждением перевода.
+        </div>
+      </div>
+
+      <div id="tariffStatus" class="text-muted-gray text-sm mt-4">Оплата активирует/продлевает доступ на 30 дней.</div>
+    </section>
+
+    <section id="screen-payment" class="screen payment-screen">
+      <h2 class="text-2xl font-bold mb-4">Оплата переводом</h2>
+
+      <div id="paymentPendingBox" class="hidden mb-4 p-4 border border-primary/40 bg-primary/10 rounded-2xl text-primary">
+        <div class="font-bold">Заявка уже отправлена</div>
+        <p class="text-sm mt-2 text-white/90">Ожидай проверки администратора. Дублировать перевод не нужно.</p>
+      </div>
+
+      <div id="paymentFormBox">
+        <div class="text-sm text-muted-gray">Сумма перевода</div>
+        <div id="paymentAmountDisplay" class="payment-amount-value text-4xl font-extrabold mb-4">...</div>
+
+        <div class="payment-data-card p-4 mb-4">
+          <div class="text-xs text-muted-gray mb-1">
+            Банк: <span class="text-white font-semibold" id="paymentBankStrict">—</span>
+          </div>
+          <div class="text-xs text-muted-gray mb-1">
+            Номер телефона
+          </div>
+          <div class="text-xl font-bold font-mono tracking-wide payment-mono-value" id="paymentPhoneDisplay">—</div>
+          <div class="text-xs text-muted-gray mt-2">
+            Получатель: <span class="text-white font-bold payment-mono-value" id="paymentRecipientDisplay">—</span>
+          </div>
+          <button id="copyPaymentDetailsBtn" class="ios-active payment-copy-link mt-3">
+            <span>Скопировать номер</span>
+          </button>
+        </div>
+
+        <div class="payment-confirm-title mb-2">ПОДТВЕРЖДЕНИЕ ПЕРЕВОДА</div>
+        <div id="paymentSenderShell" class="payment-input-shell mb-2">
+          <span class="input-corner corner-tl" aria-hidden="true"></span>
+          <span class="input-corner corner-tr" aria-hidden="true"></span>
+          <span class="input-corner corner-bl" aria-hidden="true"></span>
+          <span class="input-corner corner-br" aria-hidden="true"></span>
+          <input
+            id="paymentSenderInput"
+            type="text"
+            class="w-full payment-input text-white rounded-xl px-4 py-3 outline-none text-center text-lg font-mono"
+            placeholder="Иван П"
+          />
+          <span id="paymentSenderValidBadge" class="payment-input-valid hidden" aria-hidden="true">✓</span>
+        </div>
+
+        <button id="submitPaymentBtn" class="ios-active bg-primary text-black font-bold px-4 py-4 rounded-xl w-full mt-6 payment-submit-btn">
+          <span>Я перевел деньги</span>
+        </button>
+        <div id="paymentStatusText" class="payment-status-receipt mt-3">После отправки заявки администратор проверит перевод.</div>
+      </div>
+    </section>
+
+    <section id="screen-devices" class="screen">
+      <h2 class="text-2xl font-bold mb-2">Устройства</h2>
+      <div class="text-muted-gray mb-1">Лимит устройств: <span id="deviceLimit">0</span></div>
+      <div class="text-muted-gray mb-3">Подключено: <span id="deviceCount">0</span></div>
+
+      <div class="text-muted-gray text-xs mb-1">Ссылка подписки</div>
+      <div id="subscriptionLink" class="hidden bg-card-dark border border-primary/40 rounded-xl px-3 py-2 text-xs text-white break-all mb-2"></div>
+      <button id="copySubscriptionBtn" class="hidden ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl mb-3">
+        Скопировать подписку
+      </button>
+
+      <div id="deviceList" class="mb-3 text-muted-gray text-sm">Загрузка...</div>
+
+      <div id="deviceAddForm" class="hidden grid grid-cols-2 gap-2 mb-3">
+        <select id="deviceType" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2">
+          <option value="iphone">iPhone</option>
+          <option value="android">Android</option>
+          <option value="mac">Mac</option>
+          <option value="windows">Windows</option>
+          <option value="linux">Linux</option>
+          <option value="tv">TV</option>
+          <option value="other">Другое</option>
+        </select>
+        <input id="deviceName" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2" placeholder="Имя устройства (необязательно)" />
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <button id="addDeviceBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Добавить устройство</button>
+        <button id="updateDeviceBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Обновить ключ</button>
+        <button id="resetDeviceBtn" class="ios-active border border-primary text-primary font-bold px-4 py-3 rounded-2xl">Сбросить ключ</button>
+        <div id="deviceStatusText" class="text-muted-gray text-sm"></div>
+        <div class="text-muted-gray text-sm">Подключай устройства через «Скопировать подписку». «Скопировать ключ» — запасной вариант.</div>
+      </div>
+    </section>
+
+    <section id="screen-admin" class="screen">
+      <h2 class="text-2xl font-bold mb-3">Админка</h2>
+      <div class="mb-4">
+        <div class="grid grid-cols-3 gap-2">
+          <button data-admin-tab="dashboard" class="ios-active border border-primary bg-primary text-black font-bold px-3 py-2 rounded-xl text-xs">Дашборд</button>
+          <button data-admin-tab="users" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Пользователи</button>
+          <button data-admin-tab="devices" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Устройства</button>
+          <button data-admin-tab="payment" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Реквизиты</button>
+          <button data-admin-tab="partner" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Партнеры</button>
+          <button data-admin-tab="system" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Система</button>
+        </div>
+      </div>
+
+      <div data-admin-pane="dashboard" class="space-y-3">
+        <div class="grid grid-cols-1 gap-2 text-sm">
+          <div class="admin-dash-card">
+            <div class="admin-dash-card-head">
+              <div class="admin-dash-title-wrap">
+                <span class="material-symbols-outlined text-primary">network_check</span>
+                <div class="admin-dash-title">Сеть</div>
+              </div>
+              <div class="text-xs text-muted-gray">LIVE</div>
+            </div>
+            <div class="admin-dash-metric-row">
+              <div><span class="text-primary font-bold" id="adminDashOnline">0</span> <span class="text-xs text-muted-gray">online</span></div>
+              <div><span class="text-white/80 font-semibold" id="adminDashOffline">0</span> <span class="text-xs text-muted-gray">offline</span></div>
+            </div>
+            <div class="text-xs text-muted-gray mt-1">Активных устройств: <span id="adminDashActivePct">0%</span></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="admin-dash-card">
+              <div class="admin-dash-title-wrap mb-2">
+                <span class="material-symbols-outlined text-primary">memory</span>
+                <div class="admin-dash-title">Ресурсы</div>
+              </div>
+              <div class="admin-ram-gauge" id="adminDashRamGauge" style="--p:0">
+                <div class="admin-ram-gauge-inner">
+                  <span id="adminDashRam">0 / 0 GB</span>
+                </div>
+              </div>
+            </div>
+            <div class="admin-dash-card">
+              <div class="admin-dash-title-wrap mb-2">
+                <span class="material-symbols-outlined text-primary">data_usage</span>
+                <div class="admin-dash-title">Нагрузка</div>
+              </div>
+              <div class="text-2xl font-extrabold text-white" id="adminDashTraffic">0 B</div>
+              <div class="text-xs text-muted-gray mt-1">Общий трафик</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-dash-card">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="admin-dash-title-wrap">
+              <span class="material-symbols-outlined text-primary">trending_up</span>
+              <div class="admin-dash-title">Приход и рост пользователей</div>
+            </div>
+            <div class="admin-growth-filter" id="adminGrowthFilter">
+              <button id="adminGrowth1mBtn" data-growth-period="1m" class="ios-active admin-growth-filter-btn admin-growth-filter-btn-active">1 мес</button>
+              <button id="adminGrowth3mBtn" data-growth-period="3m" class="ios-active admin-growth-filter-btn">3 мес</button>
+              <button id="adminGrowthAllBtn" data-growth-period="all" class="ios-active admin-growth-filter-btn">Все</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="admin-growth-metric">
+              <span class="material-symbols-outlined text-primary text-base">smart_toy</span>
+              <div class="text-xs text-muted-gray">В бота</div>
+              <div class="text-lg font-extrabold text-white" id="adminDashBotStarts">0</div>
+            </div>
+            <div class="admin-growth-metric">
+              <span class="material-symbols-outlined text-primary text-base">shield_person</span>
+              <div class="text-xs text-muted-gray">Профили</div>
+              <div class="text-lg font-extrabold text-white" id="adminDashProfilesCreated">0</div>
+            </div>
+            <div class="admin-growth-metric">
+              <span class="material-symbols-outlined text-primary text-base">payments</span>
+              <div class="text-xs text-muted-gray">Оплаты</div>
+              <div class="text-lg font-extrabold text-white" id="adminDashFirstPaid">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <button id="adminDashExpiringCard" class="ios-active admin-dash-card admin-dash-alert admin-dash-alert-warn text-left">
+            <div class="admin-dash-title-wrap mb-1">
+              <span class="material-symbols-outlined text-amber-300">hourglass_top</span>
+              <div class="admin-dash-title">Истекают</div>
+            </div>
+            <div class="text-xl font-extrabold text-white" id="adminDashExpiringSoon">0</div>
+            <div class="text-[11px] text-amber-300/90">в 3 дня</div>
+          </button>
+          <div class="admin-dash-card admin-dash-alert admin-dash-alert-red">
+            <div class="admin-dash-title-wrap mb-1">
+              <span class="material-symbols-outlined text-accent-red">block</span>
+              <div class="admin-dash-title">Черный список</div>
+            </div>
+            <div class="text-xl font-extrabold text-white" id="adminDashBlacklisted">0</div>
+            <div class="text-[11px] text-accent-red/90">заблокировано</div>
+          </div>
+          <div class="admin-dash-card admin-dash-alert">
+            <div class="admin-dash-title-wrap mb-1">
+              <span class="material-symbols-outlined text-primary">devices</span>
+              <div class="admin-dash-title">Устройства</div>
+            </div>
+            <div class="text-xl font-extrabold text-white" id="adminDashDevicesTotal">0</div>
+            <div class="text-[11px] text-muted-gray">всего</div>
+          </div>
+        </div>
+
+        <button id="adminDashRefreshBtn" class="ios-active border border-primary text-primary font-bold px-4 py-2 rounded-xl w-full">Обновить дашборд</button>
+      </div>
+
+      <div data-admin-pane="users" class="hidden space-y-3">
+        <div class="flex items-center gap-2">
+          <select id="adminUsersSelect" class="flex-1 rounded-xl bg-card-dark border border-primary text-white px-3 py-2"></select>
+          <button id="adminUsersRefreshBtn" class="ios-active border border-primary text-primary font-bold px-2.5 py-2 rounded-xl text-xs leading-none" title="Обновить пользователей">
+            <span class="material-symbols-outlined text-base">refresh</span>
+          </button>
+        </div>
+        <div id="adminUserMetaCard" class="rounded-xl border border-primary/40 bg-card-dark px-3 py-3">
+          <div class="admin-user-meta-grid">
+            <div class="admin-user-meta-left">
+              <div id="adminUserTierBadge" class="admin-user-tier-badge">R</div>
+              <div id="adminUserName" class="text-white text-sm font-semibold mt-2">Выбери пользователя</div>
+              <div id="adminUserIdLine" class="text-xs text-muted-gray mt-1">ID: —</div>
+            </div>
+            <div class="admin-user-meta-right">
+              <div class="admin-user-stat"><span>📅</span><span id="adminUserDaysLeft">—</span></div>
+              <div class="admin-user-stat"><span>👥</span><span id="adminUserInviter">—</span></div>
+              <div class="admin-user-stat"><span>📈</span><span id="adminUserTraffic">—</span></div>
+              <div class="admin-user-stat"><span>📱</span><span id="adminUserDevicesRatio">—</span></div>
+              <div class="admin-user-stat"><span>🧾</span><span id="adminUserStatusLine">—</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-xl border border-primary/40 bg-card-dark px-3 py-3">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="text-white text-sm font-semibold">Ключи пользователя</div>
+            <div id="adminUserLimitBadge" class="admin-user-limit-badge">—</div>
+          </div>
+          <div id="adminUserKeysList" class="space-y-2 text-sm text-muted-gray">
+            <div class="rounded-xl border border-white/10 bg-black/30 px-3 py-2">Выбери пользователя, чтобы загрузить ключи.</div>
+          </div>
+        </div>
+        <div class="rounded-xl border border-white/10 bg-black/20 p-2.5 space-y-2">
+          <div class="text-xs text-muted-gray uppercase tracking-wide">Уровень доступа</div>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="adminUserTierRegularBtn" class="ios-active admin-tier-btn admin-tier-regular rounded-xl text-xs">Regular</button>
+            <button id="adminUserTierOwnBtn" class="ios-active admin-tier-btn admin-tier-own rounded-xl text-xs">Own</button>
+            <button id="adminUserTierVipBtn" class="ios-active admin-tier-btn admin-tier-vip rounded-xl text-xs">VIP</button>
+          </div>
+        </div>
+        <div class="rounded-xl border border-sky-400/30 bg-sky-500/5 p-2.5 space-y-2">
+          <div class="text-xs text-sky-200/90 uppercase tracking-wide">Подписка</div>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="adminUserExtendBtn" class="ios-active admin-sub-btn rounded-xl text-xs">+ Дни</button>
+            <button id="adminUserUnlimitedBtn" class="ios-active admin-sub-btn rounded-xl text-xs">♾️ Без срока</button>
+            <button id="adminUserResetSubBtn" class="ios-active admin-sub-btn admin-sub-btn-reset rounded-xl text-xs">❌ Сбросить</button>
+          </div>
+        </div>
+        <div class="rounded-xl border border-accent-red/40 bg-red-500/5 p-2.5 space-y-2">
+          <div class="text-xs text-red-300 uppercase tracking-wide">Терминал наказаний</div>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="adminUserBanBtn" class="ios-active admin-mod-btn admin-mod-btn-danger rounded-xl text-xs">🚫 Бан</button>
+            <button id="adminUserUnbanBtn" class="ios-active admin-mod-btn rounded-xl text-xs">🔓 Разбан</button>
+            <button id="adminUserDeleteBtn" class="ios-active admin-mod-btn admin-mod-btn-danger rounded-xl text-xs">🗑️ Удалить</button>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <div class="text-sm text-white">Сообщение через бота</div>
+          <textarea id="adminUserMessageInput" rows="3" class="w-full rounded-xl bg-card-dark border border-primary text-white px-3 py-2" placeholder="Текст сообщения пользователю"></textarea>
+          <button id="adminUserMessageBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl w-full">Отправить через бота</button>
+        </div>
+      </div>
+
+      <div data-admin-pane="devices" class="hidden space-y-3">
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <div class="admin-device-stat-pill">
+            <span class="admin-device-stat-dot admin-device-dot-online"></span>
+            <span class="text-white/70">Online:</span>
+            <span id="adminClientsOnlineCount" class="text-white font-semibold">0</span>
+          </div>
+          <div class="admin-device-stat-pill">
+            <span class="admin-device-stat-dot admin-device-dot-offline"></span>
+            <span class="text-white/70">Offline:</span>
+            <span id="adminClientsOfflineCount" class="text-white font-semibold">0</span>
+          </div>
+          <div class="admin-device-stat-pill">
+            <span class="admin-device-stat-dot admin-device-dot-disabled"></span>
+            <span class="text-white/70">Disabled:</span>
+            <span id="adminClientsDisabledCount" class="text-white font-semibold">0</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="adminClientsSearchInput" class="flex-1 rounded-xl bg-card-dark border border-primary text-white px-3 py-2 text-sm" placeholder="Поиск: TG ID или Label" />
+          <button id="adminClientsRefreshBtn" class="ios-active border border-primary text-primary font-bold px-2.5 py-2 rounded-xl text-xs leading-none" title="Обновить устройства">
+            <span class="material-symbols-outlined text-base">refresh</span>
+          </button>
+        </div>
+        <div id="adminClientsList" class="space-y-2 text-sm text-muted-gray">
+          <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2">Загрузка...</div>
+        </div>
+      </div>
+
+      <div data-admin-pane="payment" class="hidden space-y-3">
+        <div class="admin-pay-preview-card">
+          <div class="admin-pay-preview-head">
+            <span class="material-symbols-outlined text-primary text-base">credit_card</span>
+            <span class="text-white text-sm font-semibold">Как увидит пользователь</span>
+          </div>
+          <div class="admin-pay-preview-row">
+            <span class="admin-pay-preview-label">🏦 Банк</span>
+            <span id="adminPayPreviewBank" class="admin-pay-preview-value">—</span>
+          </div>
+          <div class="admin-pay-preview-row">
+            <span class="admin-pay-preview-label">📞 Телефон</span>
+            <span id="adminPayPreviewPhone" class="admin-pay-preview-value">—</span>
+          </div>
+          <div class="admin-pay-preview-row">
+            <span class="admin-pay-preview-label">👤 Получатель</span>
+            <span id="adminPayPreviewRecipient" class="admin-pay-preview-value">—</span>
+          </div>
+        </div>
+
+        <div class="admin-pay-editor-card">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="text-white text-sm font-semibold">Редактирование реквизитов</div>
+            <button id="adminPayLoadBtn" class="ios-active border border-primary text-primary rounded-lg px-2 py-1.5 leading-none" title="Загрузить текущие реквизиты">
+              <span class="material-symbols-outlined text-base">refresh</span>
+            </button>
+          </div>
+
+          <label class="admin-pay-field">
+            <span class="admin-pay-field-label">📞 Телефон (SBP)</span>
+            <input id="adminPayPhone" class="admin-pay-input" inputmode="numeric" autocomplete="off" placeholder="+7 (___) ___-__-__" />
+          </label>
+
+          <label class="admin-pay-field">
+            <span class="admin-pay-field-label">🏦 Банк</span>
+            <input id="adminPayBank" class="admin-pay-input" autocomplete="off" placeholder="Например: Т-Банк" />
+          </label>
+
+          <label class="admin-pay-field">
+            <span class="admin-pay-field-label">👤 Получатель</span>
+            <input id="adminPayRecipient" class="admin-pay-input" autocomplete="off" placeholder="Имя или ФИО" />
+          </label>
+
+          <button id="adminPaySaveBtn" class="ios-active admin-pay-save-btn mt-2">Сохранить реквизиты</button>
+        </div>
+
+        <div class="admin-pay-history-card">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="text-white text-sm font-semibold">История изменений реквизитов</div>
+            <button id="adminPayHistoryRefreshBtn" class="ios-active border border-primary text-primary rounded-lg px-2 py-1.5 leading-none" title="Обновить историю">
+              <span class="material-symbols-outlined text-base">refresh</span>
+            </button>
+          </div>
+          <div id="adminPayHistoryList" class="space-y-2 text-xs text-muted-gray">
+            <div class="rounded-xl border border-white/10 bg-black/30 px-3 py-2">История пока не загружена.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div data-admin-pane="partner" class="hidden space-y-3">
+        <div class="admin-partner-card">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="text-white text-sm font-semibold">Партнерская ссылка</div>
+            <div class="flex items-center gap-2">
+              <button id="adminPartnerSaveBtn" class="ios-active border border-white/20 text-white rounded-lg px-2 py-1.5 leading-none" title="Сохранить в пресеты">
+                <span class="material-symbols-outlined text-base">bookmark_add</span>
+              </button>
+              <button id="adminPartnerRefreshBtn" class="ios-active border border-primary text-primary rounded-lg px-2 py-1.5 leading-none" title="Обновить статистику">
+                <span class="material-symbols-outlined text-base">refresh</span>
+              </button>
+            </div>
+          </div>
+          <div class="text-xs text-muted-gray mb-3">Создай или получи текущую ссылку для доверенного партнера. Первые 20 человек проходят автоматически, дальше - ручное решение.</div>
+
+          <div class="grid grid-cols-1 gap-2">
+            <label class="admin-pay-field">
+              <span class="admin-pay-field-label">TG ID партнера</span>
+              <input id="adminPartnerTgId" class="admin-pay-input" inputmode="numeric" autocomplete="off" placeholder="Например: 747212726" />
+            </label>
+
+            <label class="admin-pay-field">
+              <span class="admin-pay-field-label">Партнерская метка</span>
+              <input id="adminPartnerCode" class="admin-pay-input" autocomplete="off" placeholder="Например: kkkkk8kkkkk" />
+            </label>
+          </div>
+
+          <div class="text-xs text-muted-gray mt-3 mb-2">Сохраненные партнеры</div>
+          <div id="adminPartnerPresetsList" class="flex flex-wrap gap-2">
+            <div class="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-muted-gray">Пока нет сохраненных партнеров.</div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <button id="adminPartnerCreateBtn" class="ios-active admin-pay-save-btn">Получить ссылку</button>
+            <button id="adminPartnerRotateBtn" class="ios-active border border-white/20 text-white rounded-xl px-3 py-2 font-semibold">Перевыпустить</button>
+          </div>
+
+          <div class="text-xs text-muted-gray mt-3 mb-1">Текущая ссылка</div>
+          <div id="adminPartnerLink" class="admin-partner-link">Ссылка еще не создана.</div>
+          <button id="adminPartnerCopyBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm w-full mt-2">Скопировать ссылку</button>
+
+          <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
+            <div class="admin-partner-stat">Всего: <span id="adminPartnerTotal">0</span></div>
+            <div class="admin-partner-stat">Оплатили: <span id="adminPartnerPaid">0</span></div>
+            <div class="admin-partner-stat">Ключ: <span id="adminPartnerKeyIssued">0</span></div>
+            <div class="admin-partner-stat">Трафик: <span id="adminPartnerTrafficStarted">0</span></div>
+            <div class="admin-partner-stat">Авто: <span id="adminPartnerAuto">0</span></div>
+            <div class="admin-partner-stat">Ручные: <span id="adminPartnerManual">0</span></div>
+          </div>
+
+          <div class="text-xs text-muted-gray mt-3 mb-2">Люди по партнерке</div>
+          <div id="adminPartnerUsersList" class="space-y-2 text-xs text-muted-gray">
+            <div class="rounded-xl border border-white/10 bg-black/30 px-3 py-2">Данные пока не загружены.</div>
+          </div>
+        </div>
+      </div>
+
+      <div data-admin-pane="system" class="hidden space-y-3">
+        <div class="admin-system-card">
+          <div class="admin-system-title-wrap">
+            <span class="material-symbols-outlined text-primary">admin_panel_settings</span>
+            <div class="admin-system-title">Роли админки</div>
+          </div>
+          <div class="text-xs text-muted-gray mt-1">Owner задается через ENV. Здесь можно выдавать/снимать роли admin/moderator.</div>
+          <div class="grid grid-cols-[1fr_auto_auto] gap-2 mt-3">
+            <input id="adminRoleTgIdInput" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2 text-sm" inputmode="numeric" placeholder="TG ID" />
+            <select id="adminRoleSelect" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2 text-sm">
+              <option value="admin">admin</option>
+              <option value="moderator">moderator</option>
+            </select>
+            <button id="adminRoleSetBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm">Выдать</button>
+          </div>
+          <button id="adminRoleRefreshBtn" class="ios-active admin-system-safe-btn mt-2">
+            <span class="material-symbols-outlined text-base">refresh</span>
+            <span>Обновить список ролей</span>
+          </button>
+          <div id="adminRolesList" class="space-y-2 mt-3 text-sm text-muted-gray">
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2">Список ролей пока не загружен.</div>
+          </div>
+        </div>
+
+        <div class="admin-system-card">
+          <div class="admin-system-title-wrap">
+            <span class="material-symbols-outlined text-primary">database</span>
+            <div class="admin-system-title">Бэкап базы</div>
+          </div>
+          <div class="text-xs text-muted-gray mt-1">Скачать актуальный backup для восстановления при сбое.</div>
+          <button id="adminSystemBackupBtn" class="ios-active admin-system-safe-btn mt-3">
+            <span class="material-symbols-outlined text-base">download</span>
+            <span>Скачать backup</span>
+          </button>
+        </div>
+
+        <div class="admin-system-card admin-system-card-danger">
+          <div class="admin-system-title-wrap">
+            <span class="material-symbols-outlined text-accent-red">restart_alt</span>
+            <div class="admin-system-title">Сервис Xray</div>
+          </div>
+          <div class="text-xs text-muted-gray mt-1">Перезапуск применяет изменения, но временно может оборвать сессии.</div>
+          <button id="adminSystemRestartBtn" class="ios-active admin-system-danger-btn mt-3">
+            <span class="material-symbols-outlined text-base">power_settings_new</span>
+            <span>Перезапустить Xray</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="adminStatusText" class="text-muted-gray text-sm mt-4">Админка готова к работе.</div>
+    </section>
+
+    <section id="screen-ref" class="screen">
+      <h2 class="text-2xl font-bold mb-2">Пригласить в клуб</h2>
+      <div class="text-muted-gray text-sm mb-4">Позови друга и получи бонус после его первой оплаты.</div>
+
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <button id="inviteModeDirectBtn" class="ios-active border border-primary bg-primary text-black font-bold px-3 py-2 rounded-xl text-sm">
+          Прямой
+        </button>
+        <button id="inviteModeBridgeBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm">
+          Мост
+        </button>
+        <button id="inviteModeTrackBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm">
+          Рефералка
+        </button>
+      </div>
+
+      <div id="inviteDirectPane" class="space-y-4">
+        <div id="inviteDirectCard" class="border border-primary rounded-2xl p-4">
+          <div class="text-white font-bold mb-1">Прямой доступ</div>
+          <div class="text-muted-gray text-xs mb-3">Для тех, у кого Telegram уже работает. Ссылка ведет сразу в бота.</div>
+          <div id="directInviteLink" class="bg-card-dark rounded-xl border border-primary/40 p-3 break-all text-sm text-muted-gray">
+            t.me/GhostLinkBot?start=&lt;token&gt;
+          </div>
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <button id="directCopyBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm">Скопировать</button>
+            <button id="directShareBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-sm">Поделиться</button>
+          </div>
+          <div id="directStatusText" class="text-muted-gray text-xs mt-3">Загрузка ссылки...</div>
+        </div>
+      </div>
+
+      <div id="inviteBridgePane" class="hidden space-y-4">
+        <div id="inviteBridgeCard" class="border border-primary rounded-2xl p-4">
+          <div class="text-white font-bold mb-1">МОСТ 2.0</div>
+          <div class="text-muted-gray text-xs mb-3">Для человека, у которого Telegram не открывается без VPN. Сначала он ставит VPN-приложение, потом получает подписку моста.</div>
+
+          <div id="bridgeAppsIntro" class="rounded-xl border border-white/10 bg-card-dark p-3 mb-3">
+            <div class="text-white text-sm font-bold mb-1">1. Сначала пусть гость скачает приложение</div>
+            <div class="text-muted-gray text-xs mb-3">Выбери устройство гостя. Мы покажем подходящие приложения. Основной кандидат сейчас — INCY, его отдельно тестируем и настроим.</div>
+            <div id="bridgeAppChoiceBtns" class="grid grid-cols-2 gap-2">
+              <button id="bridgeAppsIosBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">iPhone / iPad</button>
+              <button id="bridgeAppsAndroidBtn" class="ios-active border border-primary text-primary font-bold px-3 py-2 rounded-xl text-xs">Android</button>
+            </div>
+            <div id="bridgeIosApps" class="hidden text-xs text-muted-gray space-y-2">
+              <div class="text-primary font-bold">iPhone / iPad</div>
+              <div><b class="text-white">INCY</b> — основной кандидат, тестируем как приложение по умолчанию.</div>
+              <div><b class="text-white">V2Ray / V2Box</b> — если доступно после смены региона Apple ID.</div>
+              <div><b class="text-white">Happ</b> — если доступно после смены региона Apple ID.</div>
+              <div><b class="text-white">Karing</b> — работает, но часто требует настройки по инструкции.</div>
+              <button id="bridgeAppsBackIosBtn" class="ios-active border border-white/20 text-white/80 font-bold px-3 py-2 rounded-xl text-xs">Выбрать другое устройство</button>
+            </div>
+            <div id="bridgeAndroidApps" class="hidden text-xs text-muted-gray space-y-2">
+              <div class="text-primary font-bold">Android</div>
+              <div><b class="text-white">INCY</b> — основной кандидат, тестируем как приложение по умолчанию.</div>
+              <div><b class="text-white">v2rayNG / V2Ray</b> — простой импорт VLESS/подписки.</div>
+              <div><b class="text-white">Happ</b> — запасной вариант.</div>
+              <div><b class="text-white">Karing</b> — работает, но часто требует настройки по инструкции.</div>
+              <button id="bridgeAppsBackAndroidBtn" class="ios-active border border-white/20 text-white/80 font-bold px-3 py-2 rounded-xl text-xs">Выбрать другое устройство</button>
+            </div>
+          </div>
+
+          <div class="text-white text-sm font-bold mb-2">2. Потом создай подписку моста</div>
+          <button id="bridgeCreateBtn" class="ios-active bg-primary text-black font-bold px-4 py-3 rounded-xl w-full mb-3">
+            Создать мост 2.0
+          </button>
+          <div class="text-muted-gray text-xs mb-1">Подписка моста</div>
+          <div id="bridgeInviteLink" class="bg-card-dark rounded-xl border border-primary/40 p-3 break-all text-sm text-muted-gray">
+            https://api.112prd.ru/s/&lt;bridge-subscription&gt;
+          </div>
+          <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <div class="text-muted-gray text-xs mb-1 text-center">1. QR подписки</div>
+              <div id="bridgeQrStub" class="w-44 h-44 mx-auto rounded-xl border border-primary/40 bg-card-dark text-muted-gray text-xs flex items-center justify-center text-center px-3">
+                QR появится после создания
+              </div>
+            </div>
+            <div>
+              <div class="text-muted-gray text-xs mb-1 text-center">2. QR Telegram-бота</div>
+              <div id="bridgeBotQrStub" class="w-44 h-44 mx-auto rounded-xl border border-primary/40 bg-card-dark text-muted-gray text-xs flex items-center justify-center text-center px-3">
+                QR появится после создания
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">До входа в бота: ограниченный срок</div>
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">После входа: закрепляется за гостем</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-3">
+            <button id="bridgeCopyBtn" class="ios-active border border-primary text-primary font-bold px-2 py-2 rounded-xl text-xs">Скопировать подписку</button>
+            <button id="bridgeRefreshQrBtn" class="ios-active border border-primary text-primary font-bold px-2 py-2 rounded-xl text-xs">Обновить подписку</button>
+            <button id="bridgeRevokeBtn" class="ios-active border border-accent-red text-accent-red font-bold px-2 py-2 rounded-xl text-xs">Отозвать</button>
+          </div>
+          <div id="bridgeStatusText" class="text-muted-gray text-xs mt-3">Нажми «Создать мост 2.0», чтобы выдать подписку и QR.</div>
+        </div>
+
+        <div class="border border-primary rounded-2xl p-4">
+          <div class="text-white font-bold mb-2">Что происходит сейчас</div>
+          <div id="inviteTimeline" class="space-y-2 text-sm">
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">1. Мост создан</div>
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">2. Гость получил подписку</div>
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">3. Включил VPN и вошел в Telegram</div>
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">4. Подписка закреплена за гостем</div>
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">5. Профиль активирован, бонус зачислен</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="inviteTrackingPane" class="hidden space-y-4">
+        <div class="border border-primary rounded-2xl p-4">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <div class="text-white font-bold">Отслеживание приглашенных</div>
+            <button id="trackingRefreshBtn" class="ios-active border border-primary text-primary font-bold px-3 py-1.5 rounded-xl text-xs">Обновить отчет</button>
+          </div>
+          <div class="text-muted-gray text-xs mb-3">Бонус начисляется только после первой успешной оплаты приглашенного пользователя.</div>
+          <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">Приглашено: <span id="trackingTotalCount">0</span></div>
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2 text-muted-gray">Оплатили: <span id="trackingPaidCount">0</span></div>
+          </div>
+          <div id="trackingInfoText" class="text-muted-gray text-xs mb-2">Открой вкладку для обновления отчета.</div>
+          <div id="inviteTrackingList" class="space-y-2 text-sm text-muted-gray">
+            <div class="rounded-xl border border-white/10 bg-card-dark px-3 py-2">Пока нет приглашенных пользователей</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="onboardingModal" class="onboarding-modal hidden" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+    <div id="onboardingSpotlight" class="onboarding-spotlight hidden" aria-hidden="true"></div>
+    <div class="onboarding-card">
+      <div class="onboarding-step" id="onboardingStep">Шаг 1 из 5</div>
+      <h3 id="onboardingTitle" class="onboarding-title">Добро пожаловать в GhostLink</h3>
+      <p id="onboardingText" class="onboarding-text">Здесь короткая карта навигации по mini app.</p>
+      <div class="onboarding-dots" id="onboardingDots" aria-hidden="true"></div>
+      <div class="onboarding-actions">
+        <button id="onboardingSkipBtn" class="ios-active onboarding-btn muted">Пропустить</button>
+        <button id="onboardingPrevBtn" class="ios-active onboarding-btn muted">Назад</button>
+        <button id="onboardingNextBtn" class="ios-active onboarding-btn primary">Дальше</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js?v=20260706-admin-auth-fix-2"></script>
+</body>
+</html>
