@@ -43,6 +43,34 @@ function applySubStatus(ref, active) {
   ref.classList.add("text-accent-red");
 }
 
+function applyHomeLoadError(refs, error) {
+  const status = Number(error?.status || 0);
+
+  if (refs.expiryValue) {
+    refs.expiryValue.textContent = "Данные не загрузились";
+  }
+
+  if (refs.subStatus) {
+    refs.subStatus.textContent =
+      status === 401
+        ? "Сессия не подтверждена"
+        : status === 403
+          ? "Доступ не подтвержден"
+          : "Статус временно недоступен";
+    refs.subStatus.classList.remove("text-primary");
+    refs.subStatus.classList.add("text-accent-red");
+  }
+
+  if (refs.currentTariffLabel) {
+    refs.currentTariffLabel.textContent =
+      status === 401
+        ? "Текущий тариф: открой Mini App заново"
+        : "Текущий тариф: данные временно недоступны";
+  }
+
+  refs.clubBadgeLabel?.classList.add("hidden");
+}
+
 function isClubTier(tier) {
   const value = String(tier || "").toLowerCase();
   return value === "own" || value === "vip";
@@ -135,14 +163,11 @@ function createHomeModule(auth) {
       if (refs.homeAdminBtn && (auth.isAdmin || Boolean(data?.user?.is_admin) || ADMIN_PREVIEW_MODE)) {
         refs.homeAdminBtn.classList.remove("hidden");
       }
-    } catch (_) {
+    } catch (error) {
       if (refs.homeAdminBtn && (auth.isAdmin || ADMIN_PREVIEW_MODE)) {
         refs.homeAdminBtn.classList.remove("hidden");
       }
-      applySubStatus(refs.subStatus, false);
-      if (refs.currentTariffLabel) {
-        refs.currentTariffLabel.textContent = "Текущий тариф: недоступно (открой Mini App внутри Telegram)";
-      }
+      applyHomeLoadError(refs, error);
     }
   }
 
@@ -372,7 +397,7 @@ async function bootstrap() {
   if (!auth.tg || !auth.initData) {
     const lockedReason = document.getElementById("lockedReasonText");
     if (lockedReason) {
-      lockedReason.textContent = "Открой Mini App внутри Telegram, а не в обычном браузере. На Mac без Telegram initData API не сможет авторизовать тебя.";
+      lockedReason.textContent = "Не удалось подтвердить сессию Telegram. Закрой и заново открой Mini App.";
     }
     router.show("screen-locked");
     return;
