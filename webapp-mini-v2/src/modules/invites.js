@@ -1,4 +1,4 @@
-﻿import { apiFetch } from "../api/client.js?v=20260706-admin-auth-fix-2";
+﻿import { apiFetch } from "../api/client.js?v=20260710-miniapp-unified-1";
 
 const DIRECT_PLACEHOLDER = "t.me/GhostLinkBot?start=<token>";
 const BRIDGE_PLACEHOLDER = "https://api.112prd.ru/s/<bridge-subscription>";

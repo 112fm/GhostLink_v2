@@ -1,10 +1,10 @@
-import { createScreenRouter } from "./ui/screens.js?v=20260709-miniapp-cachefix-1";
-import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260710-standard-api-1";
-import { bootstrapAuthContext } from "./modules/auth.js?v=20260709-miniapp-cachefix-1";
-import { createInviteModule } from "./modules/invites.js?v=20260709-miniapp-cachefix-1";
-import { createPaymentsModule } from "./modules/payments.js?v=20260709-miniapp-cachefix-1";
-import { createDevicesModule } from "./modules/devices.js?v=20260709-miniapp-cachefix-1";
-import { createAdminModule } from "./modules/admin.js?v=20260709-miniapp-cachefix-1";
+import { createScreenRouter } from "./ui/screens.js?v=20260710-miniapp-unified-1";
+import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260710-miniapp-unified-1";
+import { bootstrapAuthContext } from "./modules/auth.js?v=20260710-miniapp-unified-1";
+import { createInviteModule } from "./modules/invites.js?v=20260710-miniapp-unified-1";
+import { createPaymentsModule } from "./modules/payments.js?v=20260710-miniapp-unified-1";
+import { createDevicesModule } from "./modules/devices.js?v=20260710-miniapp-unified-1";
+import { createAdminModule } from "./modules/admin.js?v=20260710-miniapp-unified-1";
 
 const ADMIN_PREVIEW_MODE = false;
 const APP_BUILD_VERSION = "2.0.0";
