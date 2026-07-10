@@ -69,12 +69,11 @@ export async function apiFetch(path, options = {}) {
   }
 
   const method = String(options.method || "GET").toUpperCase();
-  const credentials = pwaToken ? "include" : "omit";
   const response = await fetch(buildApiUrl(path), {
     ...options,
     method,
     cache: "no-store",
-    credentials,
+    credentials: "include",
     headers: buildHeaders(options.headers || {}, { ...options, method }),
   });
 
