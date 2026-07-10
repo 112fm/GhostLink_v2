@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE = "https://api.112prd.ru:2053";
+const DEFAULT_API_BASE = "https://api.112prd.ru";
 
 let apiBase = DEFAULT_API_BASE;
 let telegramInitData = "";
