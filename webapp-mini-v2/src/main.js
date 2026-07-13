@@ -1,10 +1,10 @@
-import { createScreenRouter } from "./ui/screens.js?v=20260710-miniapp-unified-1";
-import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260710-miniapp-unified-1";
-import { bootstrapAuthContext } from "./modules/auth.js?v=20260710-miniapp-unified-1";
-import { createInviteModule } from "./modules/invites.js?v=20260710-miniapp-unified-1";
-import { createPaymentsModule } from "./modules/payments.js?v=20260710-miniapp-unified-1";
-import { createDevicesModule } from "./modules/devices.js?v=20260710-miniapp-unified-1";
-import { createAdminModule } from "./modules/admin.js?v=20260710-miniapp-unified-1";
+import { createScreenRouter } from "./ui/screens.js?v=20260713-miniapp-stable-1";
+import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260713-miniapp-stable-1";
+import { bootstrapAuthContext } from "./modules/auth.js?v=20260713-miniapp-stable-1";
+import { createInviteModule } from "./modules/invites.js?v=20260713-miniapp-stable-1";
+import { createPaymentsModule } from "./modules/payments.js?v=20260713-miniapp-stable-1";
+import { createDevicesModule } from "./modules/devices.js?v=20260713-miniapp-stable-1";
+import { createAdminModule } from "./modules/admin.js?v=20260713-miniapp-stable-1";
 
 const ADMIN_PREVIEW_MODE = false;
 const APP_BUILD_VERSION = "2.0.0";
@@ -112,8 +112,8 @@ async function checkAppVersion() {
       minVersion,
       latestVersion,
     };
-  } catch (_) {
-    return { ok: false, outdated: false, minVersion: "", latestVersion: "" };
+  } catch (error) {
+    return { ok: false, outdated: false, minVersion: "", latestVersion: "", error };
   }
 }
 
@@ -131,6 +131,55 @@ function showUpdateScreen(router, versionState) {
     };
   }
   router.show("screen-update");
+}
+
+function getErrorScreenType(error) {
+  if (error === "not-found") return "not-found";
+  if (error?.maintenance || Number(error?.status || 0) === 503) return "maintenance";
+
+  const status = Number(error?.status || 0);
+  if (status === 0 || status >= 500) return "unavailable";
+  return "";
+}
+
+function showAppError(router, error) {
+  const type = getErrorScreenType(error);
+  if (!type) return false;
+
+  const content = {
+    "not-found": {
+      code: "404",
+      title: "Страница не найдена",
+      text: "Похоже, этот экран потерялся. Вернись назад и попробуй ещё раз.",
+      image: "./assets/mascot/error-404-detective.png?v=20260713-miniapp-stable-1",
+    },
+    unavailable: {
+      code: "OFFLINE",
+      title: "Сервис временно недоступен",
+      text: "Не удалось связаться с GhostLink. Попробуй повторить через несколько секунд.",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260713-miniapp-stable-1",
+    },
+    maintenance: {
+      code: "MAINTENANCE",
+      title: "Ведутся технические работы",
+      text: "Мы уже чиним связь. Попробуй обновить Mini App немного позже.",
+      image: "./assets/mascot/error-maintenance-helmet.png?v=20260713-miniapp-stable-1",
+    },
+  }[type];
+
+  const image = document.getElementById("errorStateImage");
+  const code = document.getElementById("errorStateCode");
+  const title = document.getElementById("errorStateTitle");
+  const text = document.getElementById("errorStateText");
+  if (image) {
+    image.src = content.image;
+    image.alt = content.title;
+  }
+  if (code) code.textContent = content.code;
+  if (title) title.textContent = content.title;
+  if (text) text.textContent = content.text;
+  router.show("screen-error");
+  return true;
 }
 
 function createHomeModule(auth) {
@@ -164,6 +213,7 @@ function createHomeModule(auth) {
         refs.homeAdminBtn.classList.remove("hidden");
       }
     } catch (error) {
+      if (showAppError(router, error)) return;
       if (refs.homeAdminBtn && (auth.isAdmin || ADMIN_PREVIEW_MODE)) {
         refs.homeAdminBtn.classList.remove("hidden");
       }
@@ -195,6 +245,11 @@ const router = createScreenRouter({
   backBtn,
   helpBtn,
   homeId: "screen-home",
+  fallbackId: "screen-error",
+});
+
+document.getElementById("errorRetryBtn")?.addEventListener("click", () => {
+  window.location.reload();
 });
 
 const payments = createPaymentsModule({
@@ -406,6 +461,7 @@ async function bootstrap() {
   try {
     await establishMiniAppSession(auth.initData);
   } catch (error) {
+    if (showAppError(router, error)) return;
     const lockedReason = document.getElementById("lockedReasonText");
     if (lockedReason && Number(error?.status || 0) === 401) {
       lockedReason.textContent = "Не удалось подтвердить Telegram-сессию. Закрой и заново открой Mini App.";
@@ -413,6 +469,7 @@ async function bootstrap() {
   }
 
   const versionState = await checkAppVersion();
+  if (!versionState.ok && showAppError(router, versionState.error)) return;
   if (versionState.outdated) {
     const reloaded = window.sessionStorage.getItem(VERSION_RELOAD_KEY) === "1";
     if (!reloaded) {

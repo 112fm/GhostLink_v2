@@ -1,4 +1,4 @@
-﻿import { apiFetch } from "../api/client.js?v=20260710-miniapp-unified-1";
+import { apiFetch } from "../api/client.js?v=20260713-miniapp-stable-1";
 
 const DIRECT_PLACEHOLDER = "t.me/GhostLinkBot?start=<token>";
 const BRIDGE_PLACEHOLDER = "https://api.112prd.ru/s/<bridge-subscription>";
@@ -46,6 +46,8 @@ function mapApiError(error) {
   if (status === 410 && detail === "invite_revoked") return "Мост отозван.";
   if (status === 404 && detail === "invite_not_found") return "Мост не найден.";
   if (status === 400 && detail === "bad_params") return "Некорректные параметры запроса.";
+  if (detail === "panel_error") return "Ошибка VPN панели. Попробуй еще раз.";
+  if (detail.startsWith("panel_error:")) return detail;
   return "Ошибка сети. Попробуй еще раз.";
 }
 

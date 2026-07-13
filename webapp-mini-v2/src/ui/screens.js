@@ -3,6 +3,7 @@ export function createScreenRouter(options = {}) {
   const backBtn = options.backBtn || null;
   const helpBtn = options.helpBtn || null;
   const homeId = options.homeId || "screen-home";
+  const fallbackId = options.fallbackId || "";
 
   const stack = [homeId];
 
@@ -17,10 +18,10 @@ export function createScreenRouter(options = {}) {
 
   function show(id) {
     screens.forEach((screen) => screen.classList.remove("active"));
-    const target = document.getElementById(id);
+    const target = document.getElementById(id) || document.getElementById(fallbackId);
     if (target) {
       target.classList.add("active");
-      setControlsState(id);
+      setControlsState(target.id);
     }
   }
 

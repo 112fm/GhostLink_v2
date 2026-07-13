@@ -1,4 +1,4 @@
-﻿import { apiFetch } from "../api/client.js?v=20260710-miniapp-unified-1";
+import { apiFetch } from "../api/client.js?v=20260713-miniapp-stable-1";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;
@@ -15,6 +15,7 @@ function mapApiError(error) {
   if (detail === "access_closed") return "Доступ закрыт. Поддержи проект, чтобы активировать ключи.";
   if (detail === "bad_id") return "Некорректный ID устройства.";
   if (detail === "panel_error") return "Ошибка VPN панели. Попробуй еще раз.";
+  if (detail.startsWith("panel_error:")) return detail;
   if (detail.startsWith("panel_add_failed:")) return "Панель не смогла добавить устройство. Попробуй еще раз.";
   if (status === 401) return "Сессия истекла. Открой mini app заново из Telegram.";
   if (status === 403) return "Нет доступа к этому действию.";

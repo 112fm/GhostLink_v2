@@ -60,6 +60,12 @@ function normalizeApiError(response, data) {
   const err = new Error(message);
   err.status = response.status;
   err.data = data || {};
+  err.code = data?.code || data?.error_code || "";
+  err.maintenance =
+    response.status === 503 ||
+    data?.maintenance === true ||
+    err.code === "maintenance" ||
+    data?.error === "maintenance";
   return err;
 }
 

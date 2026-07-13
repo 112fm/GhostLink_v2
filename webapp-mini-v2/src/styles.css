@@ -40,6 +40,57 @@ button,
   display: block;
 }
 
+.error-state {
+  min-height: calc(100dvh - 2rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0 2rem;
+  text-align: center;
+}
+
+.error-state-image {
+  width: min(100%, 360px);
+  max-height: 52dvh;
+  object-fit: contain;
+  border-radius: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.error-state-code {
+  color: #b8ff00;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.error-state-title {
+  margin: 0.35rem 0 0;
+  color: #fff;
+  font-size: 1.45rem;
+  font-weight: 800;
+}
+
+.error-state-text {
+  max-width: 25rem;
+  margin: 0.65rem 0 1.25rem;
+  color: #999;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.error-state-button {
+  min-width: 10rem;
+  border: 1px solid #b8ff00;
+  border-radius: 0.9rem;
+  padding: 0.75rem 1rem;
+  color: #111;
+  background: #b8ff00;
+  font-weight: 800;
+}
+
 .period-toggle-btn {
   border: 1px solid rgba(184, 255, 0, 0.65);
   color: #b8ff00;
