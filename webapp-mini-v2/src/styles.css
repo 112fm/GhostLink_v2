@@ -46,16 +46,28 @@ button,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1rem 0 2rem;
+  padding: 2rem 0 3rem;
   text-align: center;
 }
 
+.error-state-visual {
+  width: clamp(132px, 38vw, 176px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid rgba(184, 255, 0, 0.26);
+  border-radius: 50%;
+  background: radial-gradient(circle, #28320f 0%, #141414 62%, #101010 100%);
+  box-shadow: 0 0 0 8px rgba(184, 255, 0, 0.04), 0 16px 34px rgba(0, 0, 0, 0.34);
+  margin-bottom: 1.35rem;
+}
+
 .error-state-image {
-  width: min(100%, 360px);
-  max-height: 52dvh;
-  object-fit: contain;
-  border-radius: 1.5rem;
-  margin-bottom: 1rem;
+  width: 160%;
+  height: 160%;
+  max-height: none;
+  object-fit: cover;
+  object-position: 50% 43%;
+  transform: translate(-19%, -7%);
 }
 
 .error-state-code {
