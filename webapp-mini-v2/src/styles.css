@@ -40,46 +40,43 @@ button,
   display: block;
 }
 
-.error-state {
-  position: relative;
-  min-height: max(30rem, calc(100dvh - 10rem));
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  overflow: hidden;
-  border: 1px solid rgba(184, 255, 0, 0.2);
-  border-radius: 1.5rem;
-  padding: 1.5rem;
-  background: #101010;
-  isolation: isolate;
+#screen-error.active ~ #appHeader {
+  display: none;
 }
 
-.error-state::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(180deg, rgba(8, 8, 8, 0.05) 0%, rgba(8, 8, 8, 0.18) 36%, rgba(8, 8, 8, 0.92) 74%, #101010 100%),
-    linear-gradient(90deg, rgba(8, 8, 8, 0.36), transparent 48%, rgba(8, 8, 8, 0.36));
+.error-state {
+  min-height: calc(100dvh - 2rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.25rem 0 1.5rem;
+  text-align: center;
+  background: #1e1e1e;
+}
+
+.error-state-art {
+  width: min(100%, 25rem);
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px solid rgba(184, 255, 0, 0.25);
+  border-radius: 1.5rem;
+  background: #101010;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
 }
 
 .error-state-image {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
-  object-position: 50% 40%;
+  object-position: 50% 50%;
   filter: saturate(1.05) contrast(1.03);
 }
 
 .error-state-content {
-  position: relative;
-  z-index: 1;
-  max-width: 28rem;
-  text-align: left;
+  width: min(100%, 25rem);
+  padding: 0 0.5rem;
 }
 
 .error-state-code {
@@ -100,8 +97,8 @@ button,
 }
 
 .error-state-text {
-  max-width: 20rem;
-  margin: 0.8rem 0 1.35rem;
+  max-width: 22rem;
+  margin: 0.8rem auto 1.35rem;
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.95rem;
   line-height: 1.45;
