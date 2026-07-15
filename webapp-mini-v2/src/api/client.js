@@ -1,6 +1,7 @@
 const DEFAULT_API_BASE = "https://api.112prd.ru";
 const PROGRESSIVE_TIMEOUTS = [3000, 10000, 30000];
 const MAX_TIMEOUT = 30000;
+const WRITE_TIMEOUTS = [MAX_TIMEOUT];
 const READ_RETRIES = 2;
 const SESSION_RETRIES = 2;
 const RETRY_DELAY_MS = 250;
@@ -13,12 +14,12 @@ function wait(ms) {
   return new Promise((resolve) => globalThis.setTimeout(resolve, ms));
 }
 
-async function fetchWithTimeout(url, options = {}, retries = 0) {
+async function fetchWithTimeout(url, options = {}, retries = 0, timeoutPlan = PROGRESSIVE_TIMEOUTS) {
   let lastError;
 
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     const controller = new AbortController();
-    const currentTimeout = PROGRESSIVE_TIMEOUTS[attempt] || MAX_TIMEOUT;
+    const currentTimeout = timeoutPlan[attempt] || timeoutPlan[timeoutPlan.length - 1] || MAX_TIMEOUT;
     const timeoutId = globalThis.setTimeout(() => controller.abort(), currentTimeout);
 
     try {
@@ -104,13 +105,14 @@ export async function apiFetch(path, options = {}) {
   }
 
   const method = String(options.method || "GET").toUpperCase();
+  const isRead = method === "GET" || method === "HEAD";
   const response = await fetchWithTimeout(buildApiUrl(path), {
     ...options,
     method,
     cache: "no-store",
     credentials: "include",
     headers: buildHeaders(options.headers || {}, { ...options, method }),
-  }, method === "GET" || method === "HEAD" ? READ_RETRIES : 0);
+  }, isRead ? READ_RETRIES : 0, isRead ? PROGRESSIVE_TIMEOUTS : WRITE_TIMEOUTS);
 
   const timeoutPromise = wait(MAX_TIMEOUT).then(() => {
     throw new Error("Timeout while reading response body");

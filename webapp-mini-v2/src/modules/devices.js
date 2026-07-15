@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-18";
+import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-19";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;
@@ -32,6 +32,13 @@ function shortUuid(value) {
   if (!raw) return "—";
   if (raw.length <= 12) return raw;
   return `${raw.slice(0, 8)}...${raw.slice(-4)}`;
+}
+
+function isIndeterminateTransportError(error) {
+  if (Number(error?.status || 0) > 0) return false;
+  const name = String(error?.name || "").toLowerCase();
+  const message = String(error?.message || "").toLowerCase();
+  return name === "aborterror" || name === "typeerror" || message.includes("failed to fetch") || message.includes("timeout");
 }
 
 function deviceTitle(item, index) {
@@ -239,6 +246,7 @@ export function createDevicesModule() {
       device_type: String(refs.type?.value || "other"),
       device_name: String(refs.name?.value || "").trim(),
     };
+    const knownUuids = new Set(state.items.map((item) => String(item?.uuid || "").trim()).filter(Boolean));
 
     setBusy(true);
     setStatus(refs.status, "Добавляю устройство...");
@@ -260,6 +268,18 @@ export function createDevicesModule() {
       showAddForm(false);
       setStatus(refs.status, "Устройство добавлено.");
     } catch (error) {
+      if (isIndeterminateTransportError(error)) {
+        setStatus(refs.status, "Ответ не получен. Проверяю, создалось ли устройство...");
+        const refreshed = await loadList(true);
+        const created = refreshed && state.items.some((item) => !knownUuids.has(String(item?.uuid || "").trim()));
+        if (created) {
+          showAddForm(false);
+          setStatus(refs.status, "Устройство создано.");
+          return;
+        }
+        setStatus(refs.status, "Ответ API не получен. Не создавай устройство повторно: подожди и обнови список.", true);
+        return;
+      }
       setStatus(refs.status, mapApiError(error), true);
       setBusy(false);
     }
@@ -272,6 +292,7 @@ export function createDevicesModule() {
       setStatus(refs.status, "Нет устройства для обновления ключа.", true);
       return;
     }
+    const previousEmail = String(state.items.find((item) => String(item?.uuid || "").trim() === target)?.email || "").trim();
 
     setBusy(true);
     setStatus(refs.status, "Обновляю ключ устройства...");
@@ -289,6 +310,20 @@ export function createDevicesModule() {
       if (!refreshed) return;
       setStatus(refs.status, "Ключ устройства обновлен.");
     } catch (error) {
+      if (isIndeterminateTransportError(error)) {
+        setStatus(refs.status, "Ответ не получен. Проверяю, обновился ли ключ...");
+        const refreshed = await loadList(true);
+        const rotated = refreshed && state.items.some((item) => {
+          const itemUuid = String(item?.uuid || "").trim();
+          return itemUuid && itemUuid !== target && String(item?.email || "").trim() === previousEmail;
+        });
+        if (rotated) {
+          setStatus(refs.status, "Ключ устройства обновлен.");
+          return;
+        }
+        setStatus(refs.status, "Ответ API не получен. Не нажимай обновление повторно: подожди и обнови список.", true);
+        return;
+      }
       setStatus(refs.status, mapApiError(error), true);
       setBusy(false);
     }
@@ -315,6 +350,17 @@ export function createDevicesModule() {
       if (!refreshed) return;
       setStatus(refs.status, "Устройство удалено.");
     } catch (error) {
+      if (isIndeterminateTransportError(error)) {
+        setStatus(refs.status, "Ответ не получен. Проверяю, удалилось ли устройство...");
+        const refreshed = await loadList(true);
+        const removed = refreshed && !state.items.some((item) => String(item?.uuid || "").trim() === target);
+        if (removed) {
+          setStatus(refs.status, "Устройство удалено.");
+          return;
+        }
+        setStatus(refs.status, "Ответ API не получен. Не нажимай удаление повторно: подожди и обнови список.", true);
+        return;
+      }
       setStatus(refs.status, mapApiError(error), true);
       setBusy(false);
     }
