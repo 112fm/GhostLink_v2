@@ -1,5 +1,5 @@
 const DEFAULT_API_BASE = "https://api.112prd.ru";
-const REQUEST_TIMEOUT_MS = 12000;
+const REQUEST_TIMEOUT_MS = 25000;
 const READ_RETRIES = 2;
 const SESSION_RETRIES = 1;
 const RETRY_DELAY_MS = 350;
