@@ -25,7 +25,11 @@ function mapApiError(error) {
   if (detail === "access_closed") return "Доступ закрыт. Напиши в поддержку.";
   if (status === 401) return "Сессия истекла. Открой mini app заново из Telegram.";
   if (status === 403) return "Нет доступа к оплате.";
+  if (status === 404) return "Данные не найдены.";
+  if (status === 409) return "Конфликт или операция уже выполнена.";
   if (status === 429) return "Слишком много запросов. Попробуй позже.";
+  if (detail === "panel_error") return "Ошибка VPN панели. Попробуй еще раз.";
+  if (detail.startsWith("panel_error:")) return detail;
   return "Ошибка сети. Попробуй еще раз.";
 }
 
@@ -62,23 +66,23 @@ function defaultPeriodTariffMap() {
     1: {
       1: { price: 150, min_pay: 100 },
       2: { price: 150, min_pay: 100 },
-      3: { price: 225, min_pay: 150 },
-      4: { price: 300, min_pay: 200 },
-      5: { price: 375, min_pay: 250 },
+      3: { price: 350, min_pay: 200 },
+      4: { price: 450, min_pay: 250 },
+      5: { price: 500, min_pay: 300 },
     },
     2: {
       1: { price: 290, min_pay: 180 },
       2: { price: 290, min_pay: 180 },
-      3: { price: 400, min_pay: 270 },
-      4: { price: 540, min_pay: 360 },
-      5: { price: 670, min_pay: 450 },
+      3: { price: 630, min_pay: 360 },
+      4: { price: 810, min_pay: 450 },
+      5: { price: 900, min_pay: 540 },
     },
     3: {
       1: { price: 430, min_pay: 240 },
       2: { price: 430, min_pay: 240 },
-      3: { price: 540, min_pay: 360 },
-      4: { price: 720, min_pay: 480 },
-      5: { price: 900, min_pay: 600 },
+      3: { price: 840, min_pay: 480 },
+      4: { price: 1080, min_pay: 600 },
+      5: { price: 1200, min_pay: 720 },
     },
   };
 }
@@ -130,9 +134,9 @@ export function createPaymentsModule(options = {}) {
     tariffMap: {
       1: { price: 150, min_pay: 100 },
       2: { price: 150, min_pay: 100 },
-      3: { price: 225, min_pay: 150 },
-      4: { price: 300, min_pay: 200 },
-      5: { price: 375, min_pay: 250 },
+      3: { price: 350, min_pay: 200 },
+      4: { price: 450, min_pay: 250 },
+      5: { price: 500, min_pay: 300 },
     },
     periodTariffMap: defaultPeriodTariffMap(),
     paymentSettings: null,

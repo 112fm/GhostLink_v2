@@ -464,7 +464,11 @@ async function bootstrap() {
     const lockedReason = document.getElementById("lockedReasonText");
     if (lockedReason && Number(error?.status || 0) === 401) {
       lockedReason.textContent = "Не удалось подтвердить Telegram-сессию. Закрой и заново открой Mini App.";
+    } else if (lockedReason) {
+      lockedReason.textContent = error?.message || "Не удалось установить сессию. Закрой и заново открой Mini App.";
     }
+    router.show("screen-locked");
+    return;
   }
 
   const versionState = await checkAppVersion();
