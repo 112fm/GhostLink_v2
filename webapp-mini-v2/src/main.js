@@ -1,10 +1,10 @@
-import { createScreenRouter } from "./ui/screens.js?v=20260715-miniapp-release-25";
-import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260715-miniapp-release-25";
-import { bootstrapAuthContext } from "./modules/auth.js?v=20260715-miniapp-release-25";
-import { createInviteModule } from "./modules/invites.js?v=20260715-miniapp-release-25";
-import { createPaymentsModule } from "./modules/payments.js?v=20260715-miniapp-release-25";
-import { createDevicesModule } from "./modules/devices.js?v=20260715-miniapp-release-25";
-import { createAdminModule } from "./modules/admin.js?v=20260715-miniapp-release-25";
+import { createScreenRouter } from "./ui/screens.js?v=20260715-miniapp-release-26";
+import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260715-miniapp-release-26";
+import { bootstrapAuthContext } from "./modules/auth.js?v=20260715-miniapp-release-26";
+import { createInviteModule } from "./modules/invites.js?v=20260715-miniapp-release-26";
+import { createPaymentsModule } from "./modules/payments.js?v=20260715-miniapp-release-26";
+import { createDevicesModule } from "./modules/devices.js?v=20260715-miniapp-release-26";
+import { createAdminModule } from "./modules/admin.js?v=20260715-miniapp-release-26";
 
 const ADMIN_PREVIEW_MODE = false;
 const APP_BUILD_VERSION = "2.0.0";
@@ -155,25 +155,25 @@ function showAppError(router, error) {
       code: "404",
       title: "Страница не найдена",
       text: "Похоже, этот экран потерялся. Вернись назад и попробуй ещё раз.",
-      image: "./assets/mascot/error-404-detective.png?v=20260715-miniapp-release-25",
+      image: "./assets/mascot/error-404-detective.png?v=20260715-miniapp-release-26",
     },
     unavailable: {
       code: "OFFLINE",
       title: "Сервис временно недоступен",
       text: "Не удалось связаться с GhostLink. Ошибка: " + (error?.message || String(error)) + ". Попробуй повторить через несколько секунд.",
-      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-25",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-26",
     },
     maintenance: {
       code: "MAINTENANCE",
       title: "Ведутся технические работы",
       text: "Мы уже чиним связь. Попробуй обновить Mini App немного позже.",
-      image: "./assets/mascot/error-maintenance-helmet.png?v=20260715-miniapp-release-25",
+      image: "./assets/mascot/error-maintenance-helmet.png?v=20260715-miniapp-release-26",
     },
     forbidden: {
       code: "403",
       title: "Доступ запрещен",
       text: "У тебя нет прав для просмотра этого раздела.",
-      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-25",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-26",
     },
   }[type];
 
