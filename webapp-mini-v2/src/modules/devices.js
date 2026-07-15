@@ -16,7 +16,10 @@ function mapApiError(error) {
   if (detail === "bad_id") return "Некорректный ID устройства.";
   if (detail === "panel_error") return "Ошибка VPN панели. Попробуй еще раз.";
   if (detail.startsWith("panel_error:")) return detail;
-  if (detail.startsWith("panel_add_failed:")) return "Панель не смогла добавить устройство. Попробуй еще раз.";
+  if (detail.startsWith("panel_add_failed:")) {
+    const reason = detail.slice("panel_add_failed:".length).trim();
+    return reason ? `Панель не добавила устройство: ${reason}` : "Панель не смогла добавить устройство. Попробуй еще раз.";
+  }
   if (status === 401) return "Сессия истекла. Открой mini app заново из Telegram.";
   if (status === 403) return "Нет доступа к этому действию.";
   if (status === 404) return "Данные устройства не найдены.";
@@ -77,12 +80,11 @@ export function createDevicesModule() {
     type: document.getElementById("deviceType"),
     name: document.getElementById("deviceName"),
     addBtn: document.getElementById("addDeviceBtn"),
-    updateBtn: document.getElementById("updateDeviceBtn"),
-    resetBtn: document.getElementById("resetDeviceBtn"),
+    refreshBtn: document.getElementById("refreshDevicesBtn"),
     status: document.getElementById("deviceStatusText"),
   };
 
-  if (!refs.list || !refs.addBtn || !refs.resetBtn) {
+  if (!refs.list || !refs.addBtn || !refs.refreshBtn) {
     return { open: async () => {} };
   }
 
@@ -99,8 +101,7 @@ export function createDevicesModule() {
   function setBusy(flag) {
     state.busy = Boolean(flag);
     refs.addBtn.disabled = state.busy;
-    refs.resetBtn.disabled = state.busy;
-    if (refs.updateBtn) refs.updateBtn.disabled = state.busy;
+    refs.refreshBtn.disabled = state.busy;
     if (refs.copyBtn) refs.copyBtn.disabled = state.busy;
   }
 
@@ -147,8 +148,6 @@ export function createDevicesModule() {
 
     state.items.forEach((item, index) => {
       const uuid = String(item?.uuid || "").trim();
-      const isMain = uuid && uuid === state.mainUuid;
-
       const card = document.createElement("div");
       card.className = "rounded-xl border border-primary/40 bg-card-dark px-3 py-3 mb-2";
 
@@ -160,10 +159,8 @@ export function createDevicesModule() {
       title.textContent = deviceTitle(item, index);
 
       const tag = document.createElement("span");
-      tag.className = isMain
-        ? "text-[10px] text-black bg-primary rounded px-2 py-0.5"
-        : "text-[10px] text-muted-gray border border-white/10 rounded px-2 py-0.5";
-      tag.textContent = isMain ? "Основной" : "Устройство";
+      tag.className = "text-[10px] text-muted-gray border border-white/10 rounded px-2 py-0.5";
+      tag.textContent = "Устройство";
 
       top.appendChild(title);
       top.appendChild(tag);
@@ -268,32 +265,6 @@ export function createDevicesModule() {
     }
   }
 
-  async function resetKey() {
-    if (state.busy) return;
-    const yes = window.confirm("Сбросить ключ? Старые ссылки перестанут работать.");
-    if (!yes) return;
-
-    setBusy(true);
-    setStatus(refs.status, "Сбрасываю ключ...");
-
-    try {
-      const data = await apiFetch("/api/device/reset", {
-        method: "POST",
-        body: JSON.stringify({}),
-      });
-
-      const nextLink = String(data?.subscription_url || "").trim();
-      if (nextLink) state.subscriptionUrl = nextLink;
-
-      const refreshed = await loadList(true);
-      if (!refreshed) return;
-      setStatus(refs.status, "Ключ сброшен.");
-    } catch (error) {
-      setStatus(refs.status, mapApiError(error), true);
-      setBusy(false);
-    }
-  }
-
   async function rotateKey(uuid) {
     if (state.busy) return;
     const target = String(uuid || state.mainUuid || state.items[0]?.uuid || "").trim();
@@ -362,8 +333,7 @@ export function createDevicesModule() {
   }
 
   refs.addBtn.addEventListener("click", addDevice);
-  refs.resetBtn.addEventListener("click", resetKey);
-  refs.updateBtn?.addEventListener("click", () => rotateKey(""));
+  refs.refreshBtn.addEventListener("click", () => loadList(true));
   refs.copyBtn?.addEventListener("click", () => copySubscription(""));
 
   refs.name?.addEventListener("keydown", (event) => {
