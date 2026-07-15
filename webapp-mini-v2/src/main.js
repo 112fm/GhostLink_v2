@@ -514,10 +514,8 @@ async function bootstrap() {
   }
 
   router.show("screen-home");
-  const [versionState] = await Promise.all([
-    checkAppVersion(),
-    home.refresh(),
-  ]);
+  const versionState = await checkAppVersion();
+  await home.refresh();
   if (versionState.outdated) {
     const reloaded = window.sessionStorage.getItem(VERSION_RELOAD_KEY) === "1";
     if (!reloaded) {

@@ -1892,7 +1892,8 @@ export function createAdminModule(options = {}) {
     } else if (name === "devices") {
       await loadClients();
     } else if (name === "payment") {
-      await Promise.all([loadPaymentSettings(), loadPaymentHistory()]);
+      await loadPaymentSettings();
+      await loadPaymentHistory();
     } else if (name === "partner") {
       await loadPartnerAnalytics();
     } else if (name === "system") {

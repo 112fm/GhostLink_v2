@@ -246,11 +246,9 @@ export function createPaymentsModule(options = {}) {
     setStatus(refs.tariffStatus, "Загрузка тарифов и реквизитов...");
 
     try {
-      const [user, tariffs, paymentSettings] = await Promise.all([
-        apiFetch("/api/user"),
-        apiFetch("/api/tariffs"),
-        apiFetch("/api/payment/settings"),
-      ]);
+      const user = await apiFetch("/api/user");
+      const tariffs = await apiFetch("/api/tariffs");
+      const paymentSettings = await apiFetch("/api/payment/settings").catch(() => ({}));
 
       state.user = user || {};
       state.paymentSettings = paymentSettings || {};

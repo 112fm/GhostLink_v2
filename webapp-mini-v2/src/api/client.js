@@ -113,6 +113,7 @@ export async function apiFetch(path, options = {}) {
   const timeoutPromise = wait(REQUEST_TIMEOUT_MS).then(() => {
     throw new Error("Timeout while reading response body");
   });
+  timeoutPromise.catch(() => {});
 
   const data = await Promise.race([
     response.json().catch(() => ({})),
