@@ -1,10 +1,10 @@
-import { createScreenRouter } from "./ui/screens.js?v=20260715-miniapp-release-3";
-import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260715-miniapp-release-3";
-import { bootstrapAuthContext } from "./modules/auth.js?v=20260715-miniapp-release-3";
-import { createInviteModule } from "./modules/invites.js?v=20260715-miniapp-release-3";
-import { createPaymentsModule } from "./modules/payments.js?v=20260715-miniapp-release-3";
-import { createDevicesModule } from "./modules/devices.js?v=20260715-miniapp-release-3";
-import { createAdminModule } from "./modules/admin.js?v=20260715-miniapp-release-3";
+import { createScreenRouter } from "./ui/screens.js?v=20260715-miniapp-release-8";
+import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260715-miniapp-release-8";
+import { bootstrapAuthContext } from "./modules/auth.js?v=20260715-miniapp-release-8";
+import { createInviteModule } from "./modules/invites.js?v=20260715-miniapp-release-8";
+import { createPaymentsModule } from "./modules/payments.js?v=20260715-miniapp-release-8";
+import { createDevicesModule } from "./modules/devices.js?v=20260715-miniapp-release-8";
+import { createAdminModule } from "./modules/admin.js?v=20260715-miniapp-release-8";
 
 const ADMIN_PREVIEW_MODE = false;
 const APP_BUILD_VERSION = "2.0.0";
@@ -34,12 +34,14 @@ function applySubStatus(ref, active) {
   if (active) {
     ref.textContent = "Подписка активна";
     ref.classList.remove("text-accent-red");
+    ref.classList.remove("text-muted-gray");
     ref.classList.add("text-primary");
     return;
   }
 
   ref.textContent = "Подписка неактивна";
   ref.classList.remove("text-primary");
+  ref.classList.remove("text-muted-gray");
   ref.classList.add("text-accent-red");
 }
 
@@ -58,6 +60,7 @@ function applyHomeLoadError(refs, error) {
           ? "Доступ не подтвержден"
           : "Статус временно недоступен";
     refs.subStatus.classList.remove("text-primary");
+    refs.subStatus.classList.remove("text-muted-gray");
     refs.subStatus.classList.add("text-accent-red");
   }
 
@@ -151,25 +154,25 @@ function showAppError(router, error) {
       code: "404",
       title: "Страница не найдена",
       text: "Похоже, этот экран потерялся. Вернись назад и попробуй ещё раз.",
-      image: "./assets/mascot/error-404-detective.png?v=20260715-miniapp-release-3",
+      image: "./assets/mascot/error-404-detective.png?v=20260715-miniapp-release-8",
     },
     unavailable: {
       code: "OFFLINE",
       title: "Сервис временно недоступен",
       text: "Не удалось связаться с GhostLink. Попробуй повторить через несколько секунд.",
-      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-3",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-8",
     },
     maintenance: {
       code: "MAINTENANCE",
       title: "Ведутся технические работы",
       text: "Мы уже чиним связь. Попробуй обновить Mini App немного позже.",
-      image: "./assets/mascot/error-maintenance-helmet.png?v=20260715-miniapp-release-3",
+      image: "./assets/mascot/error-maintenance-helmet.png?v=20260715-miniapp-release-8",
     },
     forbidden: {
       code: "403",
       title: "Доступ запрещен",
       text: "У тебя нет прав для просмотра этого раздела.",
-      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-3",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-8",
     },
   }[type];
 
