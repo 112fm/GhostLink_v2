@@ -1,8 +1,37 @@
 const DEFAULT_API_BASE = "https://api.112prd.ru";
+const REQUEST_TIMEOUT_MS = 12000;
+const READ_RETRIES = 2;
+const SESSION_RETRIES = 1;
+const RETRY_DELAY_MS = 350;
 
 let apiBase = DEFAULT_API_BASE;
 let telegramInitData = "";
 let pwaToken = "";
+
+function wait(ms) {
+  return new Promise((resolve) => globalThis.setTimeout(resolve, ms));
+}
+
+async function fetchWithTimeout(url, options = {}, retries = 0) {
+  let lastError;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const controller = new AbortController();
+    const timeoutId = globalThis.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } catch (error) {
+      lastError = error;
+      if (attempt >= retries) throw error;
+      await wait(RETRY_DELAY_MS * (attempt + 1));
+    } finally {
+      globalThis.clearTimeout(timeoutId);
+    }
+  }
+
+  throw lastError || new Error("request_failed");
+}
 
 export function configureApiClient(options = {}) {
   if (options.apiBase) {
@@ -75,13 +104,13 @@ export async function apiFetch(path, options = {}) {
   }
 
   const method = String(options.method || "GET").toUpperCase();
-  const response = await fetch(buildApiUrl(path), {
+  const response = await fetchWithTimeout(buildApiUrl(path), {
     ...options,
     method,
     cache: "no-store",
     credentials: "include",
     headers: buildHeaders(options.headers || {}, { ...options, method }),
-  });
+  }, method === "GET" || method === "HEAD" ? READ_RETRIES : 0);
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -101,7 +130,7 @@ export async function establishMiniAppSession(initData) {
     return null;
   }
 
-  const response = await fetch(`${apiBase}/api/miniapp/session`, {
+  const response = await fetchWithTimeout(`${apiBase}/api/miniapp/session`, {
     method: "POST",
     cache: "no-store",
     credentials: "include",
@@ -109,7 +138,7 @@ export async function establishMiniAppSession(initData) {
       Accept: "application/json",
     },
     body: new URLSearchParams({ init_data: value }),
-  });
+  }, SESSION_RETRIES);
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
