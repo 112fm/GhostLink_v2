@@ -50,11 +50,7 @@ export function setPwaToken(token) {
 }
 
 function buildApiUrl(path) {
-  const url = new URL(`${apiBase}${path}`);
-  if (pwaToken && !url.searchParams.has("pwa_token")) {
-    url.searchParams.set("pwa_token", pwaToken);
-  }
-  return url.toString();
+  return new URL(`${apiBase}${path}`).toString();
 }
 
 function shouldSendJsonContentType(method, options = {}) {
@@ -77,6 +73,8 @@ function buildHeaders(extraHeaders = {}, options = {}) {
 
   if (telegramInitData) {
     headers["X-Telegram-InitData"] = telegramInitData;
+  } else if (pwaToken) {
+    headers["X-PWA-Token"] = pwaToken;
   }
   return headers;
 }
