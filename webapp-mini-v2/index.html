@@ -62,17 +62,21 @@
     </div>
   </section>
 
-  <section id="screen-error" class="screen">
-    <div class="error-state">
-      <div class="error-state-art">
-        <img id="errorStateImage" class="error-state-image" src="./assets/mascot/error-unavailable-sleep.png" alt="" />
-      </div>
-      <div class="error-state-content">
-        <div id="errorStateCode" class="error-state-code">OFFLINE</div>
-        <h2 id="errorStateTitle" class="error-state-title">Сервис временно недоступен</h2>
-        <p id="errorStateText" class="error-state-text">Не удалось связаться с GhostLink.</p>
-        <button id="errorRetryBtn" class="ios-active error-state-button">Повторить</button>
-      </div>
+  <!-- Error Screen -->
+  <section id="screen-error" class="screen relative overflow-hidden bg-black">
+    <div class="absolute inset-0 z-0">
+      <img id="errorStateImage" src="./assets/mascot/error-unavailable-sleep.png" alt="" class="w-full h-full object-cover opacity-50 blur-[2px]">
+      <div class="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/80 to-transparent"></div>
+    </div>
+    
+    <div class="relative z-10 flex flex-col items-center justify-end h-full text-center px-6 pb-12">
+      <div id="errorStateCode" class="text-primary text-[13px] font-bold tracking-[0.2em] uppercase mb-4 opacity-90 drop-shadow-md">OFFLINE</div>
+      <h2 id="errorStateTitle" class="text-white text-[28px] font-extrabold mb-3 leading-tight drop-shadow-lg max-w-[320px]">Сервис временно недоступен</h2>
+      <p id="errorStateText" class="text-gray-300 text-base leading-relaxed max-w-[280px] mb-10 drop-shadow-md">Не удалось связаться с GhostLink.</p>
+      
+      <button id="errorRetryBtn" class="ios-active w-full bg-primary text-black font-bold text-[17px] py-4 rounded-[16px] shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-transform active:scale-95">
+        Повторить
+      </button>
     </div>
   </section>
 
@@ -776,6 +780,6 @@
     </div>
   </div>
 
-  <script type="module" src="./src/main.js?v=20260715-miniapp-release-5"></script>
+  <script type="module" src="./src/main.js?v=20260715-miniapp-release-6"></script>
 </body>
 </html>
