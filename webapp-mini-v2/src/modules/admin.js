@@ -1,4 +1,4 @@
-import { apiFetch, getApiBase } from "../api/client.js?v=20260715-miniapp-release-24";
+import { apiFetch, getApiBase } from "../api/client.js?v=20260715-miniapp-release-25";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;

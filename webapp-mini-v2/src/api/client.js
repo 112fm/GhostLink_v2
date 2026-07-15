@@ -1,8 +1,9 @@
 const DEFAULT_API_BASE = "https://api.112prd.ru";
 const PROGRESSIVE_TIMEOUTS = [3000, 10000, 30000];
 const MAX_TIMEOUT = 30000;
+const DEVICE_MAX_TIMEOUT = 120000;
 const WRITE_TIMEOUTS = [MAX_TIMEOUT];
-const DEVICE_TIMEOUTS = [MAX_TIMEOUT];
+const DEVICE_TIMEOUTS = [DEVICE_MAX_TIMEOUT];
 const READ_RETRIES = 2;
 const SESSION_RETRIES = 2;
 const RETRY_DELAY_MS = 250;
@@ -118,7 +119,7 @@ export async function apiFetch(path, options = {}) {
     headers: buildHeaders(options.headers || {}, { ...options, method }),
   }, retries, timeoutPlan);
 
-  const timeoutPromise = wait(MAX_TIMEOUT).then(() => {
+  const timeoutPromise = wait(isDeviceRequest ? DEVICE_MAX_TIMEOUT : MAX_TIMEOUT).then(() => {
     throw new Error("Timeout while reading response body");
   });
   timeoutPromise.catch(() => {});
