@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE = "https://panel.112prd.ru:2053";
+const DEFAULT_API_BASE = "https://api.112prd.ru";
 const PROGRESSIVE_TIMEOUTS = [3000, 10000, 30000];
 const MAX_TIMEOUT = 30000;
 const DEVICE_MAX_TIMEOUT = 120000;

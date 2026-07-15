@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-26";
+import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-27";
 
 const DIRECT_PLACEHOLDER = "t.me/GhostLinkBot?start=<token>";
 const BRIDGE_PLACEHOLDER = "https://api.112prd.ru/s/<bridge-subscription>";
