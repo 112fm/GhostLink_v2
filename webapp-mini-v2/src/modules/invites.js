@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-9";
+import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-13";
 
 const DIRECT_PLACEHOLDER = "t.me/GhostLinkBot?start=<token>";
 const BRIDGE_PLACEHOLDER = "https://api.112prd.ru/s/<bridge-subscription>";
@@ -55,11 +55,29 @@ async function copyText(value) {
   const text = String(value || "").trim();
   if (!text) return false;
   try {
-    await navigator.clipboard.writeText(text);
-    return true;
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
   } catch (_) {
-    return false;
+    // Telegram WebView may expose clipboard only partially; use the legacy path below.
   }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  let copied = false;
+  try {
+    copied = Boolean(document.execCommand?.("copy"));
+  } catch (_) {
+    copied = false;
+  }
+  textarea.remove();
+  return copied;
 }
 
 function formatExpiry(expiresInSec) {

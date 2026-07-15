@@ -1,15 +1,16 @@
-import { createScreenRouter } from "./ui/screens.js?v=20260715-miniapp-release-9";
-import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260715-miniapp-release-9";
-import { bootstrapAuthContext } from "./modules/auth.js?v=20260715-miniapp-release-9";
-import { createInviteModule } from "./modules/invites.js?v=20260715-miniapp-release-9";
-import { createPaymentsModule } from "./modules/payments.js?v=20260715-miniapp-release-9";
-import { createDevicesModule } from "./modules/devices.js?v=20260715-miniapp-release-9";
-import { createAdminModule } from "./modules/admin.js?v=20260715-miniapp-release-9";
+import { createScreenRouter } from "./ui/screens.js?v=20260715-miniapp-release-13";
+import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260715-miniapp-release-13";
+import { bootstrapAuthContext } from "./modules/auth.js?v=20260715-miniapp-release-13";
+import { createInviteModule } from "./modules/invites.js?v=20260715-miniapp-release-13";
+import { createPaymentsModule } from "./modules/payments.js?v=20260715-miniapp-release-13";
+import { createDevicesModule } from "./modules/devices.js?v=20260715-miniapp-release-13";
+import { createAdminModule } from "./modules/admin.js?v=20260715-miniapp-release-13";
 
 const ADMIN_PREVIEW_MODE = false;
 const APP_BUILD_VERSION = "2.0.0";
 const VERSION_RELOAD_KEY = "ghostlink_version_soft_reload_done";
 const ONBOARDING_KEY = "ghostlink_onboarding_seen_v2";
+const HOME_CACHE_KEY = "ghostlink_home_snapshot_v2";
 
 function formatSubLine(sub) {
   if (!sub || !sub.active) return "Нет подписки";
@@ -154,25 +155,25 @@ function showAppError(router, error) {
       code: "404",
       title: "Страница не найдена",
       text: "Похоже, этот экран потерялся. Вернись назад и попробуй ещё раз.",
-      image: "./assets/mascot/error-404-detective.png?v=20260715-miniapp-release-9",
+      image: "./assets/mascot/error-404-detective.png?v=20260715-miniapp-release-13",
     },
     unavailable: {
       code: "OFFLINE",
       title: "Сервис временно недоступен",
       text: "Не удалось связаться с GhostLink. Попробуй повторить через несколько секунд.",
-      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-9",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-13",
     },
     maintenance: {
       code: "MAINTENANCE",
       title: "Ведутся технические работы",
       text: "Мы уже чиним связь. Попробуй обновить Mini App немного позже.",
-      image: "./assets/mascot/error-maintenance-helmet.png?v=20260715-miniapp-release-9",
+      image: "./assets/mascot/error-maintenance-helmet.png?v=20260715-miniapp-release-13",
     },
     forbidden: {
       code: "403",
       title: "Доступ запрещен",
       text: "У тебя нет прав для просмотра этого раздела.",
-      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-9",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-13",
     },
   }[type];
 
@@ -200,6 +201,40 @@ function createHomeModule(auth) {
     homeAdminBtn: document.getElementById("homeAdminBtn"),
   };
 
+  function applyUserData(data) {
+    if (refs.expiryValue) refs.expiryValue.textContent = formatSubLine(data?.subscription || null);
+    applySubStatus(refs.subStatus, Boolean(data?.subscription?.active));
+
+    if (refs.currentTariffLabel) {
+      refs.currentTariffLabel.textContent = `Текущий тариф: ${formatTariffLabel(data?.device_limit)}`;
+    }
+
+    const showBadge = isClubTier(data?.member_tier);
+    refs.clubBadgeLabel?.classList.toggle("hidden", !showBadge);
+    if (refs.homeAdminBtn && (auth.isAdmin || Boolean(data?.user?.is_admin) || ADMIN_PREVIEW_MODE)) {
+      refs.homeAdminBtn.classList.remove("hidden");
+    }
+  }
+
+  function readSnapshot() {
+    try {
+      const raw = window.localStorage.getItem(HOME_CACHE_KEY);
+      if (!raw) return null;
+      const snapshot = JSON.parse(raw);
+      return snapshot?.data && typeof snapshot.data === "object" ? snapshot : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeSnapshot(data) {
+    try {
+      window.localStorage.setItem(HOME_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data }));
+    } catch (_) {
+      // Storage can be unavailable in restricted Telegram WebViews.
+    }
+  }
+
   async function refresh() {
     if (refs.homeAdminBtn && (auth.isAdmin || ADMIN_PREVIEW_MODE)) {
       refs.homeAdminBtn.classList.remove("hidden");
@@ -207,21 +242,19 @@ function createHomeModule(auth) {
 
     try {
       const data = await apiFetch("/api/user");
-
-      if (refs.expiryValue) refs.expiryValue.textContent = formatSubLine(data?.subscription || null);
-      applySubStatus(refs.subStatus, Boolean(data?.subscription?.active));
-
-      if (refs.currentTariffLabel) {
-        refs.currentTariffLabel.textContent = `Текущий тариф: ${formatTariffLabel(data?.device_limit)}`;
-      }
-
-      const showBadge = isClubTier(data?.member_tier);
-      refs.clubBadgeLabel?.classList.toggle("hidden", !showBadge);
-
-      if (refs.homeAdminBtn && (auth.isAdmin || Boolean(data?.user?.is_admin) || ADMIN_PREVIEW_MODE)) {
-        refs.homeAdminBtn.classList.remove("hidden");
-      }
+      applyUserData(data);
+      writeSnapshot(data);
     } catch (error) {
+      const snapshot = readSnapshot();
+      if (snapshot) {
+        applyUserData(snapshot.data);
+        if (refs.subStatus) {
+          refs.subStatus.textContent = "Нет связи · показаны последние данные";
+          refs.subStatus.classList.remove("text-primary", "text-muted-gray");
+          refs.subStatus.classList.add("text-accent-red");
+        }
+        return;
+      }
       if (showAppError(router, error)) return;
       if (refs.homeAdminBtn && (auth.isAdmin || ADMIN_PREVIEW_MODE)) {
         refs.homeAdminBtn.classList.remove("hidden");
@@ -480,7 +513,11 @@ async function bootstrap() {
     return;
   }
 
-  const versionState = await checkAppVersion();
+  router.show("screen-home");
+  const [versionState] = await Promise.all([
+    checkAppVersion(),
+    home.refresh(),
+  ]);
   if (versionState.outdated) {
     const reloaded = window.sessionStorage.getItem(VERSION_RELOAD_KEY) === "1";
     if (!reloaded) {
@@ -492,8 +529,6 @@ async function bootstrap() {
     return;
   }
   window.sessionStorage.removeItem(VERSION_RELOAD_KEY);
-  router.show("screen-home");
-  await home.refresh();
   if (onboarding.shouldAutoOpen()) onboarding.open();
 }
 

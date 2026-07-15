@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-9";
+import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-13";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;
@@ -41,11 +41,29 @@ async function copyText(value) {
   const raw = String(value || "").trim();
   if (!raw) return false;
   try {
-    await navigator.clipboard.writeText(raw);
-    return true;
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(raw);
+      return true;
+    }
   } catch (_) {
-    return false;
+    // Telegram WebView may expose clipboard only partially; use the legacy path below.
   }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = raw;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  let copied = false;
+  try {
+    copied = Boolean(document.execCommand?.("copy"));
+  } catch (_) {
+    copied = false;
+  }
+  textarea.remove();
+  return copied;
 }
 
 export function createDevicesModule() {
@@ -196,17 +214,18 @@ export function createDevicesModule() {
       renderList();
       setStatus(refs.status, `Устройств подключено: ${state.connected}/${state.deviceLimit || 0}.`);
     } catch (error) {
-      state.items = [];
-      state.deviceLimit = 0;
-      state.connected = 0;
-      state.mainUuid = "";
+      // Keep the last rendered list during a refresh failure so a transient
+      // network error does not erase the user's devices from the screen.
       renderTop();
       renderList();
       setStatus(refs.status, mapApiError(error), true);
+      return false;
     } finally {
       state.loading = false;
       setBusy(false);
     }
+
+    return true;
   }
 
   async function addDevice() {
@@ -236,8 +255,12 @@ export function createDevicesModule() {
       const nextLink = String(data?.subscription_url || "").trim();
       if (nextLink) state.subscriptionUrl = nextLink;
 
+      const refreshed = await loadList(true);
+      if (!refreshed) {
+        setStatus(refs.status, "Устройство создано, но список не обновился. Нажми «Обновить».", true);
+        return;
+      }
       showAddForm(false);
-      await loadList(true);
       setStatus(refs.status, "Устройство добавлено.");
     } catch (error) {
       setStatus(refs.status, mapApiError(error), true);
@@ -262,7 +285,8 @@ export function createDevicesModule() {
       const nextLink = String(data?.subscription_url || "").trim();
       if (nextLink) state.subscriptionUrl = nextLink;
 
-      await loadList(true);
+      const refreshed = await loadList(true);
+      if (!refreshed) return;
       setStatus(refs.status, "Ключ сброшен.");
     } catch (error) {
       setStatus(refs.status, mapApiError(error), true);
@@ -290,7 +314,8 @@ export function createDevicesModule() {
       const nextLink = String(data?.subscription_url || "").trim();
       if (nextLink) state.subscriptionUrl = nextLink;
 
-      await loadList(true);
+      const refreshed = await loadList(true);
+      if (!refreshed) return;
       setStatus(refs.status, "Ключ устройства обновлен.");
     } catch (error) {
       setStatus(refs.status, mapApiError(error), true);
@@ -315,7 +340,8 @@ export function createDevicesModule() {
         body: JSON.stringify({ uuid: target }),
       });
 
-      await loadList(true);
+      const refreshed = await loadList(true);
+      if (!refreshed) return;
       setStatus(refs.status, "Устройство удалено.");
     } catch (error) {
       setStatus(refs.status, mapApiError(error), true);

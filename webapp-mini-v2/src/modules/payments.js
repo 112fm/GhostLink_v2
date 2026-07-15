@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-9";
+import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-13";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;
@@ -326,10 +326,35 @@ export function createPaymentsModule(options = {}) {
       return;
     }
 
+    let copied = false;
     try {
-      await navigator.clipboard.writeText(phone);
-      setStatus(refs.paymentStatusText, "Номер телефона скопирован.");
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(phone);
+        copied = true;
+      }
     } catch (_) {
+      // Telegram WebView may expose clipboard only partially; use the legacy path below.
+    }
+
+    if (!copied) {
+      const textarea = document.createElement("textarea");
+      textarea.value = phone;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        copied = Boolean(document.execCommand?.("copy"));
+      } catch (_) {
+        copied = false;
+      }
+      textarea.remove();
+    }
+
+    if (copied) {
+      setStatus(refs.paymentStatusText, "Номер телефона скопирован.");
+    } else {
       setStatus(refs.paymentStatusText, "Не удалось скопировать номер.", true);
     }
   }
