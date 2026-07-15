@@ -38,7 +38,8 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./src/styles.css?v=20260715-miniapp-release-3" />
+  <link rel="stylesheet" href="./src/styles.css?v=20260715-miniapp-release-7" />
+  <script type="module" src="./src/main.js?v=20260715-miniapp-release-7"></script>
 </head>
 
 <body class="flex flex-col p-6">
@@ -63,22 +64,18 @@
   </section>
 
   <!-- Error Screen -->
-  <section id="screen-error" class="screen relative overflow-hidden bg-black">
-    <div class="absolute inset-0 z-0">
-      <img id="errorStateImage" src="./assets/mascot/error-unavailable-sleep.png" alt="" class="w-full h-full object-cover opacity-50 blur-[2px]">
-      <div class="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/80 to-transparent"></div>
+  <section id="screen-error" class="screen">
+    <div class="error-img-wrap">
+      <img id="errorStateImage" src="./assets/mascot/error-unavailable-sleep.png" alt="">
     </div>
-    
-    <div class="relative z-10 flex flex-col items-center justify-end h-full text-center px-6 pb-12">
-      <div id="errorStateCode" class="text-primary text-[13px] font-bold tracking-[0.2em] uppercase mb-4 opacity-90 drop-shadow-md">OFFLINE</div>
-      <h2 id="errorStateTitle" class="text-white text-[28px] font-extrabold mb-3 leading-tight drop-shadow-lg max-w-[320px]">Сервис временно недоступен</h2>
-      <p id="errorStateText" class="text-gray-300 text-base leading-relaxed max-w-[280px] mb-10 drop-shadow-md">Не удалось связаться с GhostLink.</p>
-      
-      <button id="errorRetryBtn" class="ios-active w-full bg-primary text-black font-bold text-[17px] py-4 rounded-[16px] shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-transform active:scale-95">
-        Повторить
-      </button>
+    <div class="error-text-wrap">
+      <div id="errorStateCode" class="error-code">OFFLINE</div>
+      <h2 id="errorStateTitle" class="error-title">Сервис временно недоступен</h2>
+      <p id="errorStateText" class="error-desc">Не удалось связаться с GhostLink.</p>
+      <button id="errorRetryBtn" class="ios-active error-btn">Повторить</button>
     </div>
   </section>
+
 
   <header id="appHeader" class="pt-2 mb-6 flex items-center gap-3">
     <img src="./ghost_ava.png" alt="GhostLink" class="w-10 h-10 rounded-full object-cover" />
