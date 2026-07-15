@@ -2,9 +2,10 @@ const DEFAULT_API_BASE = "https://api.112prd.ru";
 const PROGRESSIVE_TIMEOUTS = [3000, 10000, 30000];
 const MAX_TIMEOUT = 30000;
 const DEVICE_MAX_TIMEOUT = 120000;
-const WRITE_TIMEOUTS = [MAX_TIMEOUT];
-const DEVICE_TIMEOUTS = [DEVICE_MAX_TIMEOUT];
+const WRITE_TIMEOUTS = [8000, 15000];
+const DEVICE_TIMEOUTS = [8000, 15000];
 const READ_RETRIES = 2;
+const WRITE_RETRIES = 1;
 const SESSION_RETRIES = 2;
 const RETRY_DELAY_MS = 250;
 
@@ -110,8 +111,14 @@ export async function apiFetch(path, options = {}) {
   const isRead = method === "GET" || method === "HEAD";
   const isDeviceRequest = String(path || "").startsWith("/api/device/");
   const timeoutPlan = isDeviceRequest ? DEVICE_TIMEOUTS : (isRead ? PROGRESSIVE_TIMEOUTS : WRITE_TIMEOUTS);
-  const retries = isRead && !isDeviceRequest ? READ_RETRIES : 0;
-  const response = await fetchWithTimeout(buildApiUrl(path), {
+  const retries = isRead && !isDeviceRequest ? READ_RETRIES : WRITE_RETRIES;
+  
+  // To avoid iOS Safari WebKit POST bug and speed up startup, we append a timestamp parameter to ALL URLs
+  // to force the proxy/browser to use a fresh context occasionally.
+  const urlParams = (path.indexOf("?") === -1) ? `?_t=${Date.now()}` : `&_t=${Date.now()}`;
+  const finalUrl = buildApiUrl(path) + urlParams;
+
+  const response = await fetchWithTimeout(finalUrl, {
     ...options,
     method,
     cache: "no-store",
