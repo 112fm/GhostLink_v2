@@ -165,6 +165,12 @@ function showAppError(router, error) {
       text: "Мы уже чиним связь. Попробуй обновить Mini App немного позже.",
       image: "./assets/mascot/error-maintenance-helmet.png?v=20260715-miniapp-release-3",
     },
+    forbidden: {
+      code: "403",
+      title: "Доступ запрещен",
+      text: "У тебя нет прав для просмотра этого раздела.",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-3",
+    },
   }[type];
 
   const image = document.getElementById("errorStateImage");
