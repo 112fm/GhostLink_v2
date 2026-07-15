@@ -1,4 +1,4 @@
-import { apiFetch, getApiBase } from "../api/client.js?v=20260715-miniapp-release-9";
+import { apiFetch, getApiBase } from "../api/client.js?v=20260715-miniapp-release-13";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;
@@ -13,11 +13,42 @@ function mapApiError(error) {
 
   if (status === 401) return "Сессия истекла. Открой mini app заново из Telegram.";
   if (status === 403) return "Нет доступа к админке.";
+  if (status === 400 && detail === "bad_params") return "Проверь TG ID и метку партнера.";
   if (status === 404) return "Данные не найдены.";
   if (status === 409) return "Действие уже выполнено или конфликт состояния.";
   if (status === 429) return "Слишком много запросов. Попробуй позже.";
   if (detail) return `Ошибка: ${detail}`;
   return "Ошибка сети. Попробуй еще раз.";
+}
+
+async function copyText(value) {
+  const text = String(value || "").trim();
+  if (!text) return false;
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (_) {
+    // Telegram WebView may expose clipboard only partially; use the legacy path below.
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  let copied = false;
+  try {
+    copied = Boolean(document.execCommand?.("copy"));
+  } catch (_) {
+    copied = false;
+  }
+  textarea.remove();
+  return copied;
 }
 
 function formatBytes(bytes) {
@@ -381,8 +412,7 @@ export function createAdminModule(options = {}) {
   function partnerIdentity() {
     const tgId = String(refs.partnerTgIdInput?.value || "").replace(/\D/g, "").trim();
     const rawCode = String(refs.partnerCodeInput?.value || "").trim();
-    const partnerCode = rawCode || tgId;
-    return { tgId, partnerCode };
+    return { tgId, partnerCode: rawCode };
   }
 
   function partnerPresetLabel(item) {
@@ -411,10 +441,16 @@ export function createAdminModule(options = {}) {
     const tgId = String(partnerInvite?.partner_tg_id || "").trim();
     const partnerCode = String(partnerInvite?.partner_code || "").trim();
     if (!tgId || !partnerCode) return;
+    const previous = readPartnerPresets().find((item) => {
+      const sameTg = String(item?.partner_tg_id || "").trim() === tgId;
+      const sameCode = String(item?.partner_code || "").trim() === partnerCode;
+      return sameTg && sameCode;
+    });
+    const telegramStartLink = String(partnerInvite?.telegram_start_link || previous?.telegram_start_link || "").trim();
     const invite = {
       partner_tg_id: tgId,
       partner_code: partnerCode,
-      telegram_start_link: String(partnerInvite?.telegram_start_link || "").trim(),
+      telegram_start_link: telegramStartLink,
       saved_ts: Date.now(),
     };
     const presets = readPartnerPresets().filter((item) => {
@@ -432,6 +468,12 @@ export function createAdminModule(options = {}) {
     const partnerCode = String(item?.partner_code || item?.partnerCode || "").trim();
     if (refs.partnerTgIdInput) refs.partnerTgIdInput.value = tgId;
     if (refs.partnerCodeInput) refs.partnerCodeInput.value = partnerCode;
+    state.partnerInvite = {
+      partner_tg_id: tgId,
+      partner_code: partnerCode,
+      telegram_start_link: String(item?.telegram_start_link || "").trim(),
+    };
+    renderPartnerState();
   }
 
   function renderPartnerPresets() {
@@ -638,13 +680,6 @@ export function createAdminModule(options = {}) {
 
   async function loadPartnerAnalytics() {
     const { tgId, partnerCode } = partnerIdentity();
-    if (!tgId) {
-      state.partnerInvite = null;
-      state.partnerAnalytics = { items: [], total: 0, paid: 0, key_issued: 0, traffic_started: 0, auto_accepted: 0, manual_moderation: 0 };
-      renderPartnerState();
-      setStatus(refs.status, "Укажи TG ID партнера, чтобы загрузить статистику.");
-      return;
-    }
 
     if (previewMode) {
       if (refs.partnerTgIdInput && !refs.partnerTgIdInput.value) refs.partnerTgIdInput.value = previewPartnerInvite.invite.partner_tg_id;
@@ -659,10 +694,14 @@ export function createAdminModule(options = {}) {
       return;
     }
 
-    setStatus(refs.status, "Загружаю партнерскую статистику...");
+    const query = new URLSearchParams();
+    if (tgId) query.set("partner_tg_id", tgId);
+    if (partnerCode) query.set("partner_code", partnerCode);
+    const queryString = query.toString();
+    setStatus(refs.status, tgId || partnerCode ? "Загружаю партнерскую статистику..." : "Загружаю всю партнерскую статистику...");
     try {
       const data = await apiFetch(
-        `/api/admin/partner-invite/analytics?partner_tg_id=${encodeURIComponent(tgId)}&partner_code=${encodeURIComponent(partnerCode)}`,
+        `/api/admin/partner-invite/analytics${queryString ? `?${queryString}` : ""}`,
       );
       state.partnerAnalytics = data || { items: [], total: 0, paid: 0, key_issued: 0, traffic_started: 0, auto_accepted: 0, manual_moderation: 0 };
       renderPartnerState();
@@ -707,7 +746,7 @@ export function createAdminModule(options = {}) {
         method: "POST",
         body: JSON.stringify({
           partner_tg_id: tgId,
-          partner_code: partnerCode,
+          partner_code: partnerCode || tgId,
           force_new: forceNew,
         }),
       });
@@ -732,12 +771,10 @@ export function createAdminModule(options = {}) {
       setStatus(refs.status, "Ссылка еще не создана.", true);
       return;
     }
-    try {
-      await navigator.clipboard.writeText(value);
+    const copied = await copyText(value);
+    if (copied) {
       setStatus(refs.status, "Партнерская ссылка скопирована.");
-    } catch (_) {
-      setStatus(refs.status, "Не удалось скопировать ссылку.", true);
-    }
+    } else setStatus(refs.status, "Не удалось скопировать ссылку.", true);
   }
 
   function selectedUser() {
@@ -1824,9 +1861,6 @@ export function createAdminModule(options = {}) {
   refs.partnerTgIdInput?.addEventListener("input", () => {
     const digits = String(refs.partnerTgIdInput.value || "").replace(/\D/g, "");
     refs.partnerTgIdInput.value = digits;
-    if (!String(refs.partnerCodeInput?.value || "").trim() && digits && refs.partnerCodeInput) {
-      refs.partnerCodeInput.value = digits;
-    }
   });
 
   refs.roleSetBtn?.addEventListener("click", setRole);
