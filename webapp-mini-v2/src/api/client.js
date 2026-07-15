@@ -1,8 +1,9 @@
 const DEFAULT_API_BASE = "https://api.112prd.ru";
-const REQUEST_TIMEOUT_MS = 30000;
-const READ_RETRIES = 1;
-const SESSION_RETRIES = 1;
-const RETRY_DELAY_MS = 350;
+const PROGRESSIVE_TIMEOUTS = [3000, 10000, 30000];
+const MAX_TIMEOUT = 30000;
+const READ_RETRIES = 2;
+const SESSION_RETRIES = 2;
+const RETRY_DELAY_MS = 250;
 
 let apiBase = DEFAULT_API_BASE;
 let telegramInitData = "";
@@ -17,7 +18,8 @@ async function fetchWithTimeout(url, options = {}, retries = 0) {
 
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     const controller = new AbortController();
-    const timeoutId = globalThis.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    const currentTimeout = PROGRESSIVE_TIMEOUTS[attempt] || MAX_TIMEOUT;
+    const timeoutId = globalThis.setTimeout(() => controller.abort(), currentTimeout);
 
     try {
       return await fetch(url, { ...options, signal: controller.signal });
@@ -110,7 +112,7 @@ export async function apiFetch(path, options = {}) {
     headers: buildHeaders(options.headers || {}, { ...options, method }),
   }, method === "GET" || method === "HEAD" ? READ_RETRIES : 0);
 
-  const timeoutPromise = wait(REQUEST_TIMEOUT_MS).then(() => {
+  const timeoutPromise = wait(MAX_TIMEOUT).then(() => {
     throw new Error("Timeout while reading response body");
   });
   timeoutPromise.catch(() => {});
