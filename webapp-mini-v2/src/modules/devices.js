@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260717-api-base-fix-1";
+import { apiFetch } from "../api/client.js?v=20260717-device-success-background-1";
 
 const ADD_OPERATION_STORAGE_KEY = "ghostlink.device-add-operation.v1";
 const ADD_OPERATION_MAX_AGE_MS = 15 * 60 * 1000;
@@ -124,6 +124,34 @@ function deviceTitle(item, index) {
   return `Устройство ${index + 1}`;
 }
 
+function extractDevicePayload(operation) {
+  const candidates = [
+    operation?.device,
+    operation?.device_payload,
+    operation?.result?.device,
+    operation?.data?.device,
+    operation?.result,
+    operation?.data,
+    operation,
+  ];
+
+  for (const value of candidates) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) continue;
+    const uuid = String(value.uuid || value.client_uuid || "").trim();
+    const subscriptionUrl = String(value.subscription_url || value.key || "").trim();
+    const email = String(value.email || value.client_email || "").trim();
+    if (!uuid || (!email && !subscriptionUrl)) continue;
+    return {
+      ...value,
+      uuid,
+      email,
+      subscription_url: subscriptionUrl,
+    };
+  }
+
+  return null;
+}
+
 async function copyText(value) {
   const raw = String(value || "").trim();
   if (!raw) return false;
@@ -186,6 +214,7 @@ export function createDevicesModule() {
     connected: 0,
     mainUuid: "",
     subscriptionUrl: "",
+    confirmedItems: new Map(),
   };
 
   function setBusy(flag) {
@@ -240,7 +269,7 @@ export function createDevicesModule() {
   function renderList() {
     refs.list.innerHTML = "";
 
-    if (!state.hasLoadedList) {
+    if (!state.hasLoadedList && !state.items.length) {
       const loading = document.createElement("div");
       loading.className = "rounded-xl border border-white/10 bg-card-dark px-3 py-3 text-muted-gray";
       loading.textContent = "Получаем список устройств...";
@@ -293,6 +322,42 @@ export function createDevicesModule() {
     });
   }
 
+  function mergeConfirmedItems(items) {
+    const merged = Array.isArray(items) ? items.map((item) => ({ ...item })) : [];
+    const listed = new Set(merged.map((item) => String(item?.uuid || "").trim()).filter(Boolean));
+
+    state.confirmedItems.forEach((item, uuid) => {
+      const index = merged.findIndex((current) => String(current?.uuid || "").trim() === uuid);
+      if (index >= 0) {
+        merged[index] = { ...item, ...merged[index] };
+      } else {
+        merged.push({ ...item });
+      }
+    });
+
+    state.confirmedItems.forEach((_, uuid) => {
+      if (listed.has(uuid)) state.confirmedItems.delete(uuid);
+    });
+    return merged;
+  }
+
+  function addConfirmedDevice(item) {
+    const uuid = String(item?.uuid || "").trim();
+    if (!uuid) return false;
+    state.confirmedItems.set(uuid, { ...item });
+    const existingIndex = state.items.findIndex((current) => String(current?.uuid || "").trim() === uuid);
+    if (existingIndex >= 0) {
+      state.items[existingIndex] = { ...state.items[existingIndex], ...item };
+    } else {
+      state.items.push({ ...item });
+    }
+    state.mainUuid = state.mainUuid || uuid;
+    state.connected = Math.max(state.connected, state.items.length);
+    renderTop();
+    renderList();
+    return true;
+  }
+
   function showAddForm(show) {
     refs.addForm?.classList.toggle("hidden", !show);
     if (show) {
@@ -323,20 +388,20 @@ export function createDevicesModule() {
   }
 
   async function loadList(force = false, options = {}) {
-    const { loadingText = "Получаем список устройств...", preserveActionStatus = false } = options;
+    const { loadingText = "Получаем список устройств...", preserveActionStatus = false, background = false } = options;
     if (state.loading && !force) return { ok: false, stale: true };
     const seq = state.listRequestSeq + 1;
     state.listRequestSeq = seq;
     state.loading = true;
-    setBusy(true);
+    if (!background) setBusy(true);
     setListLoadingState(seq, loadingText, preserveActionStatus);
 
     try {
       const data = await apiFetch("/api/device/list");
       if (seq !== state.listRequestSeq) return { ok: false, stale: true };
-      state.items = Array.isArray(data?.items) ? data.items : [];
+      state.items = mergeConfirmedItems(data?.items);
       state.deviceLimit = Number(data?.device_limit || 0);
-      state.connected = Number(data?.connected || state.items.length || 0);
+      state.connected = Math.max(Number(data?.connected || 0), state.items.length);
       state.mainUuid = String(state.items[0]?.uuid || "").trim();
       state.hasLoadedList = true;
       state.listState = "loaded";
@@ -369,7 +434,7 @@ export function createDevicesModule() {
       if (seq === state.listRequestSeq) {
         clearListProgressTimer();
         state.loading = false;
-        setBusy(false);
+        if (!background) setBusy(false);
       }
     }
 
@@ -416,19 +481,40 @@ export function createDevicesModule() {
   }
 
   async function finishCreated(operation) {
+    const pending = state.pendingAdd;
+    const knownUuids = new Set(pending?.knownUuids || []);
     const nextLink = String(operation?.subscription_url || "").trim();
     if (nextLink) state.subscriptionUrl = nextLink;
+    const device = extractDevicePayload(operation);
+    const hasDevicePayload = addConfirmedDevice(device);
 
     forgetPendingAdd();
     showAddForm(false);
-    setStatus(refs.status, "Устройство создано. Обновляю список...");
-    const refreshed = await loadList(true, { preserveActionStatus: true });
-    if (refreshed.stale) return;
-    if (refreshed.ok) {
-      setStatus(refs.status, "Устройство добавлено.");
-    } else {
-      setStatus(refs.status, "Устройство создано. Список временно не обновился.");
-    }
+    setBusy(false);
+    setStatus(refs.status, hasDevicePayload ? "Устройство добавлено. Синхронизирую список..." : "Устройство создано, получаю данные ключа...");
+
+    void loadList(true, { preserveActionStatus: true, background: true }).then((refreshed) => {
+      if (refreshed.stale) return;
+      if (!refreshed.ok) {
+        setStatus(
+          refs.status,
+          hasDevicePayload
+            ? "Устройство добавлено. Список синхронизируется в фоне."
+            : "Устройство создано. Данные ключа пока не получены, не создавай его повторно.",
+        );
+        return;
+      }
+
+      const confirmedByList = state.items.some((item) => {
+        const uuid = String(item?.uuid || "").trim();
+        return uuid && !knownUuids.has(uuid);
+      });
+      if (hasDevicePayload || confirmedByList) {
+        setStatus(refs.status, "Устройство добавлено.");
+      } else {
+        setStatus(refs.status, "Устройство создано. Список пока не подтвердил новый ключ, обнови его позже.");
+      }
+    });
   }
 
   async function resumePendingAdd({ retryMissing = false } = {}) {
@@ -613,6 +699,7 @@ export function createDevicesModule() {
         body: JSON.stringify({ uuid: target }),
       });
 
+      state.confirmedItems.delete(target);
       state.items = state.items.filter((item) => String(item?.uuid || "").trim() !== target);
       state.connected = state.items.length;
       state.mainUuid = String(state.items[0]?.uuid || "").trim();
