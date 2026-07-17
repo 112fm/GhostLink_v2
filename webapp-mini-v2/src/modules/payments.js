@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260717-device-list-ux-1";
+import { apiFetch } from "../api/client.js?v=20260717-device-add-error-1";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;

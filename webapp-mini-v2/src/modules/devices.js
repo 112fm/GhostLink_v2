@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260717-device-list-ux-1";
+import { apiFetch } from "../api/client.js?v=20260717-device-add-error-1";
 
 const ADD_OPERATION_STORAGE_KEY = "ghostlink.device-add-operation.v1";
 const ADD_OPERATION_MAX_AGE_MS = 15 * 60 * 1000;
@@ -64,9 +64,16 @@ function setStatus(node, text, isError = false) {
 
 function mapApiError(error) {
   const status = Number(error?.status || 0);
-  const detail = String(error?.message || error?.data?.detail || error?.error_code || "").trim();
+  const detail = String(error?.data?.detail || error?.data?.error || error?.error_code || error?.code || error?.message || "").trim();
+  const normalizedDetail = detail.toLowerCase().replace(/[\s-]+/g, "_");
 
-  if (detail === "device_limit_reached") return "Достигнут лимит устройств для текущего тарифа.";
+  if (normalizedDetail === "device_limit_reached") return "Достигнут лимит устройств для текущего тарифа.";
+  if (normalizedDetail === "bad_params" || normalizedDetail.includes("validation")) {
+    return "Проверь тип и имя устройства, затем попробуй снова.";
+  }
+  if (normalizedDetail === "request_id_mismatch" || normalizedDetail.includes("request_id_mismatch")) {
+    return "Запрос создания не прошел проверку. Закрой Mini App и открой его заново.";
+  }
   if (detail === "access_closed") return "Доступ закрыт. Поддержи проект, чтобы активировать ключи.";
   if (detail === "bad_id") return "Некорректный ID устройства.";
   if (detail === "panel_error") return "Ошибка VPN панели. Попробуй еще раз.";
@@ -80,9 +87,20 @@ function mapApiError(error) {
   }
   if (status === 401) return "Сессия истекла. Открой mini app заново из Telegram.";
   if (status === 403) return "Нет доступа к этому действию.";
+  if (status === 400) return "Сервер отклонил создание устройства. Проверь параметры и попробуй снова.";
   if (status === 404) return "Данные устройства не найдены.";
   if (status === 429) return "Слишком много запросов. Попробуй позже.";
   return "Ошибка сети. Попробуй еще раз.";
+}
+
+function getAddPostOutcome(error) {
+  const status = Number(error?.status || 0);
+  const detail = String(error?.data?.detail || error?.data?.error || error?.error_code || error?.code || error?.message || "").trim();
+  const phase = String(error?.phase || (status > 0 ? "response" : "request")).trim() || "request";
+
+  if (status > 0) return { kind: "http_error", status, detail, phase };
+  if (phase === "request") return { kind: "no_http_response", status: 0, detail, phase };
+  return { kind: "response_unreadable", status: 0, detail, phase };
 }
 
 function shortUuid(value) {
@@ -364,9 +382,16 @@ export function createDevicesModule() {
       payload,
       knownUuids: Array.from(knownUuids),
       createdAt: Date.now(),
+      postOutcome: { kind: "pending", status: 0, detail: "", phase: "request" },
     };
     writePendingAdd(state.pendingAdd);
     return state.pendingAdd;
+  }
+
+  function rememberAddPostOutcome(pending, outcome) {
+    if (!pending || state.pendingAdd !== pending) return;
+    pending.postOutcome = outcome;
+    writePendingAdd(pending);
   }
 
   function forgetPendingAdd() {
@@ -410,13 +435,21 @@ export function createDevicesModule() {
     const pending = state.pendingAdd;
     if (!pending) return false;
 
+    let postOutcome = pending.postOutcome || { kind: "unknown", status: 0, detail: "", phase: "" };
+    if (postOutcome.kind === "http_error") {
+      forgetPendingAdd();
+      setBusy(false);
+      setStatus(refs.status, mapApiError({ ...postOutcome, data: { detail: postOutcome.detail } }), true);
+      return false;
+    }
+
     setBusy(true);
     setStatus(refs.status, "Проверяю создание устройства...");
     let outcome = await getAddOperation(pending.requestId);
 
-    // A 404 means the original POST did not reach the API. Retrying it with
-    // the same request ID remains safe: the server can create at most one key.
-    if (outcome.kind === "not_found" && retryMissing) {
+    // Retry only after a user-triggered action and only when the initial POST
+    // had no HTTP response at all. A confirmed HTTP error must stay final.
+    if (outcome.kind === "not_found" && retryMissing && postOutcome.kind === "no_http_response") {
       try {
         const data = await apiFetch("/api/device/add", {
           method: "POST",
@@ -427,9 +460,13 @@ export function createDevicesModule() {
           await finishCreated(data);
           return true;
         }
+        rememberAddPostOutcome(pending, { kind: "accepted", status: 0, detail: String(data?.status || ""), phase: "response" });
+        postOutcome = pending.postOutcome;
         outcome = await getAddOperation(pending.requestId);
       } catch (error) {
-        if (!isIndeterminateTransportError(error)) outcome = { kind: "error", error };
+        const retryOutcome = getAddPostOutcome(error);
+        rememberAddPostOutcome(pending, retryOutcome);
+        if (retryOutcome.kind === "http_error") outcome = { kind: "error", error };
       }
     }
 
@@ -444,6 +481,12 @@ export function createDevicesModule() {
       return false;
     }
     if (outcome.kind === "not_found") {
+      if (postOutcome.kind !== "no_http_response") {
+        state.addOutcomeUnknown = true;
+        setBusy(false);
+        setStatus(refs.status, "Сервер не подтвердил операцию. Не создавай второе устройство: обнови список позже.", true);
+        return false;
+      }
       forgetPendingAdd();
       setBusy(false);
       setStatus(refs.status, "Сервер не получил запрос. Можно создать устройство заново.", true);
@@ -488,13 +531,17 @@ export function createDevicesModule() {
       });
 
       if (String(data?.status || "").toLowerCase() === "processing") {
+        rememberAddPostOutcome(pending, { kind: "accepted", status: 0, detail: "processing", phase: "response" });
         await resumePendingAdd();
         return;
       }
+      rememberAddPostOutcome(pending, { kind: "accepted", status: 0, detail: "succeeded", phase: "response" });
       await finishCreated(data);
     } catch (error) {
-      if (isIndeterminateTransportError(error)) {
-        await resumePendingAdd({ retryMissing: true });
+      const postOutcome = getAddPostOutcome(error);
+      rememberAddPostOutcome(pending, postOutcome);
+      if (postOutcome.kind === "no_http_response" || postOutcome.kind === "response_unreadable") {
+        await resumePendingAdd();
         return;
       }
       forgetPendingAdd();
