@@ -1,10 +1,10 @@
-import { createScreenRouter } from "./ui/screens.js?v=20260715-miniapp-release-29";
-import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260715-miniapp-release-29";
-import { bootstrapAuthContext } from "./modules/auth.js?v=20260715-miniapp-release-29";
-import { createInviteModule } from "./modules/invites.js?v=20260715-miniapp-release-29";
-import { createPaymentsModule } from "./modules/payments.js?v=20260715-miniapp-release-29";
-import { createDevicesModule } from "./modules/devices.js?v=20260715-miniapp-release-29";
-import { createAdminModule } from "./modules/admin.js?v=20260715-miniapp-release-29";
+import { createScreenRouter } from "./ui/screens.js?v=20260715-miniapp-release-30";
+import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260715-miniapp-release-30";
+import { bootstrapAuthContext } from "./modules/auth.js?v=20260715-miniapp-release-30";
+import { createInviteModule } from "./modules/invites.js?v=20260715-miniapp-release-30";
+import { createPaymentsModule } from "./modules/payments.js?v=20260715-miniapp-release-30";
+import { createDevicesModule } from "./modules/devices.js?v=20260715-miniapp-release-30";
+import { createAdminModule } from "./modules/admin.js?v=20260715-miniapp-release-30";
 
 const ADMIN_PREVIEW_MODE = false;
 const APP_BUILD_VERSION = "2.0.0";
@@ -155,25 +155,25 @@ function showAppError(router, error) {
       code: "404",
       title: "Страница не найдена",
       text: "Похоже, этот экран потерялся. Вернись назад и попробуй ещё раз.",
-      image: "./assets/mascot/error-404-detective.png?v=20260715-miniapp-release-29",
+      image: "./assets/mascot/error-404-detective.png?v=20260715-miniapp-release-30",
     },
     unavailable: {
       code: "OFFLINE",
       title: "Сервис временно недоступен",
       text: "Не удалось связаться с GhostLink. Ошибка: " + (error?.message || String(error)) + ". Попробуй повторить через несколько секунд.",
-      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-29",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-30",
     },
     maintenance: {
       code: "MAINTENANCE",
       title: "Ведутся технические работы",
       text: "Мы уже чиним связь. Попробуй обновить Mini App немного позже.",
-      image: "./assets/mascot/error-maintenance-helmet.png?v=20260715-miniapp-release-29",
+      image: "./assets/mascot/error-maintenance-helmet.png?v=20260715-miniapp-release-30",
     },
     forbidden: {
       code: "403",
       title: "Доступ запрещен",
       text: "У тебя нет прав для просмотра этого раздела.",
-      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-29",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-30",
     },
   }[type];
 
@@ -504,13 +504,18 @@ async function bootstrap() {
     await establishMiniAppSession(auth.initData);
   } catch (error) {
     const lockedReason = document.getElementById("lockedReasonText");
-    if (lockedReason && Number(error?.status || 0) === 401) {
-      lockedReason.textContent = "Не удалось подтвердить Telegram-сессию. Закрой и заново открой Mini App.";
-    } else if (lockedReason) {
-      lockedReason.textContent = error?.message || "Не удалось установить сессию. Закрой и заново открой Mini App.";
+    const status = Number(error?.status || 0);
+    if (status === 401 || status === 403) {
+      if (lockedReason) {
+        lockedReason.textContent = "Не удалось подтвердить Telegram-сессию. Закрой и заново открой Mini App.";
+      }
+      router.show("screen-locked");
+      return;
     }
-    router.show("screen-locked");
-    return;
+
+    // API requests still carry Telegram initData, so a short session-service
+    // outage must not block the whole Mini App before /api/user is checked.
+    console.warn("Mini App session bootstrap was skipped", error);
   }
 
   router.show("screen-home");

@@ -1,12 +1,11 @@
 const DEFAULT_API_BASE = "https://panel.112prd.ru:2053";
-const PROGRESSIVE_TIMEOUTS = [3000, 10000, 30000];
-const MAX_TIMEOUT = 30000;
-const DEVICE_MAX_TIMEOUT = 120000;
-const WRITE_TIMEOUTS = [8000, 15000];
-const DEVICE_TIMEOUTS = [8000, 15000];
+const PROGRESSIVE_TIMEOUTS = [5000, 10000, 20000];
+const WRITE_TIMEOUTS = [20000];
+const DEVICE_TIMEOUTS = [30000];
+const SESSION_TIMEOUTS = [4000];
 const READ_RETRIES = 2;
-const WRITE_RETRIES = 1;
-const SESSION_RETRIES = 2;
+const WRITE_RETRIES = 0;
+const SESSION_RETRIES = 0;
 const RETRY_DELAY_MS = 250;
 
 let apiBase = DEFAULT_API_BASE;
@@ -17,22 +16,79 @@ function wait(ms) {
   return new Promise((resolve) => globalThis.setTimeout(resolve, ms));
 }
 
-async function fetchWithTimeout(url, options = {}, retries = 0, timeoutPlan = PROGRESSIVE_TIMEOUTS) {
+function createTransportError(error, phase, timedOut = false) {
+  if (timedOut) {
+    const timeoutError = new Error(phase === "body" ? "response_body_timeout" : "request_timeout");
+    timeoutError.name = "AbortError";
+    timeoutError.phase = phase;
+    timeoutError.timedOut = true;
+    return timeoutError;
+  }
+
+  const transportError = new Error(
+    error && typeof error === "object" ? String(error.message || "request_failed") : String(error || "request_failed"),
+  );
+  if (error && typeof error === "object" && error.name) {
+    transportError.name = error.name;
+    transportError.cause = error;
+  }
+  transportError.phase = phase;
+  return transportError;
+}
+
+function parseJsonBody(response, rawBody) {
+  if (response.status === 204) return {};
+
+  const body = String(rawBody || "").trim();
+  if (!body) {
+    if (!response.ok) return {};
+    const error = new Error("empty_response_body");
+    error.phase = "body";
+    throw error;
+  }
+
+  try {
+    return JSON.parse(body);
+  } catch (_) {
+    if (!response.ok) return {};
+    const error = new Error("invalid_json_response");
+    error.phase = "json";
+    throw error;
+  }
+}
+
+async function requestJsonAttempt(url, options = {}, timeoutMs = PROGRESSIVE_TIMEOUTS[0]) {
+  const controller = new AbortController();
+  let phase = "request";
+  let timedOut = false;
+  const timeoutId = globalThis.setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    phase = "body";
+    const rawBody = await response.text();
+    return { response, data: parseJsonBody(response, rawBody) };
+  } catch (error) {
+    throw createTransportError(error, phase, timedOut);
+  } finally {
+    globalThis.clearTimeout(timeoutId);
+  }
+}
+
+async function requestJsonWithRetry(url, options = {}, retries = 0, timeoutPlan = PROGRESSIVE_TIMEOUTS) {
   let lastError;
 
   for (let attempt = 0; attempt <= retries; attempt += 1) {
-    const controller = new AbortController();
-    const currentTimeout = timeoutPlan[attempt] || timeoutPlan[timeoutPlan.length - 1] || MAX_TIMEOUT;
-    const timeoutId = globalThis.setTimeout(() => controller.abort(), currentTimeout);
-
     try {
-      return await fetch(url, { ...options, signal: controller.signal });
+      const currentTimeout = timeoutPlan[attempt] || timeoutPlan[timeoutPlan.length - 1] || PROGRESSIVE_TIMEOUTS[0];
+      return await requestJsonAttempt(url, options, currentTimeout);
     } catch (error) {
       lastError = error;
       if (attempt >= retries) throw error;
       await wait(RETRY_DELAY_MS * (attempt + 1));
-    } finally {
-      globalThis.clearTimeout(timeoutId);
     }
   }
 
@@ -118,23 +174,13 @@ export async function apiFetch(path, options = {}) {
   const urlParams = (path.indexOf("?") === -1) ? `?_t=${Date.now()}` : `&_t=${Date.now()}`;
   const finalUrl = buildApiUrl(path) + urlParams;
 
-  const response = await fetchWithTimeout(finalUrl, {
+  const { response, data } = await requestJsonWithRetry(finalUrl, {
     ...options,
     method,
     cache: "no-store",
     credentials: "include",
     headers: buildHeaders(options.headers || {}, { ...options, method }),
   }, retries, timeoutPlan);
-
-  const timeoutPromise = wait(isDeviceWrite ? DEVICE_MAX_TIMEOUT : MAX_TIMEOUT).then(() => {
-    throw new Error("Timeout while reading response body");
-  });
-  timeoutPromise.catch(() => {});
-
-  const data = await Promise.race([
-    response.json().catch(() => ({})),
-    timeoutPromise
-  ]);
 
   if (!response.ok) {
     throw normalizeApiError(response, data);
@@ -153,7 +199,7 @@ export async function establishMiniAppSession(initData) {
     return null;
   }
 
-  const response = await fetchWithTimeout(`${apiBase}/api/miniapp/session`, {
+  const { response, data } = await requestJsonWithRetry(`${apiBase}/api/miniapp/session`, {
     method: "POST",
     cache: "no-store",
     credentials: "include",
@@ -161,9 +207,8 @@ export async function establishMiniAppSession(initData) {
       Accept: "application/json",
     },
     body: new URLSearchParams({ init_data: value }),
-  }, SESSION_RETRIES);
+  }, SESSION_RETRIES, SESSION_TIMEOUTS);
 
-  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     throw normalizeApiError(response, data);
   }

@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-29";
+import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-30";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;
@@ -36,6 +36,7 @@ function shortUuid(value) {
 
 function isIndeterminateTransportError(error) {
   if (Number(error?.status || 0) > 0) return false;
+  if (error?.phase === "body" || error?.phase === "json") return true;
   const name = String(error?.name || "").toLowerCase();
   const message = String(error?.message || "").toLowerCase();
   return name === "aborterror" || name === "typeerror" || message.includes("failed to fetch") || message.includes("timeout");
