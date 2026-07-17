@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-30";
+import { apiFetch } from "../api/client.js?v=20260717-device-add-idempotency-1";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;

@@ -1,10 +1,10 @@
-import { createScreenRouter } from "./ui/screens.js?v=20260715-miniapp-release-30";
-import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260715-miniapp-release-30";
-import { bootstrapAuthContext } from "./modules/auth.js?v=20260715-miniapp-release-30";
-import { createInviteModule } from "./modules/invites.js?v=20260715-miniapp-release-30";
-import { createPaymentsModule } from "./modules/payments.js?v=20260715-miniapp-release-30";
-import { createDevicesModule } from "./modules/devices.js?v=20260715-miniapp-release-30";
-import { createAdminModule } from "./modules/admin.js?v=20260715-miniapp-release-30";
+import { createScreenRouter } from "./ui/screens.js?v=20260717-device-add-idempotency-1";
+import { apiFetch, configureApiClient, establishMiniAppSession } from "./api/client.js?v=20260717-device-add-idempotency-1";
+import { bootstrapAuthContext } from "./modules/auth.js?v=20260717-device-add-idempotency-1";
+import { createInviteModule } from "./modules/invites.js?v=20260717-device-add-idempotency-1";
+import { createPaymentsModule } from "./modules/payments.js?v=20260717-device-add-idempotency-1";
+import { createDevicesModule } from "./modules/devices.js?v=20260717-device-add-idempotency-1";
+import { createAdminModule } from "./modules/admin.js?v=20260717-device-add-idempotency-1";
 
 const ADMIN_PREVIEW_MODE = false;
 const APP_BUILD_VERSION = "2.0.0";
@@ -155,25 +155,25 @@ function showAppError(router, error) {
       code: "404",
       title: "Страница не найдена",
       text: "Похоже, этот экран потерялся. Вернись назад и попробуй ещё раз.",
-      image: "./assets/mascot/error-404-detective.png?v=20260715-miniapp-release-30",
+      image: "./assets/mascot/error-404-detective.png?v=20260717-device-add-idempotency-1",
     },
     unavailable: {
       code: "OFFLINE",
       title: "Сервис временно недоступен",
       text: "Не удалось связаться с GhostLink. Ошибка: " + (error?.message || String(error)) + ". Попробуй повторить через несколько секунд.",
-      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-30",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260717-device-add-idempotency-1",
     },
     maintenance: {
       code: "MAINTENANCE",
       title: "Ведутся технические работы",
       text: "Мы уже чиним связь. Попробуй обновить Mini App немного позже.",
-      image: "./assets/mascot/error-maintenance-helmet.png?v=20260715-miniapp-release-30",
+      image: "./assets/mascot/error-maintenance-helmet.png?v=20260717-device-add-idempotency-1",
     },
     forbidden: {
       code: "403",
       title: "Доступ запрещен",
       text: "У тебя нет прав для просмотра этого раздела.",
-      image: "./assets/mascot/error-unavailable-sleep.png?v=20260715-miniapp-release-30",
+      image: "./assets/mascot/error-unavailable-sleep.png?v=20260717-device-add-idempotency-1",
     },
   }[type];
 
@@ -240,12 +240,21 @@ function createHomeModule(auth) {
       refs.homeAdminBtn.classList.remove("hidden");
     }
 
+    const snapshot = readSnapshot();
+    if (snapshot) {
+      applyUserData(snapshot.data);
+      if (refs.subStatus) {
+        refs.subStatus.textContent = "Обновляю данные...";
+        refs.subStatus.classList.remove("text-primary", "text-accent-red");
+        refs.subStatus.classList.add("text-muted-gray");
+      }
+    }
+
     try {
       const data = await apiFetch("/api/user");
       applyUserData(data);
       writeSnapshot(data);
     } catch (error) {
-      const snapshot = readSnapshot();
       if (snapshot) {
         applyUserData(snapshot.data);
         if (refs.subStatus) {
@@ -519,8 +528,8 @@ async function bootstrap() {
   }
 
   router.show("screen-home");
-  const versionState = await checkAppVersion();
   await home.refresh();
+  const versionState = await checkAppVersion();
   if (versionState.outdated) {
     const reloaded = window.sessionStorage.getItem(VERSION_RELOAD_KEY) === "1";
     if (!reloaded) {

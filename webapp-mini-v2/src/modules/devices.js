@@ -1,4 +1,59 @@
-import { apiFetch } from "../api/client.js?v=20260715-miniapp-release-30";
+import { apiFetch } from "../api/client.js?v=20260717-device-add-idempotency-1";
+
+const ADD_OPERATION_STORAGE_KEY = "ghostlink.device-add-operation.v1";
+const ADD_OPERATION_MAX_AGE_MS = 15 * 60 * 1000;
+const ADD_OPERATION_POLL_DELAY_MS = 1200;
+const ADD_OPERATION_MAX_POLLS = 25;
+
+function sleep(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function newRequestId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+
+  const bytes = new Uint8Array(16);
+  if (globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+function isRequestId(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ""));
+}
+
+function readPendingAdd() {
+  try {
+    const saved = JSON.parse(window.sessionStorage.getItem(ADD_OPERATION_STORAGE_KEY) || "null");
+    if (!saved || !isRequestId(saved.requestId) || !saved.payload || !Number.isFinite(saved.createdAt)) return null;
+    if (Date.now() - saved.createdAt > ADD_OPERATION_MAX_AGE_MS) return null;
+    return saved;
+  } catch (_) {
+    return null;
+  }
+}
+
+function writePendingAdd(operation) {
+  try {
+    window.sessionStorage.setItem(ADD_OPERATION_STORAGE_KEY, JSON.stringify(operation));
+  } catch (_) {
+    // The request ID still protects this open Mini App when session storage is unavailable.
+  }
+}
+
+function clearPendingAdd() {
+  try {
+    window.sessionStorage.removeItem(ADD_OPERATION_STORAGE_KEY);
+  } catch (_) {
+    // Ignore storage cleanup failures.
+  }
+}
 
 function setStatus(node, text, isError = false) {
   if (!node) return;
@@ -9,7 +64,7 @@ function setStatus(node, text, isError = false) {
 
 function mapApiError(error) {
   const status = Number(error?.status || 0);
-  const detail = String(error?.message || error?.data?.detail || "").trim();
+  const detail = String(error?.message || error?.data?.detail || error?.error_code || "").trim();
 
   if (detail === "device_limit_reached") return "Достигнут лимит устройств для текущего тарифа.";
   if (detail === "access_closed") return "Доступ закрыт. Поддержи проект, чтобы активировать ключи.";
@@ -18,6 +73,9 @@ function mapApiError(error) {
   if (detail.startsWith("panel_error:")) return detail;
   if (detail.startsWith("panel_add_failed:")) {
     const reason = detail.slice("panel_add_failed:".length).trim();
+    if (reason.toLowerCase().includes("duplicate_email")) {
+      return "Не удалось подобрать уникальное имя устройства. Измени имя и попробуй снова.";
+    }
     return reason ? `Панель не добавила устройство: ${reason}` : "Панель не смогла добавить устройство. Попробуй еще раз.";
   }
   if (status === 401) return "Сессия истекла. Открой mini app заново из Telegram.";
@@ -99,6 +157,8 @@ export function createDevicesModule() {
   const state = {
     loading: false,
     busy: false,
+    addOutcomeUnknown: false,
+    pendingAdd: readPendingAdd(),
     items: [],
     deviceLimit: 0,
     connected: 0,
@@ -108,7 +168,7 @@ export function createDevicesModule() {
 
   function setBusy(flag) {
     state.busy = Boolean(flag);
-    refs.addBtn.disabled = state.busy;
+    refs.addBtn.disabled = state.busy || state.addOutcomeUnknown || Boolean(state.pendingAdd);
     refs.refreshBtn.disabled = state.busy;
     if (refs.copyBtn) refs.copyBtn.disabled = state.busy;
   }
@@ -202,11 +262,11 @@ export function createDevicesModule() {
     }
   }
 
-  async function loadList(force = false) {
+  async function loadList(force = false, loadingText = "Загружаю устройства...") {
     if (state.loading && !force) return;
     state.loading = true;
     setBusy(true);
-    setStatus(refs.status, "Загружаю устройства...");
+    setStatus(refs.status, loadingText);
 
     try {
       const data = await apiFetch("/api/device/list");
@@ -233,8 +293,108 @@ export function createDevicesModule() {
     return true;
   }
 
+  function rememberPendingAdd(payload, knownUuids) {
+    state.pendingAdd = {
+      requestId: newRequestId(),
+      payload,
+      knownUuids: Array.from(knownUuids),
+      createdAt: Date.now(),
+    };
+    writePendingAdd(state.pendingAdd);
+    return state.pendingAdd;
+  }
+
+  function forgetPendingAdd() {
+    state.pendingAdd = null;
+    state.addOutcomeUnknown = false;
+    clearPendingAdd();
+  }
+
+  async function getAddOperation(requestId) {
+    for (let attempt = 0; attempt < ADD_OPERATION_MAX_POLLS; attempt += 1) {
+      try {
+        const operation = await apiFetch(`/api/device/operations/${encodeURIComponent(requestId)}`);
+        const status = String(operation?.status || "").toLowerCase();
+        if (status === "succeeded" || status === "failed") return { kind: status, operation };
+      } catch (error) {
+        if (Number(error?.status || 0) === 404) return { kind: "not_found" };
+        if (!isIndeterminateTransportError(error)) return { kind: "error", error };
+      }
+      await sleep(ADD_OPERATION_POLL_DELAY_MS);
+    }
+    return { kind: "processing" };
+  }
+
+  async function finishCreated(operation) {
+    const nextLink = String(operation?.subscription_url || "").trim();
+    if (nextLink) state.subscriptionUrl = nextLink;
+
+    forgetPendingAdd();
+    const refreshed = await loadList(true, "Устройство создано. Обновляю список...");
+    showAddForm(false);
+    if (refreshed) {
+      setStatus(refs.status, "Устройство добавлено.");
+    } else {
+      setStatus(refs.status, "Устройство создано, но список не обновился. Нажми «Обновить».", true);
+    }
+  }
+
+  async function resumePendingAdd({ retryMissing = false } = {}) {
+    const pending = state.pendingAdd;
+    if (!pending) return false;
+
+    setBusy(true);
+    setStatus(refs.status, "Проверяю создание устройства...");
+    let outcome = await getAddOperation(pending.requestId);
+
+    // A 404 means the original POST did not reach the API. Retrying it with
+    // the same request ID remains safe: the server can create at most one key.
+    if (outcome.kind === "not_found" && retryMissing) {
+      try {
+        const data = await apiFetch("/api/device/add", {
+          method: "POST",
+          headers: { "X-Request-ID": pending.requestId },
+          body: JSON.stringify({ ...pending.payload, request_id: pending.requestId }),
+        });
+        if (String(data?.status || "").toLowerCase() === "succeeded" || data?.subscription_url) {
+          await finishCreated(data);
+          return true;
+        }
+        outcome = await getAddOperation(pending.requestId);
+      } catch (error) {
+        if (!isIndeterminateTransportError(error)) outcome = { kind: "error", error };
+      }
+    }
+
+    if (outcome.kind === "succeeded") {
+      await finishCreated(outcome.operation);
+      return true;
+    }
+    if (outcome.kind === "failed" || outcome.kind === "error") {
+      forgetPendingAdd();
+      setBusy(false);
+      setStatus(refs.status, mapApiError(outcome.error || outcome.operation), true);
+      return false;
+    }
+    if (outcome.kind === "not_found") {
+      forgetPendingAdd();
+      setBusy(false);
+      setStatus(refs.status, "Сервер не получил запрос. Можно создать устройство заново.", true);
+      return false;
+    }
+
+    state.addOutcomeUnknown = true;
+    setBusy(false);
+    setStatus(refs.status, "Создание еще выполняется. Нажми «Обновить список», не создавая второе устройство.", true);
+    return false;
+  }
+
   async function addDevice() {
-    if (state.busy) return;
+    if (state.busy || state.addOutcomeUnknown) return;
+    if (state.pendingAdd) {
+      await resumePendingAdd({ retryMissing: true });
+      return;
+    }
 
     const isFormHidden = refs.addForm?.classList.contains("hidden");
     if (isFormHidden) {
@@ -248,39 +408,29 @@ export function createDevicesModule() {
       device_name: String(refs.name?.value || "").trim(),
     };
     const knownUuids = new Set(state.items.map((item) => String(item?.uuid || "").trim()).filter(Boolean));
+    const pending = rememberPendingAdd(payload, knownUuids);
 
     setBusy(true);
-    setStatus(refs.status, "Добавляю устройство...");
+    setStatus(refs.status, "Создаю устройство. Не закрывай Mini App...");
 
     try {
       const data = await apiFetch("/api/device/add", {
         method: "POST",
-        body: JSON.stringify(payload),
+        headers: { "X-Request-ID": pending.requestId },
+        body: JSON.stringify({ ...payload, request_id: pending.requestId }),
       });
 
-      const nextLink = String(data?.subscription_url || "").trim();
-      if (nextLink) state.subscriptionUrl = nextLink;
-
-      const refreshed = await loadList(true);
-      if (!refreshed) {
-        setStatus(refs.status, "Устройство создано, но список не обновился. Нажми «Обновить».", true);
+      if (String(data?.status || "").toLowerCase() === "processing") {
+        await resumePendingAdd();
         return;
       }
-      showAddForm(false);
-      setStatus(refs.status, "Устройство добавлено.");
+      await finishCreated(data);
     } catch (error) {
       if (isIndeterminateTransportError(error)) {
-        setStatus(refs.status, "Ответ не получен. Проверяю, создалось ли устройство...");
-        const refreshed = await loadList(true);
-        const created = refreshed && state.items.some((item) => !knownUuids.has(String(item?.uuid || "").trim()));
-        if (created) {
-          showAddForm(false);
-          setStatus(refs.status, "Устройство создано.");
-          return;
-        }
-        setStatus(refs.status, "Ответ API не получен. Не создавай устройство повторно: подожди и обнови список.", true);
+        await resumePendingAdd({ retryMissing: true });
         return;
       }
+      forgetPendingAdd();
       setStatus(refs.status, mapApiError(error), true);
       setBusy(false);
     }
@@ -380,7 +530,17 @@ export function createDevicesModule() {
   }
 
   refs.addBtn.addEventListener("click", addDevice);
-  refs.refreshBtn.addEventListener("click", () => loadList(true));
+  refs.refreshBtn.addEventListener("click", async () => {
+    const refreshed = await loadList(true);
+    if (refreshed && state.pendingAdd) {
+      await resumePendingAdd({ retryMissing: true });
+      return;
+    }
+    if (refreshed && state.addOutcomeUnknown) {
+      state.addOutcomeUnknown = false;
+      setBusy(false);
+    }
+  });
   refs.copyBtn?.addEventListener("click", () => copySubscription(""));
 
   refs.name?.addEventListener("keydown", (event) => {
@@ -412,7 +572,15 @@ export function createDevicesModule() {
   return {
     open: async () => {
       showAddForm(false);
-      await loadList(true);
+      const refreshed = await loadList(true);
+      if (refreshed && state.pendingAdd) {
+        await resumePendingAdd({ retryMissing: true });
+        return;
+      }
+      if (refreshed && state.addOutcomeUnknown) {
+        state.addOutcomeUnknown = false;
+        setBusy(false);
+      }
     },
   };
 }
