@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 
-  <script src="./src/telegram-web-app.js?v=20260717-device-add-idempotency-1"></script>
+  <script src="./src/telegram-web-app.js?v=20260717-device-list-ux-1"></script>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script>
     if (typeof tailwind === "undefined") {
@@ -43,8 +43,8 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./src/styles.css?v=20260717-device-add-idempotency-1" />
-  <script type="module" src="./src/main.js?v=20260717-device-add-idempotency-1"></script>
+  <link rel="stylesheet" href="./src/styles.css?v=20260717-device-list-ux-1" />
+  <script type="module" src="./src/main.js?v=20260717-device-list-ux-1"></script>
 </head>
 
 <body class="flex flex-col p-6">
@@ -231,8 +231,8 @@
 
     <section id="screen-devices" class="screen">
       <h2 class="text-2xl font-bold mb-2">Устройства</h2>
-      <div class="text-muted-gray mb-1">Лимит устройств: <span id="deviceLimit">0</span></div>
-      <div class="text-muted-gray mb-3">Подключено: <span id="deviceCount">0</span></div>
+      <div class="text-muted-gray mb-1">Лимит устройств: <span id="deviceLimit">—</span></div>
+      <div class="text-muted-gray mb-3">Подключено: <span id="deviceCount">—</span></div>
 
       <div class="text-muted-gray text-xs mb-1">Ссылка подписки</div>
       <div id="subscriptionLink" class="hidden bg-card-dark border border-primary/40 rounded-xl px-3 py-2 text-xs text-white break-all mb-2"></div>
@@ -240,7 +240,7 @@
         Скопировать подписку
       </button>
 
-      <div id="deviceList" class="mb-3 text-muted-gray text-sm">Загрузка...</div>
+      <div id="deviceList" class="mb-3 text-muted-gray text-sm">Получаем список устройств...</div>
 
       <div id="deviceAddForm" class="hidden grid grid-cols-2 gap-2 mb-3">
         <select id="deviceType" class="rounded-xl bg-card-dark border border-primary text-white px-3 py-2">

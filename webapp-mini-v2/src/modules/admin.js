@@ -1,4 +1,4 @@
-import { apiFetch, getApiBase } from "../api/client.js?v=20260717-device-add-idempotency-1";
+import { apiFetch, getApiBase } from "../api/client.js?v=20260717-device-list-ux-1";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;

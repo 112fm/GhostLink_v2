@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260717-device-add-idempotency-1";
+import { apiFetch } from "../api/client.js?v=20260717-device-list-ux-1";
 
 const ADD_OPERATION_STORAGE_KEY = "ghostlink.device-add-operation.v1";
 const ADD_OPERATION_MAX_AGE_MS = 15 * 60 * 1000;
@@ -157,6 +157,10 @@ export function createDevicesModule() {
   const state = {
     loading: false,
     busy: false,
+    listState: "idle",
+    listRequestSeq: 0,
+    listProgressTimer: null,
+    hasLoadedList: false,
     addOutcomeUnknown: false,
     pendingAdd: readPendingAdd(),
     items: [],
@@ -173,6 +177,18 @@ export function createDevicesModule() {
     if (refs.copyBtn) refs.copyBtn.disabled = state.busy;
   }
 
+  function clearListProgressTimer() {
+    if (state.listProgressTimer) {
+      window.clearTimeout(state.listProgressTimer);
+      state.listProgressTimer = null;
+    }
+  }
+
+  function isTemporaryListError(error) {
+    const status = Number(error?.status || 0);
+    return isIndeterminateTransportError(error) || status >= 500;
+  }
+
   function getMainItem() {
     return state.items.find((x) => String(x?.uuid || "") === state.mainUuid) || state.items[0] || null;
   }
@@ -185,8 +201,8 @@ export function createDevicesModule() {
   }
 
   function renderTop() {
-    if (refs.limit) refs.limit.textContent = String(state.deviceLimit || 0);
-    if (refs.count) refs.count.textContent = String(state.connected || 0);
+    if (refs.limit) refs.limit.textContent = state.hasLoadedList ? String(state.deviceLimit || 0) : "—";
+    if (refs.count) refs.count.textContent = state.hasLoadedList ? String(state.connected || 0) : "—";
     if (refs.link) refs.link.classList.add("hidden");
     if (refs.copyBtn) refs.copyBtn.classList.add("hidden");
   }
@@ -205,6 +221,14 @@ export function createDevicesModule() {
 
   function renderList() {
     refs.list.innerHTML = "";
+
+    if (!state.hasLoadedList) {
+      const loading = document.createElement("div");
+      loading.className = "rounded-xl border border-white/10 bg-card-dark px-3 py-3 text-muted-gray";
+      loading.textContent = "Получаем список устройств...";
+      refs.list.appendChild(loading);
+      return;
+    }
 
     if (!state.items.length) {
       const empty = document.createElement("div");
@@ -262,35 +286,76 @@ export function createDevicesModule() {
     }
   }
 
-  async function loadList(force = false, loadingText = "Загружаю устройства...") {
-    if (state.loading && !force) return;
+  function setListLoadingState(seq, loadingText, preserveActionStatus) {
+    state.listState = "loading";
+    if (!state.hasLoadedList) {
+      renderTop();
+      renderList();
+    }
+    if (!preserveActionStatus) setStatus(refs.status, loadingText);
+
+    clearListProgressTimer();
+    state.listProgressTimer = window.setTimeout(() => {
+      if (seq !== state.listRequestSeq || !state.loading) return;
+      state.listState = "retrying";
+      if (!preserveActionStatus) {
+        setStatus(refs.status, "Список загружается дольше обычного. Проверяем соединение...");
+      }
+    }, 5000);
+  }
+
+  async function loadList(force = false, options = {}) {
+    const { loadingText = "Получаем список устройств...", preserveActionStatus = false } = options;
+    if (state.loading && !force) return { ok: false, stale: true };
+    const seq = state.listRequestSeq + 1;
+    state.listRequestSeq = seq;
     state.loading = true;
     setBusy(true);
-    setStatus(refs.status, loadingText);
+    setListLoadingState(seq, loadingText, preserveActionStatus);
 
     try {
       const data = await apiFetch("/api/device/list");
+      if (seq !== state.listRequestSeq) return { ok: false, stale: true };
       state.items = Array.isArray(data?.items) ? data.items : [];
       state.deviceLimit = Number(data?.device_limit || 0);
       state.connected = Number(data?.connected || state.items.length || 0);
       state.mainUuid = String(state.items[0]?.uuid || "").trim();
+      state.hasLoadedList = true;
+      state.listState = "loaded";
 
       renderTop();
       renderList();
-      setStatus(refs.status, `Устройств подключено: ${state.connected}/${state.deviceLimit || 0}.`);
+      if (!preserveActionStatus) {
+        setStatus(refs.status, `Устройств подключено: ${state.connected}/${state.deviceLimit || 0}.`);
+      }
     } catch (error) {
-      // Keep the last rendered list during a refresh failure so a transient
-      // network error does not erase the user's devices from the screen.
-      renderTop();
-      renderList();
-      setStatus(refs.status, mapApiError(error), true);
-      return false;
+      if (seq !== state.listRequestSeq) return { ok: false, stale: true };
+      state.listState = state.hasLoadedList ? "stale" : "unavailable";
+      if (state.hasLoadedList) {
+        // Preserve the last confirmed cards during temporary refresh failures.
+        renderTop();
+        renderList();
+      } else {
+        renderTop();
+        renderList();
+      }
+      if (!preserveActionStatus) {
+        const temporary = isTemporaryListError(error);
+        const text = state.hasLoadedList
+          ? "Список временно не обновился. Нажми «Обновить список»."
+          : "Не удалось получить список устройств. Нажми «Обновить список».";
+        setStatus(refs.status, temporary ? text : mapApiError(error), !temporary);
+      }
+      return { ok: false, error };
     } finally {
-      state.loading = false;
-      setBusy(false);
+      if (seq === state.listRequestSeq) {
+        clearListProgressTimer();
+        state.loading = false;
+        setBusy(false);
+      }
     }
 
-    return true;
+    return { ok: true };
   }
 
   function rememberPendingAdd(payload, knownUuids) {
@@ -330,12 +395,14 @@ export function createDevicesModule() {
     if (nextLink) state.subscriptionUrl = nextLink;
 
     forgetPendingAdd();
-    const refreshed = await loadList(true, "Устройство создано. Обновляю список...");
     showAddForm(false);
-    if (refreshed) {
+    setStatus(refs.status, "Устройство создано. Обновляю список...");
+    const refreshed = await loadList(true, { preserveActionStatus: true });
+    if (refreshed.stale) return;
+    if (refreshed.ok) {
       setStatus(refs.status, "Устройство добавлено.");
     } else {
-      setStatus(refs.status, "Устройство создано, но список не обновился. Нажми «Обновить».", true);
+      setStatus(refs.status, "Устройство создано. Список временно не обновился.");
     }
   }
 
@@ -457,14 +524,16 @@ export function createDevicesModule() {
       const nextLink = String(data?.subscription_url || "").trim();
       if (nextLink) state.subscriptionUrl = nextLink;
 
-      const refreshed = await loadList(true);
-      if (!refreshed) return;
-      setStatus(refs.status, "Ключ устройства обновлен.");
+      setStatus(refs.status, "Ключ обновлен. Обновляю список...");
+      const refreshed = await loadList(true, { preserveActionStatus: true });
+      if (refreshed.stale) return;
+      setStatus(refs.status, refreshed.ok ? "Ключ устройства обновлен." : "Ключ обновлен. Список временно не обновился.");
     } catch (error) {
       if (isIndeterminateTransportError(error)) {
         setStatus(refs.status, "Ответ не получен. Проверяю, обновился ли ключ...");
-        const refreshed = await loadList(true);
-        const rotated = refreshed && state.items.some((item) => {
+        const refreshed = await loadList(true, { preserveActionStatus: true });
+        if (refreshed.stale) return;
+        const rotated = refreshed.ok && state.items.some((item) => {
           const itemUuid = String(item?.uuid || "").trim();
           return itemUuid && itemUuid !== target && String(item?.email || "").trim() === previousEmail;
         });
@@ -472,7 +541,7 @@ export function createDevicesModule() {
           setStatus(refs.status, "Ключ устройства обновлен.");
           return;
         }
-        setStatus(refs.status, "Ответ API не получен. Не нажимай обновление повторно: подожди и обнови список.", true);
+        setStatus(refs.status, "Не удалось подтвердить обновление ключа. Не нажимай повторно: подожди и обнови список.");
         return;
       }
       setStatus(refs.status, mapApiError(error), true);
@@ -497,19 +566,28 @@ export function createDevicesModule() {
         body: JSON.stringify({ uuid: target }),
       });
 
-      const refreshed = await loadList(true);
-      if (!refreshed) return;
-      setStatus(refs.status, "Устройство удалено.");
+      state.items = state.items.filter((item) => String(item?.uuid || "").trim() !== target);
+      state.connected = state.items.length;
+      state.mainUuid = String(state.items[0]?.uuid || "").trim();
+      state.hasLoadedList = true;
+      renderTop();
+      renderList();
+
+      setStatus(refs.status, "Устройство удалено. Обновляю список...");
+      const refreshed = await loadList(true, { preserveActionStatus: true });
+      if (refreshed.stale) return;
+      setStatus(refs.status, refreshed.ok ? "Устройство удалено." : "Устройство удалено. Список временно не обновился.");
     } catch (error) {
       if (isIndeterminateTransportError(error)) {
         setStatus(refs.status, "Ответ не получен. Проверяю, удалилось ли устройство...");
-        const refreshed = await loadList(true);
-        const removed = refreshed && !state.items.some((item) => String(item?.uuid || "").trim() === target);
+        const refreshed = await loadList(true, { preserveActionStatus: true });
+        if (refreshed.stale) return;
+        const removed = refreshed.ok && !state.items.some((item) => String(item?.uuid || "").trim() === target);
         if (removed) {
           setStatus(refs.status, "Устройство удалено.");
           return;
         }
-        setStatus(refs.status, "Ответ API не получен. Не нажимай удаление повторно: подожди и обнови список.", true);
+        setStatus(refs.status, "Не удалось подтвердить удаление. Не нажимай повторно: подожди и обнови список.");
         return;
       }
       setStatus(refs.status, mapApiError(error), true);
@@ -532,11 +610,11 @@ export function createDevicesModule() {
   refs.addBtn.addEventListener("click", addDevice);
   refs.refreshBtn.addEventListener("click", async () => {
     const refreshed = await loadList(true);
-    if (refreshed && state.pendingAdd) {
+    if (refreshed.ok && state.pendingAdd) {
       await resumePendingAdd({ retryMissing: true });
       return;
     }
-    if (refreshed && state.addOutcomeUnknown) {
+    if (refreshed.ok && state.addOutcomeUnknown) {
       state.addOutcomeUnknown = false;
       setBusy(false);
     }
@@ -573,11 +651,11 @@ export function createDevicesModule() {
     open: async () => {
       showAddForm(false);
       const refreshed = await loadList(true);
-      if (refreshed && state.pendingAdd) {
+      if (refreshed.ok && state.pendingAdd) {
         await resumePendingAdd({ retryMissing: true });
         return;
       }
-      if (refreshed && state.addOutcomeUnknown) {
+      if (refreshed.ok && state.addOutcomeUnknown) {
         state.addOutcomeUnknown = false;
         setBusy(false);
       }
