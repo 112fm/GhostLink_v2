@@ -1,4 +1,4 @@
-import { apiFetch, getApiBase } from "../api/client.js?v=20260717-device-add-error-1";
+import { apiFetch, getApiBase } from "../api/client.js?v=20260717-api-base-fix-1";
 
 function setStatus(node, text, isError = false) {
   if (!node) return;

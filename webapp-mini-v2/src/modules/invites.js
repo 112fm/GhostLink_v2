@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260717-device-add-error-1";
+import { apiFetch } from "../api/client.js?v=20260717-api-base-fix-1";
 
 const DIRECT_PLACEHOLDER = "t.me/GhostLinkBot?start=<token>";
 const BRIDGE_PLACEHOLDER = "https://api.112prd.ru/s/<bridge-subscription>";

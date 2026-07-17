@@ -1,4 +1,4 @@
-import { apiFetch } from "../api/client.js?v=20260717-device-add-error-1";
+import { apiFetch } from "../api/client.js?v=20260717-api-base-fix-1";
 
 const ADD_OPERATION_STORAGE_KEY = "ghostlink.device-add-operation.v1";
 const ADD_OPERATION_MAX_AGE_MS = 15 * 60 * 1000;
