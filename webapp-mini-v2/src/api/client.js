@@ -109,9 +109,9 @@ export async function apiFetch(path, options = {}) {
 
   const method = String(options.method || "GET").toUpperCase();
   const isRead = method === "GET" || method === "HEAD";
-  const isDeviceRequest = String(path || "").startsWith("/api/device/");
-  const timeoutPlan = isDeviceRequest ? DEVICE_TIMEOUTS : (isRead ? PROGRESSIVE_TIMEOUTS : WRITE_TIMEOUTS);
-  const retries = isRead && !isDeviceRequest ? READ_RETRIES : WRITE_RETRIES;
+  const isDeviceWrite = !isRead && String(path || "").startsWith("/api/device/");
+  const timeoutPlan = isDeviceWrite ? DEVICE_TIMEOUTS : (isRead ? PROGRESSIVE_TIMEOUTS : WRITE_TIMEOUTS);
+  const retries = isRead ? READ_RETRIES : WRITE_RETRIES;
   
   // To avoid iOS Safari WebKit POST bug and speed up startup, we append a timestamp parameter to ALL URLs
   // to force the proxy/browser to use a fresh context occasionally.
@@ -126,7 +126,7 @@ export async function apiFetch(path, options = {}) {
     headers: buildHeaders(options.headers || {}, { ...options, method }),
   }, retries, timeoutPlan);
 
-  const timeoutPromise = wait(isDeviceRequest ? DEVICE_MAX_TIMEOUT : MAX_TIMEOUT).then(() => {
+  const timeoutPromise = wait(isDeviceWrite ? DEVICE_MAX_TIMEOUT : MAX_TIMEOUT).then(() => {
     throw new Error("Timeout while reading response body");
   });
   timeoutPromise.catch(() => {});
