@@ -1,0 +1,25 @@
+# GhostLink GitHub repository contains the Mini App only.
+# Server runtime, local control-plane documents and generated files stay local.
+/.DS_Store
+/.env
+/.env.*
+/.venv/
+/__pycache__/
+/api_server.py
+/backend/
+/bot/
+/ghost_final.py
+/*.db
+/requirements*.txt
+/scripts/
+/test_user.py
+/projects/
+/backups/
+/docs/
+/Gemini/
+/Karing/
+/webapp/
+/webapp-mini/
+/webapp-pwa/
+/webapp-shared/
+*.pyc
