@@ -80,6 +80,17 @@ function isClubTier(tier) {
   return value === "own" || value === "vip";
 }
 
+function getKnownDeviceCount(data) {
+  const candidates = [data?.device_count, data?.connected_devices];
+  for (const value of candidates) {
+    const count = Number(value);
+    if (Number.isFinite(count) && count >= 0) return count;
+  }
+
+  if (Array.isArray(data?.devices)) return data.devices.length;
+  return null;
+}
+
 function parseVersionParts(input) {
   return String(input || "")
     .trim()
@@ -198,6 +209,8 @@ function createHomeModule(auth) {
     subStatus: document.getElementById("subStatus"),
     currentTariffLabel: document.getElementById("currentTariffLabel"),
     clubBadgeLabel: document.getElementById("clubBadgeLabel"),
+    buyBtnLabel: document.getElementById("buyBtnLabel"),
+    homeDevicesLabel: document.getElementById("homeDevicesLabel"),
     homeAdminBtn: document.getElementById("homeAdminBtn"),
   };
 
@@ -207,6 +220,15 @@ function createHomeModule(auth) {
 
     if (refs.currentTariffLabel) {
       refs.currentTariffLabel.textContent = `Текущий тариф: ${formatTariffLabel(data?.device_limit)}`;
+    }
+
+    const subscriptionActive = Boolean(data?.subscription?.active);
+    const deviceCount = getKnownDeviceCount(data);
+    if (refs.buyBtnLabel) {
+      refs.buyBtnLabel.textContent = subscriptionActive ? "Продлить подписку" : "Выбрать тариф";
+    }
+    if (refs.homeDevicesLabel) {
+      refs.homeDevicesLabel.textContent = deviceCount === 0 ? "Получить ключ" : "Мои ключи";
     }
 
     const showBadge = isClubTier(data?.member_tier);
@@ -371,12 +393,12 @@ function createOnboarding() {
   const slides = [
     {
       title: "Главная",
-      text: "Здесь ты видишь статус подписки и переходы в основные разделы: Поддержать проект, Мои ключи, Пригласить в клуб.",
+      text: "Здесь ты видишь статус подписки и переходы в основные разделы: Тарифы и подписка, Мои ключи, Пригласить в клуб.",
       highlight: ["expiryValue", "subStatus"],
       highlightMode: "text",
     },
     {
-      title: "Поддержать проект",
+      title: "Тарифы и подписка",
       text: "Выбери срок 1/2/3 месяца, затем тариф Solo или Flex и отправь подтверждение оплаты.",
       highlight: ["buyBtn"],
     },
