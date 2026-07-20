@@ -115,6 +115,7 @@ export function createPaymentsModule(options = {}) {
     copyPaymentDetailsBtn: document.getElementById("copyPaymentDetailsBtn"),
     submitPaymentBtn: document.getElementById("submitPaymentBtn"),
     paymentStatusText: document.getElementById("paymentStatusText"),
+    promo1plus1Badge: document.getElementById("promo1plus1Badge"),
   };
 
   if (!refs.soloPayBtn || !refs.flexPayBtn || !refs.flexSlider) {
@@ -129,6 +130,7 @@ export function createPaymentsModule(options = {}) {
     loading: false,
     submitting: false,
     user: null,
+    activePromo: "",
     tier: "regular",
     periodMonths: 1,
     tariffMap: {
@@ -200,6 +202,10 @@ export function createPaymentsModule(options = {}) {
     if (refs.soloPrice) refs.soloPrice.textContent = String(soloAmount);
     if (refs.flexPrice) refs.flexPrice.textContent = `${sliderVal} устройства — ${flexAmount} ₽`;
 
+    if (refs.promo1plus1Badge) {
+      refs.promo1plus1Badge.classList.toggle("hidden", state.activePromo !== "1plus1");
+    }
+
     renderTierBadge();
     renderPeriodButtons();
   }
@@ -251,6 +257,7 @@ export function createPaymentsModule(options = {}) {
       const paymentSettings = await apiFetch("/api/payment/settings").catch(() => ({}));
 
       state.user = user || {};
+      state.activePromo = user?.active_promo || "";
       state.paymentSettings = paymentSettings || {};
       state.tier = String(tariffs?.tier || user?.member_tier || "regular");
 
